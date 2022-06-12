@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Archimedes service infrastructure
+Resources:
+  ExercisesDynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "code"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+      BillingMode: "PROVISIONED"
+      #GlobalSecondaryIndexes:
+      #  - GlobalSecondaryIndex
+      KeySchema:
+        - AttributeName: "code"  # WN04
+          KeyType: "HASH"
+        - AttributeName: "sk"  # METADATA#WN04
+          KeyType: "RANGE"
+      #LocalSecondaryIndexes:
+      #  - LocalSecondaryIndex
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      #SSESpecification:
+      #  SSESpecification
+      TableName: archimedes-exercises
+      #TimeToLiveSpecification:
+      #  TimeToLiveSpecification
+  ExerciseResultsDynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "createdAt"
+          AttributeType: "N"
+      BillingMode: "PROVISIONED"
+      #GlobalSecondaryIndexes:
+      #  - GlobalSecondaryIndex
+      KeySchema:
+        - AttributeName: "pk"  # STUDENT#123#EXERCISE#WN1
+          KeyType: "HASH"
+        - AttributeName: "createdAt"  #123456
+          KeyType: "RANGE"
+      #LocalSecondaryIndexes:
+      #  - LocalSecondaryIndex
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      #SSESpecification:
+      #  SSESpecification
+      TableName: archimedes-exercise-results
+      #TimeToLiveSpecification:
+      #  TimeToLiveSpecification
+  ExerciseResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: 'archimedes-exercise-results'
+      #LifecycleConfiguration:
+      #  LifecycleConfiguration
+      #LoggingConfiguration:
+      #  LoggingConfiguration
+      #MetricsConfigurations:
+      #  - MetricsConfiguration
+      #NotificationConfiguration:
+      #  NotificationConfiguration
+      #OwnershipControls:
+      #  OwnershipControls
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      #ReplicationConfiguration:
+      #  ReplicationConfiguration
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+  PublicReadGetObjectExerciseResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ExerciseResultsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref ExerciseResultsBucket
+                - /*
+            Principal: '*'
+  MiniQuizzesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: 'archimedes-mini-quizzes'
+      #LifecycleConfiguration:
+      #  LifecycleConfiguration
+      #LoggingConfiguration:
+      #  LoggingConfiguration
+      #MetricsConfigurations:
+      #  - MetricsConfiguration
+      #NotificationConfiguration:
+      #  NotificationConfiguration
+      #OwnershipControls:
+      #  OwnershipControls
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      #ReplicationConfiguration:
+      #  ReplicationConfiguration
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+  PublicReadGetObjectMiniQuizzesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref MiniQuizzesBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref MiniQuizzesBucket
+                - /*
+            Principal: '*'

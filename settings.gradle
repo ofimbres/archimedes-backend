@@ -1,0 +1,3 @@
+rootProject.name = 'archimedesService'
+
+include 'dataAccess', 'businessLogic', 'service'
