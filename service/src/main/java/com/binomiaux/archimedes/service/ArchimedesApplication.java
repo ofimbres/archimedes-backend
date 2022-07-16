@@ -8,13 +8,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-//@EntityScan("com.binomiaux.archimedes.db.model")
-//@EnableJpaRepositories("com.binomiaux.archimedes.dao")
 @SpringBootApplication
 @ComponentScan({ "com.binomiaux.archimedes.dao", "com.binomiaux.archimedes.service", "com.binomiaux.archimedes.business" })
 @EnableAutoConfiguration(exclude={SecurityAutoConfiguration.class})

@@ -18,12 +18,13 @@ public class S3Client {
     String accessKey = "AKIA5QLPQK5E2GETOS7R";
     String secretKey = "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";
 
+    private final String region = Regions.US_WEST_2.getName();
     private final AmazonS3 client;
 
     public S3Client() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
         client = AmazonS3ClientBuilder.standard()
-                .withRegion(Regions.US_WEST_2)
+                .withRegion(region)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
     }
@@ -39,8 +40,8 @@ public class S3Client {
             e.printStackTrace();
         }
 
-        String filename = exerciseCode + "_" + studentId + "_" + timestamp + ".html";
-        PutObjectRequest request = new PutObjectRequest("archimedes-exercise-results", filename, tmpFile);
+        String key = exerciseCode + "_" + studentId + "_" + timestamp + ".html";
+        PutObjectRequest request = new PutObjectRequest("archimedes-exercise-results", key, tmpFile);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType("text/html");
         request.setMetadata(metadata);

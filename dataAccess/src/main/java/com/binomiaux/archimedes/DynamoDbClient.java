@@ -30,12 +30,6 @@ public class DynamoDbClient {
                 .build();
 
         mapper = new DynamoDBMapper(client);
-
-        /*Exercise item = new Exercise();
-        item.setCode("102");
-        item.setName("Book 102 Title");
-
-        mapper.save(item);*/
     }
 
     public ExerciseResults getLatestExerciseResults(String studentId, String exerciseCode) {

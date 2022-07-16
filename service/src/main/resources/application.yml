@@ -1,0 +1,21 @@
+spring:
+  security:
+    oauth2:
+      # Interactive/web users authentication
+      client:
+        registration:
+          cognito:
+            clientId: 1h0sfngmtf1j5mf20votenps4b
+            clientSecret: 1cov7q3ll26hees1armnf5uvdp565kk8r54963amtvkm909kdftr
+            redirect-uri: http://localhost:8080/login/oauth2/code/cognito
+            scope: openid,email
+            clientName: public_client
+        provider:
+          cognito:
+            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_L1d4rVi4m
+            user-name-attribute: username
+
+      # REST API authentication
+      resourceserver:
+        jwt:
+          issuer-uri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_L1d4rVi4m

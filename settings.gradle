@@ -1,3 +1,3 @@
-rootProject.name = 'archimedesService'
+rootProject.name = 'archimedes-backend'
 
 include 'dataAccess', 'businessLogic', 'service'

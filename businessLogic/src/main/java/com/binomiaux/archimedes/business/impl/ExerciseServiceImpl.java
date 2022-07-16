@@ -8,13 +8,28 @@ import com.binomiaux.archimedes.business.ExerciseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
 public class ExerciseServiceImpl implements ExerciseService {
 
     public ExerciseServiceImpl() {
+    }
+
+    @Override
+    public List<Exercise> getAll() {
+        Exercise exercise = new Exercise();
+        exercise.setName("Adding Whole Numbers 4");
+        exercise.setCode("WN04");
+        exercise.setType("miniquiz");
+        exercise.setSk("METADATA#WN04");
+        exercise.setS3Location("archimedes-mini-quizzes/WN04.htm");
+
+        List<Exercise> output = new ArrayList<>();
+        output.add(exercise);
+        return output;
     }
 
     @Override
@@ -45,14 +60,3 @@ public class ExerciseServiceImpl implements ExerciseService {
         dynamoDbClient.setExerciseResults(studentId, code, score, timestamp);
     }
 }
-
-/**
- * {
- *   "code": "WN04",
- *   "index": "TOPIC#wholenumbers/add",
- *   "index_name": "Whole Numbers / Add",
- *   "name": "Adding Whole Numbers 4",
- *   "s3Location": "WN04.htm",
- *   "type": "miniquiz"
- * }
- */
