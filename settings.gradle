@@ -1,0 +1,3 @@
+rootProject.name = 'archimedes-backend'
+
+include 'model', 'dataAccess', 'dynamoDbWrapper', 'businessLogic', 'service'
