@@ -18,8 +18,10 @@ public class ScoreRecordTransform implements RecordTransform<ExerciseResultRecor
         model.setTimestamp(Instant.parse(entity.getTimestamp()));
 
         Student student = new Student();
-        student.setFirstName(entity.getStudentName());
+        student.setFirstName(entity.getFirstName());
+        student.setLastName(entity.getLastName());
         model.setStudent(student);
+        model.setS3Key(entity.getS3Key());
 
         return model;
     }
@@ -28,13 +30,25 @@ public class ScoreRecordTransform implements RecordTransform<ExerciseResultRecor
     public ExerciseResultRecord untransform(ExerciseResult model) {
 
         ExerciseResultRecord entity = new ExerciseResultRecord();
-        entity.setScore(model.getScore());
+        entity.setPk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id);
+        entity.setSk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id);
+        //entity.setSk("TIMESTAMP#" + model.getTimestamp());
+        entity.setGsipk("CLASS#" + model.getClassroom().getId());
+        entity.setGsisk("EXERCISE#" + model.getExercise().getId());
+        entity.setType("EXERCISE_RESULT");
+
+        entity.setFirstName(model.getStudent().getFirstName());
+        entity.setLastName(model.getStudent().getLastName());
+        entity.setExerciseName(model.getExercise().getName());
 
         String timestamp = ZonedDateTime.ofInstant(model.getTimestamp(), ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_INSTANT);
 
         entity.setTimestamp(timestamp);
-        entity.setStudentName(model.getStudent().getFirstName());
+        entity.setScore(model.getScore());
+        entity.setFirstName(model.getStudent().getFirstName());
+        entity.setLastName(model.getStudent().getLastName());
+        entity.setS3Key(model.getS3Key());
 
         return entity;
     }

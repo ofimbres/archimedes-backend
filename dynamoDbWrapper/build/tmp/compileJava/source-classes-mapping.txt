@@ -1,0 +1,20 @@
+com/binomiaux/archimedes/database/transform/RecordTransform.java
+ com.binomiaux.archimedes.database.transform.RecordTransform
+com/binomiaux/archimedes/database/transform/ExerciseResultMetadataTransform.java
+ com.binomiaux.archimedes.database.transform.ExerciseResultMetadataTransform
+com/binomiaux/archimedes/database/config/DatabaseConfig.java
+ com.binomiaux.archimedes.database.config.DatabaseConfig
+com/binomiaux/archimedes/database/schema/ExerciseResultMetadataRecord.java
+ com.binomiaux.archimedes.database.schema.ExerciseResultMetadataRecord
+com/binomiaux/archimedes/database/transform/ExerciseRecordTransform.java
+ com.binomiaux.archimedes.database.transform.ExerciseRecordTransform
+com/binomiaux/archimedes/database/repository/impl/ExerciseRepositoryImpl.java
+ com.binomiaux.archimedes.database.repository.impl.ExerciseRepositoryImpl
+com/binomiaux/archimedes/database/schema/ExerciseRecord.java
+ com.binomiaux.archimedes.database.schema.ExerciseRecord
+com/binomiaux/archimedes/database/schema/ExerciseResultRecord.java
+ com.binomiaux.archimedes.database.schema.ExerciseResultRecord
+com/binomiaux/archimedes/database/transform/ScoreRecordTransform.java
+ com.binomiaux.archimedes.database.transform.ScoreRecordTransform
+com/binomiaux/archimedes/database/repository/impl/ExerciseResultRepositoryImpl.java
+ com.binomiaux.archimedes.database.repository.impl.ExerciseResultRepositoryImpl

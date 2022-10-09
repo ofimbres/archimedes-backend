@@ -31,7 +31,8 @@ public class CognitoSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .logoutSuccessUrl("/");*/
-        http
+
+        /*http
                 // TODO disable CSRF because when enabled controllers aren't initialized
                 //  and if they are, POST are getting 403
                 .csrf().disable()
@@ -48,6 +49,23 @@ public class CognitoSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .oauth2Login()
                 .redirectionEndpoint().baseUri("/login/oauth2/code/cognito")
+                .and();
+                */
+
+                http
+                // TODO disable CSRF because when enabled controllers aren't initialized
+                //  and if they are, POST are getting 403
+                .csrf().disable()
+
+                .authorizeRequests()
+                .anyRequest().authenticated()
+
+                .and()
+                .oauth2Client()
+
+                .and()
+                .logout()
+
                 .and();
 
         http.cors();

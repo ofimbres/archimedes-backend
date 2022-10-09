@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.database.dao.service;
+package com.binomiaux.archimedes.database.repository.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

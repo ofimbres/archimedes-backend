@@ -5,13 +5,10 @@ import lombok.Data;
 import java.time.Instant;
 
 @Data
-public class ExerciseResult {
-
+public class ExerciseResultMetadata {
     private Exercise exercise;
     private Student student;
     private Classroom classroom;
     private int score;
     private Instant timestamp;
-    private String worksheetContent;
-    private String s3Key;
 }
