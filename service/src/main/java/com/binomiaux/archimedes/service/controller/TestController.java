@@ -16,7 +16,6 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("test")
 public class TestController {
 
-    @CrossOrigin
     @GetMapping("/hello")
     public ResponseEntity hello(Principal principal) {
         return ok("potro " + principal.getName());

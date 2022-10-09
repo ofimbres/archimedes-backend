@@ -5,7 +5,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.Data;
 
-//@DynamoDBTable(tableName = "archimedes-exercises")
+@DynamoDBTable(tableName = "ArchimedesData")
 @Data
 public class ExerciseRecord {
 

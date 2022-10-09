@@ -1,15 +1,14 @@
-package com.binomiaux.archimedes.database.dao.impl;
+package com.binomiaux.archimedes.database.repository.impl;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.binomiaux.archimedes.database.dao.ExerciseDao;
+import com.binomiaux.archimedes.database.repository.ExerciseRepository;
 import com.binomiaux.archimedes.database.transform.ExerciseRecordTransform;
-import com.binomiaux.archimedes.database.transform.ScoreRecordTransform;
 import com.binomiaux.archimedes.model.Exercise;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ExerciseDaoImpl implements ExerciseDao {
+public class ExerciseRepositoryImpl implements ExerciseRepository {
 
     @Autowired
     private DynamoDBMapper mapper;
@@ -17,7 +16,7 @@ public class ExerciseDaoImpl implements ExerciseDao {
     private ExerciseRecordTransform exerciseRecordTransform = new ExerciseRecordTransform();
 
     @Override
-    public Exercise getByCode(String code) {
+    public Exercise findByCode(String code) {
         return null;
     }
 }
