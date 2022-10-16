@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Slf4j
 @Service
 public class ExerciseServiceImpl implements ExerciseService {
@@ -22,5 +25,14 @@ public class ExerciseServiceImpl implements ExerciseService {
         exercise.setName("Multiplying Whole Numbers");
         exercise.setClassification("miniquiz");
         return exercise;
+    }
+
+    @Override
+    public List<Exercise> getExercises() {
+        Exercise exercise = new Exercise();
+        exercise.setId("WN16");
+        exercise.setName("Multiplying Whole Numbers");
+        exercise.setClassification("miniquiz");
+        return Arrays.asList(exercise);
     }
 }

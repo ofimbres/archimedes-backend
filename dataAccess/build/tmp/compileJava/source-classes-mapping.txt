@@ -1,4 +1,0 @@
-com/binomiaux/archimedes/database/repository/ExerciseRepository.java
- com.binomiaux.archimedes.database.repository.ExerciseRepository
-com/binomiaux/archimedes/database/repository/ExerciseResultRepository.java
- com.binomiaux.archimedes.database.repository.ExerciseResultRepository

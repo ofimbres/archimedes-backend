@@ -29,4 +29,10 @@ public class ExerciseController {
 
     @Autowired
     private ExerciseService mExerciseService;
+
+    @GetMapping("/")
+    public ResponseEntity get() {
+        List<Exercise> exerciseResults = mExerciseService.getExercises();
+        return ok(exerciseResults);
+    }
 }

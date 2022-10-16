@@ -37,7 +37,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     }
 
     @Override
-    public List<ExerciseResult> findByClassIdAndExerciseCode(String classId, String exerciseCode) {
+    public List<ExerciseResult> findAllByClassIdAndExerciseCode(String classId, String exerciseCode) {
         ExerciseResultRecord exerciseResult = new ExerciseResultRecord();
         exerciseResult.setGsipk("CLASS#" + classId);
         exerciseResult.setGsisk("EXERCISE#" + exerciseCode);

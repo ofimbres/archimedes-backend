@@ -34,6 +34,6 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
 
     @Override
     public List<ExerciseResult> getByClassAndExercise(String className, String exerciseCode) {
-        return exerciseResultRepository.findByClassIdAndExerciseCode(className, exerciseCode);
+        return exerciseResultRepository.findAllByClassIdAndExerciseCode(className, exerciseCode);
     }
 }

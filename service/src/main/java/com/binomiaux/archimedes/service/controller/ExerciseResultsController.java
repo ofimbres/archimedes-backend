@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
-import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
