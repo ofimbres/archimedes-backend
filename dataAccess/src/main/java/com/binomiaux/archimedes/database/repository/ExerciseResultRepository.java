@@ -7,5 +7,5 @@ import java.util.List;
 public interface ExerciseResultRepository {
     void create(ExerciseResult exerciseResult);
     ExerciseResult findByClassIdStudentIdAndExerciseCode(String classId, String studentId, String exerciseCode);
-    List<ExerciseResult> findByClassIdAndExerciseCode(String classId, String exerciseCode);
+    List<ExerciseResult> findAllByClassIdAndExerciseCode(String classId, String exerciseCode);
 }

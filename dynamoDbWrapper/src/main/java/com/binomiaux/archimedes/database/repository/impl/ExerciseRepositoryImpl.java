@@ -7,6 +7,8 @@ import com.binomiaux.archimedes.model.Exercise;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class ExerciseRepositoryImpl implements ExerciseRepository {
 
@@ -17,6 +19,11 @@ public class ExerciseRepositoryImpl implements ExerciseRepository {
 
     @Override
     public Exercise findByCode(String code) {
+        return null;
+    }
+
+    @Override
+    public List<Exercise> findAll() {
         return null;
     }
 }

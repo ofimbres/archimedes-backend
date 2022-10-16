@@ -2,7 +2,6 @@ package com.binomiaux.archimedes.business.impl;
 
 import com.binomiaux.archimedes.business.StudentService;
 import com.binomiaux.archimedes.model.Student;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 @Service
