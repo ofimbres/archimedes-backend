@@ -7,4 +7,5 @@ public class Exercise {
     public String id;
     public String name;
     public String classification;
+    public String path;
 }
