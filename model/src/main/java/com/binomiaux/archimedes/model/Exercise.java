@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class Exercise {
-    public String id;
-    public String name;
-    public String classification;
-    public String path;
+    private String id;
+    private String name;
+    private String classification;
+    private String path;
 }

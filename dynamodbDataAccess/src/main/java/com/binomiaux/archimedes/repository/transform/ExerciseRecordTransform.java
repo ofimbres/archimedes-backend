@@ -7,6 +7,10 @@ public class ExerciseRecordTransform implements RecordTransform<ExerciseRecord, 
     @Override
     public Exercise transform(ExerciseRecord entity) {
         Exercise model = new Exercise();
+        model.setId(entity.getCode());
+        model.setName(entity.getName());
+        model.setPath(entity.getPath());
+        model.setClassification(entity.getClassification());
 
         return model;
     }

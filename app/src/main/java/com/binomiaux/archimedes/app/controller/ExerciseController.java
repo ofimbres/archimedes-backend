@@ -14,10 +14,10 @@ import static org.springframework.http.ResponseEntity.ok;
 public class ExerciseController {
 
     @Autowired
-    private ExerciseService mExerciseService;
+    private ExerciseService exerciseService;
 
     @GetMapping("/{exerciseId}")
     public ResponseEntity get(@PathVariable String exerciseId) {
-        return ok("");
+        return ok(exerciseService.getExercise(exerciseId));
     }
 }
