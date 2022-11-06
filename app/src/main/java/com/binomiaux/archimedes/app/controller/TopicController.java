@@ -27,6 +27,11 @@ public class TopicController {
 
     @GetMapping("/")
     public ResponseEntity get() {
+        return ok(topicService.getTopicsHierarchy());
+    }
+
+    /*@GetMapping("/")
+    public ResponseEntity get() {
         List<Topic> topics = topicService.getTopics();
         return ok(topics);
     }
@@ -35,7 +40,7 @@ public class TopicController {
     public ResponseEntity get(@PathVariable String topicId) {
         List<Topic> topics = topicService.getTopicsById(topicId);
         return ok(topics);
-    }
+    }*/
 
     @GetMapping("/{topicId}/subtopic/{subtopicId}/exercises")
     public ResponseEntity get(@PathVariable String topicId, @PathVariable String subtopicId) {
