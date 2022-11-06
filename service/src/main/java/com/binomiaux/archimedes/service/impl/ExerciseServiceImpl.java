@@ -12,7 +12,7 @@ import java.util.*;
 @Slf4j
 @Service
 public class ExerciseServiceImpl implements ExerciseService {
-    Map<String, Exercise> exerciseDb = new HashMap<>();
+    /*Map<String, Exercise> exerciseDb = new HashMap<>();
 
     public ExerciseServiceImpl() {
         Exercise exercise1 = new Exercise();
@@ -51,18 +51,18 @@ public class ExerciseServiceImpl implements ExerciseService {
         exerciseDb.put(exercise4.getId(), exercise4);
         exerciseDb.put(exercise5.getId(), exercise5);
         exerciseDb.put(exercise6.getId(), exercise6);
-    }
+    }*/
 
     @Autowired
-    private ExerciseRepository exerciseDao;
+    private ExerciseRepository exerciseRepository;
 
     @Override
-    public Exercise getExercise(String id) {
-        return exerciseDb.get(id);
+    public Exercise getExercise(String exerciseId) {
+        return exerciseRepository.findByCode(exerciseId);
     }
 
     @Override
-    public Iterable<Exercise> getExercises() {
-        return exerciseDb.values();
+    public List<Exercise> getExercisesByTopicIdAndSubtopicId(String topicId, String subtopicId) {
+        return exerciseRepository.findByTopicAndSubtopic(topicId, subtopicId);
     }
 }

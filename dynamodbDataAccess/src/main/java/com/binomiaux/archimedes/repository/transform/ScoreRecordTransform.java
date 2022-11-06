@@ -30,8 +30,8 @@ public class ScoreRecordTransform implements RecordTransform<ExerciseResultRecor
     public ExerciseResultRecord untransform(ExerciseResult model) {
 
         ExerciseResultRecord entity = new ExerciseResultRecord();
-        entity.setPk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id);
-        entity.setSk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id);
+        entity.setPk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().getId());
+        entity.setSk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().getId());
         //entity.setSk("TIMESTAMP#" + model.getTimestamp());
         entity.setGsipk("CLASS#" + model.getClassroom().getId());
         entity.setGsisk("EXERCISE#" + model.getExercise().getId());

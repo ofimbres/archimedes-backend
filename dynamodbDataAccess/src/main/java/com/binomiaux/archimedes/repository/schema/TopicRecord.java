@@ -8,17 +8,13 @@ import lombok.Data;
 
 @DynamoDBTable(tableName = "ArchimedesData")
 @Data
-public class ExerciseRecord {
+public class TopicRecord {
     @DynamoDBHashKey(attributeName="pk")
     private String pk;
     @DynamoDBRangeKey(attributeName="sk")
     private String sk;
-    @DynamoDBAttribute(attributeName="code")
-    private String code;
-    @DynamoDBAttribute(attributeName="name")
-    private String name;
-    @DynamoDBAttribute(attributeName="classification")
-    private String classification;
-    @DynamoDBAttribute(attributeName="path")
-    private String path;
+    @DynamoDBAttribute(attributeName="id")
+    private String id;
+    @DynamoDBAttribute(attributeName="topicName")
+    private String topicName;
 }
