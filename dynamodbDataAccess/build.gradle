@@ -16,11 +16,11 @@ dependencies {
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compile project(':model')
-    compile project(':dataAccess')
+    implementation project(':model')
+    implementation project(':dataAccess')
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
 test {
