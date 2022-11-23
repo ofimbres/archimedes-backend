@@ -30,7 +30,6 @@ public class ExerciseResultsController {
 
     @Autowired
     private ExerciseResultService mExerciseResultService;
-
     @Autowired
     private StudentService mStudentService;
     @Autowired
@@ -46,7 +45,7 @@ public class ExerciseResultsController {
 
     @GetMapping("/class/{classroomId}/student/{studentId}/exercise/{exerciseId}")
     public ResponseEntity getByClassStudentAndExercise(@PathVariable String classroomId, @PathVariable String studentId, @PathVariable String exerciseId) {
-        //ExerciseResult exerciseResults = mExerciseResultService.getByClassStudentAndExercise(classroomId, studentId, exerciseId);
+        ExerciseResult exerciseResults = mExerciseResultService.getByStudentAndExercise(classroomId, studentId, exerciseId);
         return ok("");
     }
 

@@ -30,18 +30,6 @@ public class TopicController {
         return ok(topicService.getTopicsHierarchy());
     }
 
-    /*@GetMapping("/")
-    public ResponseEntity get() {
-        List<Topic> topics = topicService.getTopics();
-        return ok(topics);
-    }
-
-    @GetMapping("/{topicId}/subtopic")
-    public ResponseEntity get(@PathVariable String topicId) {
-        List<Topic> topics = topicService.getTopicsById(topicId);
-        return ok(topics);
-    }*/
-
     @GetMapping("/{topicId}/subtopic/{subtopicId}/exercises")
     public ResponseEntity get(@PathVariable String topicId, @PathVariable String subtopicId) {
         List<Exercise> exercises = exerciseService.getExercisesByTopicIdAndSubtopicId(topicId, subtopicId);
