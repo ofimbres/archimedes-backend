@@ -1,8 +1,12 @@
 package com.binomiaux.archimedes.app.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
+/**
+ *
+ */
 @ConfigurationProperties(prefix = "web")
 @ConstructorBinding
 public class WebConfigProperties {
@@ -17,7 +21,12 @@ public class WebConfigProperties {
         return cors;
     }
 
+    /**
+     *
+     */
+    @Data
     public static class Cors {
+
         private final String[] allowedOrigins;
 
         private final String[] allowedMethods;
@@ -35,26 +44,6 @@ public class WebConfigProperties {
             this.maxAge = maxAge;
             this.allowedHeaders = allowedHeaders;
             this.exposedHeaders = exposedHeaders;
-        }
-
-        public String[] getAllowedOrigins() {
-            return allowedOrigins;
-        }
-
-        public String[] getAllowedMethods() {
-            return allowedMethods;
-        }
-
-        public long getMaxAge() {
-            return maxAge;
-        }
-
-        public String[] getAllowedHeaders() {
-            return allowedHeaders;
-        }
-
-        public String[] getExposedHeaders() {
-            return exposedHeaders;
         }
     }
 }

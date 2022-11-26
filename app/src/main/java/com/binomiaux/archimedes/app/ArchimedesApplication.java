@@ -14,35 +14,38 @@ import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ *
+ */
 @Configuration
 @SpringBootApplication
 @Import(value = { ArchimedesServiceScan.class, ArchimedesRepositoryScan.class })
-@EnableAutoConfiguration(exclude={SecurityAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @EnableConfigurationProperties({WebConfigProperties.class})
 public class ArchimedesApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(ArchimedesApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ArchimedesApplication.class, args);
+    }
 
-	private final WebConfigProperties webConfigProperties;
+    private final WebConfigProperties webConfigProperties;
 
-	public ArchimedesApplication(WebConfigProperties webConfigProperties) {
-		this.webConfigProperties = webConfigProperties;
-	}
+    public ArchimedesApplication(WebConfigProperties webConfigProperties) {
+        this.webConfigProperties = webConfigProperties;
+    }
 
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				WebConfigProperties.Cors cors = webConfigProperties.getCors();
-				registry.addMapping("/**")
-						.allowedOrigins(cors.getAllowedOrigins())
-						.allowedMethods(cors.getAllowedMethods())
-						.maxAge(cors.getMaxAge())
-						.allowedHeaders(cors.getAllowedHeaders())
-						.exposedHeaders(cors.getExposedHeaders());
-			}
-		};
-	}
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                WebConfigProperties.Cors cors = webConfigProperties.getCors();
+                    registry.addMapping("/**")
+                        .allowedOrigins(cors.getAllowedOrigins())
+                        .allowedMethods(cors.getAllowedMethods())
+                        .maxAge(cors.getMaxAge())
+                        .allowedHeaders(cors.getAllowedHeaders())
+                        .exposedHeaders(cors.getExposedHeaders());
+            }
+        };
+    }
 }

@@ -16,12 +16,12 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-dynamodb'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
+    implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.347')
     implementation project(':dataAccess')
     implementation project(':dynamodbDataAccess')
     implementation project(':model')
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 

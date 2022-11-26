@@ -1,20 +1,24 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.service.ClassroomService;
-import com.binomiaux.archimedes.service.ExerciseResultService;
-import com.binomiaux.archimedes.service.ExerciseService;
-import com.binomiaux.archimedes.service.StudentService;
 import com.binomiaux.archimedes.model.Classroom;
 import com.binomiaux.archimedes.model.Exercise;
 import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.service.ClassroomService;
+import com.binomiaux.archimedes.service.ExerciseResultService;
+import com.binomiaux.archimedes.service.ExerciseService;
+import com.binomiaux.archimedes.service.StudentService;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayOutputStream;
 import java.time.Instant;
@@ -23,7 +27,9 @@ import java.util.UUID;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-@Slf4j
+/**
+ *
+ */
 @RestController
 @RequestMapping("/api/v1/exerciseresult")
 public class ExerciseResultsController {
@@ -39,14 +45,15 @@ public class ExerciseResultsController {
 
     @GetMapping("/class/{classroomId}/exercise/{exerciseId}")
     public ResponseEntity getByClassAndExercise(@PathVariable String classroomId, @PathVariable String exerciseId) {
-        List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(classroomId, exerciseId);
+        var exerciseResults = mExerciseResultService.getByClassAndExercise(classroomId, exerciseId);
         return ok(exerciseResults);
     }
 
     @GetMapping("/class/{classroomId}/student/{studentId}/exercise/{exerciseId}")
-    public ResponseEntity getByClassStudentAndExercise(@PathVariable String classroomId, @PathVariable String studentId, @PathVariable String exerciseId) {
-        ExerciseResult exerciseResults = mExerciseResultService.getByStudentAndExercise(classroomId, studentId, exerciseId);
-        return ok("");
+    public ResponseEntity getByClassStudentAndExercise(@PathVariable String classroomId, @PathVariable String studentId,
+                                                       @PathVariable String exerciseId) {
+        var exerciseResult = mExerciseResultService.getByStudentAndExercise(classroomId, studentId, exerciseId);
+        return ok(exerciseResult);
     }
 
     @PostMapping("/")
@@ -72,7 +79,8 @@ public class ExerciseResultsController {
 
     @GetMapping("/downloadFile/{fileName:.+}")
     public ResponseEntity download(@PathVariable String fileName) {
-        List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise("e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
+        List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
+                "e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
         String filename = "";
         ByteArrayOutputStream downloadInputStream = null;
         return ok()
