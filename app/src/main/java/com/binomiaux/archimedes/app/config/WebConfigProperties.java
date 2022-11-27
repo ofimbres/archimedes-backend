@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
 /**
- *
+ * Configuration web properties such as CORS.
  */
 @ConfigurationProperties(prefix = "web")
 @ConstructorBinding

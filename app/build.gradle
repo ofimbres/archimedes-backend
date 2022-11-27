@@ -4,7 +4,6 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
-    //id "com.github.spotbugs" version "5.0.13"
 }
 
 group 'org.example'
@@ -60,15 +59,3 @@ checkstyleMain {
 checkstyleTest {
     source ='src/test/java'
 }
-
-/*spotbugs {
-    toolVersion = '4.2.2'
-}
-
-import com.github.spotbugs.snom.SpotBugsTask
-tasks.withType(SpotBugsTask) {
-    reports {
-        xml.enabled = false
-        html.enabled = true
-    }
-}*/
