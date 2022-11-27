@@ -15,7 +15,7 @@ import java.util.List;
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
- *
+ * Topic controller.
  */
 @RestController
 @RequestMapping("/api/v1/topic")
