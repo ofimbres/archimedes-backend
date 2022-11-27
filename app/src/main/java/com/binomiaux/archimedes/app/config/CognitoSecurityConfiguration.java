@@ -7,9 +7,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Congnito Security Configuration for
+ * Congnito Security Configuration for:
  * a) Cognito interactive/web users authentication and
- * b) Cognito REST clients authentication - token based security
+ * b) Cognito REST clients authentication - token based security.
  */
 @Configuration
 @EnableWebSecurity
