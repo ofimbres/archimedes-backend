@@ -7,14 +7,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- *
+ * Congnito Security Configuration for
+ * a) Cognito interactive/web users authentication and
+ * b) Cognito REST clients authentication - token based security
  */
 @Configuration
 @EnableWebSecurity
 public class CognitoSecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Cognito interactive/web users authentication
         http
                 .csrf().disable()
                 .oauth2Client()
@@ -24,7 +25,6 @@ public class CognitoSecurityConfiguration {
                 .oauth2Login()
                 .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
 
-        // Cognito REST clients authentication - token based security
         http.authorizeRequests()
                 .antMatchers("/healthcheck/").permitAll()
                 .anyRequest().authenticated().and()

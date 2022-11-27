@@ -3,13 +3,6 @@ cloud:
     region:
       static: us-west-2
 
-web:
-  cors:
-    allowed-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD
-    max-age: 3600
-    allowed-headers: "Requestor-Type"
-    exposed-headers: "X-Get-Header"
-
 spring:
   profiles:
     active: dev
