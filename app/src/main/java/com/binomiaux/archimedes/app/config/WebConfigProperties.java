@@ -1,6 +1,6 @@
 package com.binomiaux.archimedes.app.config;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
@@ -10,21 +10,17 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConfigurationProperties(prefix = "web")
 @ConstructorBinding
 public class WebConfigProperties {
-
+    @Getter
     private final Cors cors;
 
     public WebConfigProperties(Cors cors) {
         this.cors = cors;
     }
 
-    public Cors getCors() {
-        return cors;
-    }
-
     /**
      *
      */
-    @Data
+    @Getter
     public static class Cors {
 
         private final String[] allowedOrigins;

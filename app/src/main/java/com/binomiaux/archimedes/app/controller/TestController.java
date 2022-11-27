@@ -10,7 +10,7 @@ import java.security.Principal;
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
- *
+ * Test controller.
  */
 @RestController
 @RequestMapping("/api/v1/test")

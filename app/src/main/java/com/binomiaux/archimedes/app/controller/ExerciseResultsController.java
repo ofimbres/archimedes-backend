@@ -10,8 +10,6 @@ import com.binomiaux.archimedes.service.ExerciseService;
 import com.binomiaux.archimedes.service.StudentService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.ByteArrayOutputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +25,7 @@ import java.util.UUID;
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
- *
+ * Exercise Results controller.
  */
 @RestController
 @RequestMapping("/api/v1/exerciseresult")
@@ -82,11 +79,12 @@ public class ExerciseResultsController {
         List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
                 "e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
         String filename = "";
-        ByteArrayOutputStream downloadInputStream = null;
+        /*ByteArrayOutputStream downloadInputStream = null;
         return ok()
                 .contentType(MediaType.TEXT_HTML)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .body(downloadInputStream.toByteArray());
+                .body(downloadInputStream.toByteArray());*/
+        return ok("potro");
     }
 
     @Data
