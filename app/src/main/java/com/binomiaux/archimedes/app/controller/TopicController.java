@@ -30,9 +30,15 @@ public class TopicController {
         return ok(topicService.getTopicsHierarchy());
     }
 
+    @GetMapping("/{topicId}/exercises")
+    public ResponseEntity get(@PathVariable String topicId) {
+        var exercises = exerciseService.getExercisesByTopicId(topicId);
+        return ok(exercises);
+    }
+
     @GetMapping("/{topicId}/subtopic/{subtopicId}/exercises")
     public ResponseEntity get(@PathVariable String topicId, @PathVariable String subtopicId) {
-        List<Exercise> exercises = exerciseService.getExercisesByTopicIdAndSubtopicId(topicId, subtopicId);
+        var exercises = exerciseService.getExercisesByTopicIdAndSubtopicId(topicId, subtopicId);
         return ok(exercises);
     }
 }
