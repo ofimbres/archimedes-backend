@@ -62,6 +62,11 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     @Override
+    public List<Exercise> getExercisesByTopicId(String topicId) {
+        return exerciseRepository.findByTopic(topicId);
+    }
+
+    @Override
     public List<Exercise> getExercisesByTopicIdAndSubtopicId(String topicId, String subtopicId) {
         return exerciseRepository.findByTopicAndSubtopic(topicId, subtopicId);
     }

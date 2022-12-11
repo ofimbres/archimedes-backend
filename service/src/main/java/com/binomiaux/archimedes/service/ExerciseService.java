@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface ExerciseService {
     Exercise getExercise(String exerciseId);
+    List<Exercise> getExercisesByTopicId(String topicId);
     List<Exercise> getExercisesByTopicIdAndSubtopicId(String topicId, String subtopicId);
 }

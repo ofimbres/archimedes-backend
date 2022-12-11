@@ -41,6 +41,23 @@ public class ExerciseRepositoryImpl implements ExerciseRepository {
     }
 
     @Override
+    public List<Exercise> findByTopic(String topicId) {
+        Map<String, AttributeValue> eav = new HashMap<>();
+        eav.put(":v1",new AttributeValue().withS("TOPIC#" + topicId));
+
+        DynamoDBQueryExpression<ExerciseRecord> queryExpression =
+                new DynamoDBQueryExpression<ExerciseRecord>()
+                        .withKeyConditionExpression("gsipk2 = :v1")
+                        .withExpressionAttributeValues(eav)
+                        .withIndexName("gsi2")
+                        .withConsistentRead(false);
+
+        List<ExerciseRecord> queryResult = mapper.query(ExerciseRecord.class, queryExpression);
+        return queryResult.stream().map(r -> transformer.transform(r))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Exercise> findByTopicAndSubtopic(String topicId, String subtopicId) {
         Map<String, AttributeValue> eav = new HashMap<>();
         eav.put(":v1",new AttributeValue().withS("TOPIC#" + topicId + "#SUBTOPIC#" + subtopicId));
