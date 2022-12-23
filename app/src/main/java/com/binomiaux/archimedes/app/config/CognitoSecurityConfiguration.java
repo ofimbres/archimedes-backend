@@ -1,10 +1,16 @@
 package com.binomiaux.archimedes.app.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 /**
  * Congnito Security Configuration for:
@@ -13,7 +19,14 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties({ WebConfigProperties.class })
 public class CognitoSecurityConfiguration {
+    private final WebConfigProperties webConfigProperties;
+
+    public CognitoSecurityConfiguration(WebConfigProperties webConfigProperties) {
+        this.webConfigProperties = webConfigProperties;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -30,6 +43,23 @@ public class CognitoSecurityConfiguration {
                 .anyRequest().authenticated().and()
                 .oauth2ResourceServer().jwt();
 
+        http.cors();
+
         return http.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        WebConfigProperties.Cors cors = webConfigProperties.getCors();
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(cors.getAllowedOrigins()));
+        configuration.setAllowedMethods(Arrays.asList(cors.getAllowedMethods()));
+        configuration.setMaxAge(cors.getMaxAge());
+        configuration.setAllowedHeaders(Arrays.asList(cors.getAllowedHeaders()));
+        configuration.setExposedHeaders(Arrays.asList(cors.getExposedHeaders()));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
