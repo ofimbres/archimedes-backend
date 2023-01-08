@@ -4,13 +4,13 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
+    id 'war'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:2.7.5'
     implementation 'org.springframework.security:spring-security-config:5.7.3'
     implementation 'org.springframework.boot:spring-boot-starter-security:2.7.5'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 }
 
 test {
@@ -42,11 +43,11 @@ application {
 }
 
 bootJar {
-    enabled = false
+    enabled = true
 }
 
 jar {
-    enabled = true
+    enabled = false
 }
 
 checkstyle {
