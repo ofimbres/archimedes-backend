@@ -52,11 +52,11 @@ public class CognitoSecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource() {
         WebConfigProperties.Cors cors = webConfigProperties.getCors();
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(cors.getAllowedOrigins()));
-        configuration.setAllowedMethods(Arrays.asList(cors.getAllowedMethods()));
+        configuration.setAllowedOrigins(cors.getAllowedOrigins());
+        configuration.setAllowedMethods(cors.getAllowedMethods());
         configuration.setMaxAge(cors.getMaxAge());
-        configuration.setAllowedHeaders(Arrays.asList(cors.getAllowedHeaders()));
-        configuration.setExposedHeaders(Arrays.asList(cors.getExposedHeaders()));
+        configuration.setAllowedHeaders(cors.getAllowedHeaders());
+        configuration.setExposedHeaders(cors.getExposedHeaders());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
