@@ -1,0 +1,14 @@
+{
+  "name": "Java 17",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-gradle"
+      ]
+    }
+  }
+}
