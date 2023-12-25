@@ -6,11 +6,7 @@ import com.binomiaux.archimedes.model.Student;
 public class StudentRecordTransform implements RecordTransform<StudentRecord, Student> {
     @Override
     public Student transform(StudentRecord entity) {
-        Student model = new Student();
-        model.setId(entity.getUsername());
-        model.setFirstName(entity.getFirstName());
-        model.setLastName(entity.getLastName());
-        model.setEmail(entity.getEmail());
+        Student model = new Student(entity.getUsername(), entity.getFirstName(), entity.getLastName(), entity.getEmail());
         return model;
     }
 

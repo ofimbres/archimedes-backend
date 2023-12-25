@@ -1,29 +1,3 @@
-cloud:
-  aws:
-    region:
-      static: us-west-2
-
 spring:
   profiles:
     active: dev
-
-  security:
-    oauth2:
-      # Interactive/web users authentication
-      client:
-        registration:
-          cognito:
-            clientId: 2ba4j54rtfsvpgtq7rfr2a3a0m
-            # clientSecret: yyy
-            redirect-uri: http://localhost:8080/login/oauth2/code/cognito
-            scope: openid,email
-            clientName: public_client
-        provider:
-          cognito:
-            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_1DuoJgSqN
-            user-name-attribute: username
-
-      # REST API authentication
-      resourceserver:
-        jwt:
-          issuer-uri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_1DuoJgSqN

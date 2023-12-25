@@ -1,17 +1,20 @@
 package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.ExerciseService;
+
 import com.binomiaux.archimedes.repository.ExerciseRepository;
 import com.binomiaux.archimedes.model.Exercise;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 public class ExerciseServiceImpl implements ExerciseService {
+    private static final Logger log = LoggerFactory.getLogger(ExerciseServiceImpl.class);
 
     @Autowired
     private ExerciseRepository exerciseRepository;
