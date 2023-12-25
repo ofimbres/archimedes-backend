@@ -6,12 +6,7 @@ import com.binomiaux.archimedes.model.Exercise;
 public class ExerciseRecordTransform implements RecordTransform<ExerciseRecord, Exercise> {
     @Override
     public Exercise transform(ExerciseRecord entity) {
-        Exercise model = new Exercise();
-        model.setId(entity.getCode());
-        model.setName(entity.getName());
-        model.setPath(entity.getPath());
-        model.setClassification(entity.getClassification());
-
+        Exercise model = new Exercise(entity.getCode(), entity.getName(), entity.getClassification(), entity.getPath());
         return model;
     }
 

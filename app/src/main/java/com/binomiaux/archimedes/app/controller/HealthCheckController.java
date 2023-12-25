@@ -14,7 +14,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("healthcheck")
 public class HealthCheckController {
     @GetMapping("/")
-    public ResponseEntity get() {
+    public ResponseEntity<String> get() {
         return ok("Health Check Success");
     }
 }

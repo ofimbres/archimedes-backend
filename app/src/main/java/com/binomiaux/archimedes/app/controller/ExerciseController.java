@@ -1,5 +1,6 @@
 package com.binomiaux.archimedes.app.controller;
 
+import com.binomiaux.archimedes.model.Exercise;
 import com.binomiaux.archimedes.service.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class ExerciseController {
     private ExerciseService exerciseService;
 
     @GetMapping("/{exerciseId}")
-    public ResponseEntity get(@PathVariable String exerciseId) {
+    public ResponseEntity<Exercise> get(@PathVariable String exerciseId) {
         return ok(exerciseService.getExercise(exerciseId));
     }
 }

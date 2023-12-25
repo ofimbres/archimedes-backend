@@ -1,5 +1,7 @@
 package com.binomiaux.archimedes.app.controller;
 
+import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.model.TopicHierarchy;
 import com.binomiaux.archimedes.service.ExerciseService;
 import com.binomiaux.archimedes.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.ResponseEntity.ok;
+
+import java.util.List;
 
 /**
  * Topic controller.
@@ -23,18 +27,18 @@ public class TopicController {
     private ExerciseService exerciseService;
 
     @GetMapping("/")
-    public ResponseEntity get() {
+    public ResponseEntity<List<TopicHierarchy>> get() {
         return ok(topicService.getTopicsHierarchy());
     }
 
     @GetMapping("/{topicId}/exercises")
-    public ResponseEntity get(@PathVariable String topicId) {
+    public ResponseEntity<List<Exercise>> get(@PathVariable String topicId) {
         var exercises = exerciseService.getExercisesByTopicId(topicId);
         return ok(exercises);
     }
 
     @GetMapping("/{topicId}/subtopic/{subtopicId}/exercises")
-    public ResponseEntity get(@PathVariable String topicId, @PathVariable String subtopicId) {
+    public ResponseEntity<List<Exercise>> get(@PathVariable String topicId, @PathVariable String subtopicId) {
         var exercises = exerciseService.getExercisesByTopicIdAndSubtopicId(topicId, subtopicId);
         return ok(exercises);
     }
