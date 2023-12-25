@@ -17,7 +17,7 @@ import static org.springframework.http.ResponseEntity.ok;
 public class TestController {
 
     @GetMapping("/hello")
-    public ResponseEntity hello(Principal principal) {
+    public ResponseEntity<String> hello(Principal principal) {
         return ok("potro " + principal.getName());
     }
 }
