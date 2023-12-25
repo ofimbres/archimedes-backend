@@ -4,15 +4,18 @@ import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.wrappers.S3ClientWrapper;
 import com.binomiaux.archimedes.repository.ExerciseResultRepository;
 import com.binomiaux.archimedes.model.ExerciseResult;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 public class ExerciseResultServiceImpl implements ExerciseResultService {
+    private static final Logger log = LoggerFactory.getLogger(ExerciseResultServiceImpl.class);
+
     @Autowired
     private ExerciseResultRepository exerciseResultRepository;
     @Autowired

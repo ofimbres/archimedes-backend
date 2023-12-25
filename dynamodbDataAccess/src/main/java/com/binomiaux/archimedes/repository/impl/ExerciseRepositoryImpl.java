@@ -5,7 +5,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.binomiaux.archimedes.repository.ExerciseRepository;
 import com.binomiaux.archimedes.repository.schema.ExerciseRecord;
-import com.binomiaux.archimedes.repository.schema.TopicRecord;
 import com.binomiaux.archimedes.repository.transform.ExerciseRecordTransform;
 import com.binomiaux.archimedes.model.Exercise;
 import org.springframework.beans.factory.annotation.Autowired;

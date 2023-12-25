@@ -1,7 +1,0 @@
-web:
-  cors:
-    allowed-origins: http://reacttestarchimfront-env.eba-s4cwvs2p.us-west-2.elasticbeanstalk.com
-    allowed-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD
-    max-age: 3600
-    allowed-headers: Requestor-Type, Origin, Content-Type, X-Auth-Token, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Authorization, Access-Control-Allow-Methods, Access-Control-Allow-Credentials
-    exposed-headers: X-Get-Header

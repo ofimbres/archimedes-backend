@@ -41,20 +41,21 @@ public class ExerciseResultsController {
     private ExerciseService mExerciseService;
 
     @GetMapping("/class/{classroomId}/exercise/{exerciseId}")
-    public ResponseEntity getByClassAndExercise(@PathVariable String classroomId, @PathVariable String exerciseId) {
+    public ResponseEntity<List<ExerciseResult>> getByClassAndExercise(@PathVariable String classroomId,
+        @PathVariable String exerciseId) {
         var exerciseResults = mExerciseResultService.getByClassAndExercise(classroomId, exerciseId);
         return ok(exerciseResults);
     }
 
     @GetMapping("/class/{classroomId}/student/{studentId}/exercise/{exerciseId}")
-    public ResponseEntity getByClassStudentAndExercise(@PathVariable String classroomId, @PathVariable String studentId,
-                                                       @PathVariable String exerciseId) {
+    public ResponseEntity<ExerciseResult> getByClassStudentAndExercise(@PathVariable String classroomId,
+        @PathVariable String studentId, @PathVariable String exerciseId) {
         var exerciseResult = mExerciseResultService.getByStudentAndExercise(classroomId, studentId, exerciseId);
         return ok(exerciseResult);
     }
 
     @PostMapping("/")
-    public ResponseEntity create(@RequestBody CreateExerciseResultRequest request) {
+    public ResponseEntity<ExerciseResult> create(@RequestBody CreateExerciseResultRequest request) {
         ExerciseResult exerciseResult = new ExerciseResult();
         Student student = mStudentService.getStudent(request.getStudentId());
         Exercise exercise = mExerciseService.getExercise(request.getExerciseId());
@@ -75,10 +76,11 @@ public class ExerciseResultsController {
     }
 
     @GetMapping("/downloadFile/{fileName:.+}")
-    public ResponseEntity download(@PathVariable String fileName) {
-        List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
+    public ResponseEntity<String> download(@PathVariable String fileName) {
+        /*List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
                 "e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
-        String filename = "";
+        String filename = "";*/
+
         /*ByteArrayOutputStream downloadInputStream = null;
         return ok()
                 .contentType(MediaType.TEXT_HTML)
