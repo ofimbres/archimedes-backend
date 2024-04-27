@@ -1,55 +1,45 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.binomiaux.archimedes.model.Topic;
 import com.binomiaux.archimedes.repository.TopicRepository;
 import com.binomiaux.archimedes.repository.schema.TopicRecord;
 import com.binomiaux.archimedes.repository.transform.TopicRecordTransformer;
+
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
 public class TopicRepositoryImpl implements TopicRepository {
 
     @Autowired
-    private DynamoDBMapper mapper;
+    private DynamoDbTable<TopicRecord> topicTable;
 
     private TopicRecordTransformer transformer = new TopicRecordTransformer();
 
     @Override
     public List<Topic> findAll() {
-        Map<String, AttributeValue> eav = new HashMap<>();
-        eav.put(":v1",new AttributeValue().withS("TOPIC"));
+        QueryConditional query = QueryConditional.keyEqualTo(b -> b.partitionValue("TOPIC"));
+        PageIterable<TopicRecord> pagedResults = topicTable.query(query);
 
-        DynamoDBQueryExpression<TopicRecord> queryExpression =
-                new DynamoDBQueryExpression<TopicRecord>()
-                        .withKeyConditionExpression("pk = :v1")
-                        .withExpressionAttributeValues(eav);
-
-        List<TopicRecord> queryResult = mapper.query(TopicRecord.class, queryExpression);
-        return queryResult.stream().map(r -> transformer.transform(r))
+        return pagedResults.items().stream()
+                .map(r -> transformer.transform(r))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Topic> findByTopicId(String topicId) {
-        Map<String, AttributeValue> eav = new HashMap<>();
-        eav.put(":v1",new AttributeValue().withS("TOPIC#" + topicId));
+        QueryConditional query = QueryConditional.keyEqualTo(b -> b.partitionValue("TOPIC#" + topicId));
+        PageIterable<TopicRecord> pagedResults = topicTable.query(query);
 
-        DynamoDBQueryExpression<TopicRecord> queryExpression =
-                new DynamoDBQueryExpression<TopicRecord>()
-                        .withKeyConditionExpression("pk = :v1")
-                        .withExpressionAttributeValues(eav);
-
-        List<TopicRecord> queryResult = mapper.query(TopicRecord.class, queryExpression);
-        return queryResult.stream().map(r -> transformer.transform(r))
+        return pagedResults.items().stream()
+                .map(r -> transformer.transform(r))
                 .collect(Collectors.toList());
     }
 }

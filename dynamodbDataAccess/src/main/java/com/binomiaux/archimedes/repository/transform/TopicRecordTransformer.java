@@ -12,10 +12,7 @@ public class TopicRecordTransformer implements RecordTransform<TopicRecord, Topi
 
     @Override
     public TopicRecord untransform(Topic model) {
-        TopicRecord record = new TopicRecord();
-        record.setId(model.id());
-        record.setTopicName(model.name());
-
+        TopicRecord record = new TopicRecord("TOPIC", "TOPIC#", model.id(), model.name());
         return record;
     }
 }
