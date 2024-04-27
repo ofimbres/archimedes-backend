@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 public class ClassroomServiceImpl implements ClassroomService {
     @Override
     public Classroom getClassroom(String id) {
-        Classroom classroom = new Classroom();
-        classroom.setId("e46e7191-e31d-434a-aba3-b9a9c187a632");
-        classroom.setName("Math");
+        Classroom classroom = new Classroom("e46e7191-e31d-434a-aba3-b9a9c187a632", "Math");
 
         return classroom;
     }

@@ -11,17 +11,13 @@ import java.util.List;
 public class SchoolServiceImpl implements SchoolService {
     @Override
     public School getSchool(String id) {
-        School school = new School();
-        school.setId("e868dec2-a788-43b7-96ff-43dbea97a64b");
-        school.setName("Lamar");
-        return null;
+        School school = new School("e868dec2-a788-43b7-96ff-43dbea97a64b", "Lamar");
+        return school;
     }
 
     @Override
     public List<School> getSchools() {
-        School school = new School();
-        school.setId("e868dec2-a788-43b7-96ff-43dbea97a64b");
-        school.setName("Lamar");
+        School school = new School("e868dec2-a788-43b7-96ff-43dbea97a64b", "Lamar");
         return Arrays.asList(school);
     }
 }

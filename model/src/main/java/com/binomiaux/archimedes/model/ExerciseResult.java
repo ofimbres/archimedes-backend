@@ -1,17 +1,5 @@
 package com.binomiaux.archimedes.model;
 
-import lombok.Data;
-
 import java.time.Instant;
 
-@Data
-public class ExerciseResult {
-
-    private Exercise exercise;
-    private Student student;
-    private Classroom classroom;
-    private int score;
-    private Instant timestamp;
-    private String worksheetContent;
-    private String s3Key;
-}
+public record ExerciseResult(Exercise exercise, Student student, Classroom classroom, int score, Instant timestamp, String worksheetContent, String s3Key) { }

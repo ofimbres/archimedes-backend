@@ -43,6 +43,4 @@ public class S3ClientConfiguration {
                 .withRegion(Regions.US_WEST_2)
                 .build();
     }
-
-
 }

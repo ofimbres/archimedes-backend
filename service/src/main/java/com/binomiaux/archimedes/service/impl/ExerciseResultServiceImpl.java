@@ -24,7 +24,7 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
     @Override
     public void create(ExerciseResult exerciseResult) {
         exerciseResultRepository.create(exerciseResult);
-        s3ClientWrapper.uploadWorksheet(exerciseResult.getS3Key(), exerciseResult.getWorksheetContent());
+        s3ClientWrapper.uploadWorksheet(exerciseResult.s3Key(), exerciseResult.worksheetContent());
     }
 
     @Override

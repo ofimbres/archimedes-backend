@@ -56,20 +56,13 @@ public class ExerciseResultsController {
 
     @PostMapping("/")
     public ResponseEntity<ExerciseResult> create(@RequestBody CreateExerciseResultRequest request) {
-        ExerciseResult exerciseResult = new ExerciseResult();
         Student student = mStudentService.getStudent(request.getStudentId());
         Exercise exercise = mExerciseService.getExercise(request.getExerciseId());
-        Classroom classRoom = mClassroomService.getClassroom(request.getClassroomId());
+        Classroom classroom = mClassroomService.getClassroom(request.getClassroomId());
+        String id = UUID.randomUUID().toString() + ".html";
 
-        exerciseResult.setExercise(exercise);
-        exerciseResult.setStudent(student);
-        exerciseResult.setClassroom(classRoom);
-        exerciseResult.setScore(request.getScore());
-        exerciseResult.setTimestamp(Instant.now());
-        exerciseResult.setWorksheetContent(request.getWorksheetContentCopy());
-
-        String id = UUID.randomUUID().toString();
-        exerciseResult.setS3Key(id + ".html");
+        ExerciseResult exerciseResult = new ExerciseResult(exercise, student, classroom, request.getScore(),
+            Instant.now(), request.getWorksheetContentCopy(), id);
 
         mExerciseResultService.create(exerciseResult);
         return ok(exerciseResult);
@@ -79,7 +72,7 @@ public class ExerciseResultsController {
     public ResponseEntity<String> download(@PathVariable String fileName) {
         /*List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
                 "e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
-        String filename = "";*/
+        String filename =  "";*/
 
         /*ByteArrayOutputStream downloadInputStream = null;
         return ok()

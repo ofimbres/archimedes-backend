@@ -1,13 +1,14 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
-import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.binomiaux.archimedes.repository.ExerciseResultRepository;
 import com.binomiaux.archimedes.repository.schema.ExerciseResultRecord;
-import com.binomiaux.archimedes.repository.transform.ScoreRecordTransform;
+import com.binomiaux.archimedes.repository.transform.ExerciseResultRecordTransform;
+
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+
 import com.binomiaux.archimedes.model.ExerciseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,13 +20,13 @@ import java.util.stream.Collectors;
 public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
 
     @Autowired
-    private DynamoDBMapper mapper;
+    private DynamoDbTable<ExerciseResultRecord> exerciseResultTable;
 
-    private ScoreRecordTransform scoreRecordTransform = new ScoreRecordTransform();
+    private ExerciseResultRecordTransform transformer = new ExerciseResultRecordTransform();
 
     @Override
     public void create(ExerciseResult score) {
-        mapper.save(scoreRecordTransform.untransform(score));
+        exerciseResultTable.putItem(transformer.untransform(score));
     }
 
     @Override
@@ -36,18 +37,19 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     @Override
     public ExerciseResult findByStudentIdAndExerciseCode(String classId, String studentId, String exerciseCode) {
         String pk = "CLASS#" + classId + "#STUDENT#" + studentId + "#EXERCISE#" + exerciseCode;
-        ExerciseResultRecord record = mapper.load(ExerciseResultRecord.class, pk, pk);
+        ExerciseResultRecord record = exerciseResultTable.getItem(Key.builder().partitionValue(pk).build());
 
-        return scoreRecordTransform.transform(record);
+        return transformer.transform(record);
     }
 
     @Override
     public List<ExerciseResult> findAllByClassIdAndExerciseCode(String classId, String exerciseCode) {
-        ExerciseResultRecord exerciseResult = new ExerciseResultRecord();
-        exerciseResult.setGsipk("CLASS#" + classId);
-        exerciseResult.setGsisk("EXERCISE#" + exerciseCode);
+        //String pk = "CLASS#" + classId;
+        //String sk = "EXERCISE#" + exerciseCode;
 
-        Condition rangeKeyCondition = new Condition()
+        //ExerciseResultRecord exerciseResult = new ExerciseResultRecord("", "", "", "", "", "", "", 0, "", "", pk, sk);
+
+        /*Condition rangeKeyCondition = new Condition()
                 .withComparisonOperator(ComparisonOperator.EQ.toString())
                 .withAttributeValueList(new AttributeValue().withS("EXERCISE#" + exerciseCode.toUpperCase()));
 
@@ -57,9 +59,14 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
                         .withRangeKeyCondition("gsisk", rangeKeyCondition)
                         .withLimit(10)
                         .withIndexName("gsi1")
-                        .withConsistentRead(false);
+                        .withConsistentRead(false);*/
 
-        List<ExerciseResultRecord> queryResult = mapper.query(ExerciseResultRecord.class, queryExpression);
-        return queryResult.stream().map(r -> scoreRecordTransform.transform(r)).collect(Collectors.toList());
+
+        QueryConditional query = QueryConditional.keyEqualTo(b -> b.partitionValue("EXERCISE#" + exerciseCode.toUpperCase()));
+        PageIterable<ExerciseResultRecord> pagedResults = PageIterable.create(exerciseResultTable.index("gsi1").query(query));
+
+        return pagedResults.items().stream()
+                .map(r -> transformer.transform(r))
+                .collect(Collectors.toList());
     }
 }

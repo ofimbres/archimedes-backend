@@ -27,23 +27,24 @@ public class CognitoSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        /*http
                 .csrf().disable()
                 .oauth2Client()
                 .and()
                 .logout()
                 .and()
                 .oauth2Login()
-                .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
+                .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");*/
 
-        http.authorizeRequests()
+        /*http.authorizeRequests()
                 .antMatchers("/healthcheck/").permitAll()
                 .anyRequest().authenticated().and()
                 .oauth2ResourceServer().jwt();
 
         http.cors();
 
-        return http.build();
+        return http.build();*/
+        return http.csrf().disable().build();
     }
 
     @Bean

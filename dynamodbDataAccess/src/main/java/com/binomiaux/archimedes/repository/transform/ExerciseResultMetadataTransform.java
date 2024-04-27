@@ -8,11 +8,7 @@ import java.time.Instant;
 public class ExerciseResultMetadataTransform implements RecordTransform<ExerciseResultMetadataRecord, ExerciseResultMetadata> {
     @Override
     public ExerciseResultMetadata transform(ExerciseResultMetadataRecord entity) {
-        ExerciseResultMetadata model = new ExerciseResultMetadata();
-
-        model.setScore(entity.getScore());
-        model.setTimestamp(Instant.parse(entity.getTimestamp()));
-
+        ExerciseResultMetadata model = new ExerciseResultMetadata(null, null, null, entity.getScore(), Instant.parse(entity.getTimestamp()));
         return model;
     }
 
