@@ -1,6 +1,6 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.model.pojo.Exercise;
 import com.binomiaux.archimedes.service.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

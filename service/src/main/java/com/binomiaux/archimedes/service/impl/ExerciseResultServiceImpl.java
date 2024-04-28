@@ -3,7 +3,7 @@ package com.binomiaux.archimedes.service.impl;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.wrappers.S3ClientWrapper;
 import com.binomiaux.archimedes.repository.ExerciseResultRepository;
-import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.pojo.ExerciseResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

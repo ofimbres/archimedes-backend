@@ -1,6 +1,6 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.model.pojo.Student;
 import com.binomiaux.archimedes.service.StudentService;
 
 import org.springframework.beans.factory.annotation.Autowired;

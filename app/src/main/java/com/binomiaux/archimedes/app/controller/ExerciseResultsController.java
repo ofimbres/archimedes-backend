@@ -1,9 +1,9 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Classroom;
-import com.binomiaux.archimedes.model.Exercise;
-import com.binomiaux.archimedes.model.ExerciseResult;
-import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.model.pojo.Classroom;
+import com.binomiaux.archimedes.model.pojo.Exercise;
+import com.binomiaux.archimedes.model.pojo.ExerciseResult;
+import com.binomiaux.archimedes.model.pojo.Student;
 import com.binomiaux.archimedes.service.ClassroomService;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.ExerciseService;
