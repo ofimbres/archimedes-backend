@@ -2,7 +2,7 @@ package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.StudentService;
 import com.binomiaux.archimedes.repository.StudentRepository;
-import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.model.pojo.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

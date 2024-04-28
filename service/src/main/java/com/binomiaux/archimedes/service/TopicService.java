@@ -1,7 +1,7 @@
 package com.binomiaux.archimedes.service;
 
-import com.binomiaux.archimedes.model.Topic;
-import com.binomiaux.archimedes.model.TopicHierarchy;
+import com.binomiaux.archimedes.model.pojo.Topic;
+import com.binomiaux.archimedes.model.pojo.TopicHierarchy;
 
 import java.util.List;
 

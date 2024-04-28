@@ -1,7 +1,7 @@
 package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.SchoolService;
-import com.binomiaux.archimedes.model.School;
+import com.binomiaux.archimedes.model.pojo.School;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
