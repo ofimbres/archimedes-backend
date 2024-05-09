@@ -7,13 +7,16 @@
     "ghcr.io/devcontainers/features/java:1": {
       "version": "none",
       "installGradle": "true"
-    }
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "aws-cli": "latest"
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "vscjava.vscode-spring-initializr",
-        "vscjava.vscode-gradle"
+        "vscjava.vscode-gradle",
+        "ms-azuretools.vscode-docker"
       ]
     }
   }
