@@ -1,13 +1,12 @@
-FROM amazoncorretto:17-alpine3.17
+FROM amazoncorretto:17-alpine3.17 AS builder
 
-# RUN gradle bootJar
-
-# Set the working directory inside the container
 WORKDIR /app
+COPY . .
+RUN ./gradlew build
 
-# Copy the JAR file from your project into the container
-COPY app/build/libs/app-1.0-SNAPSHOT.jar /app/
-# Expose the port your microservice listens on (if applicable)
+FROM amazoncorretto:17-alpine3.17
+WORKDIR /app
+COPY --from=builder app/app/build/libs/app-1.0-SNAPSHOT.jar /app/
+
 EXPOSE 80
-# Define the command to run your microservice
 CMD ["java", "-jar", "app-1.0-SNAPSHOT.jar"]
