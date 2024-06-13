@@ -3,6 +3,7 @@ package com.binomiaux.archimedes.app.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,14 +18,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({ WebConfigProperties.class })
+@EnableConfigurationProperties({ Cors.class })
 public class CognitoSecurityConfiguration {
-    private final WebConfigProperties webConfigProperties;
+    private final Cors cors;
 
-    public CognitoSecurityConfiguration(WebConfigProperties webConfigProperties) {
-        this.webConfigProperties = webConfigProperties;
+    public CognitoSecurityConfiguration(Cors cors) {
+        this.cors = cors;
     }
 
+    @Profile("!dev")
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -46,9 +48,21 @@ public class CognitoSecurityConfiguration {
         return http.build();
     }
 
+    @Profile("dev")
+    @Bean
+    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .anyRequest().permitAll();
+
+        http.cors();
+
+        return http.build();
+    }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        WebConfigProperties.Cors cors = webConfigProperties.getCors();
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(cors.getAllowedOrigins());
         configuration.setAllowedMethods(cors.getAllowedMethods());

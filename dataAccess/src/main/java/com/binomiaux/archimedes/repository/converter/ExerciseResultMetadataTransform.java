@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository.transform;
+package com.binomiaux.archimedes.repository.converter;
 
 import com.binomiaux.archimedes.repository.schema.ExerciseResultMetadataRecord;
 import com.binomiaux.archimedes.model.ExerciseResultMetadata;
