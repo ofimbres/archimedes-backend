@@ -13,7 +13,8 @@
     "vscode": {
       "extensions": [
         "vscjava.vscode-spring-initializr",
-        "vscjava.vscode-gradle"
+        "vscjava.vscode-gradle",
+        "github.copilot-chat"
       ]
     }
   }

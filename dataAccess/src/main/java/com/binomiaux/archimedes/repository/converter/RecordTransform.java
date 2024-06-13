@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository.transform;
+package com.binomiaux.archimedes.repository.converter;
 
 public interface RecordTransform<E, M> {
     M transform(E entity);
