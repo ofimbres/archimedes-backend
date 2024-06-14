@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.service.wrappers;
+package com.binomiaux.archimedes.service.awsservices;
 
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -6,11 +6,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class S3ClientWrapper {
+public class S3Service {
     private final S3Client s3Client;
     private static final String BUCKET_NAME = "archimedes-exercise-results";
 
-    public S3ClientWrapper(S3Client client) {
+    public S3Service(S3Client client) {
         s3Client = client;
     }
 

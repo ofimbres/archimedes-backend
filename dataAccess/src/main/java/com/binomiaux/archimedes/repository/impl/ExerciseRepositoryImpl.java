@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.binomiaux.archimedes.repository.ExerciseRepository;
-import com.binomiaux.archimedes.repository.converter.ExerciseRecordTransform;
-import com.binomiaux.archimedes.repository.schema.ExerciseRecord;
+import com.binomiaux.archimedes.repository.api.ExerciseRepository;
+import com.binomiaux.archimedes.repository.converter.ExerciseEntityTransform;
+import com.binomiaux.archimedes.repository.entities.ExerciseEntity;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -31,18 +31,18 @@ public class ExerciseRepositoryImpl implements ExerciseRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private ExerciseRecordTransform transformer = new ExerciseRecordTransform();
+    private ExerciseEntityTransform transformer = new ExerciseEntityTransform();
 
     @Override
     public Exercise findByCode(String exerciseCode) {
         String pk = "EXERCISE#" + exerciseCode;
-        DynamoDbTable<ExerciseRecord> exerciseTable = enhancedClient.table(tableName, ExerciseRecord.TABLE_SCHEMA);
-        DynamoDbIndex<ExerciseRecord> index = exerciseTable.index("gsi1");
+        DynamoDbTable<ExerciseEntity> exerciseTable = enhancedClient.table(tableName, ExerciseEntity.TABLE_SCHEMA);
+        DynamoDbIndex<ExerciseEntity> index = exerciseTable.index("gsi1");
         Key key = Key.builder().partitionValue(pk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-        SdkIterable<Page<ExerciseRecord>> pages = index.query(queryConditional);
+        SdkIterable<Page<ExerciseEntity>> pages = index.query(queryConditional);
 
-        Optional<ExerciseRecord> record = StreamSupport.stream(pages.spliterator(), false)
+        Optional<ExerciseEntity> record = StreamSupport.stream(pages.spliterator(), false)
             .flatMap(page -> page.items().stream())
             .findFirst();
 
@@ -56,11 +56,11 @@ public class ExerciseRepositoryImpl implements ExerciseRepository {
     @Override
     public List<Exercise> findByTopic(String topicId) {
         String pk = "TOPIC#" + topicId;
-        DynamoDbTable<ExerciseRecord> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseRecord.TABLE_SCHEMA);
-        DynamoDbIndex<ExerciseRecord> index = exerciseTable.index("gsi2");
+        DynamoDbTable<ExerciseEntity> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseEntity.TABLE_SCHEMA);
+        DynamoDbIndex<ExerciseEntity> index = exerciseTable.index("gsi2");
         Key key = Key.builder().partitionValue(pk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-        SdkIterable<Page<ExerciseRecord>> pages = index.query(queryConditional);
+        SdkIterable<Page<ExerciseEntity>> pages = index.query(queryConditional);
 
         return StreamSupport.stream(pages.spliterator(), false)
                 .flatMap(page -> page.items().stream())
@@ -71,10 +71,10 @@ public class ExerciseRepositoryImpl implements ExerciseRepository {
     @Override
     public List<Exercise> findByTopicAndSubtopic(String topicId, String subtopicId) {
         String pk = "TOPIC#" + topicId + "#SUBTOPIC#" + subtopicId;
-        DynamoDbTable<ExerciseRecord> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseRecord.TABLE_SCHEMA);
+        DynamoDbTable<ExerciseEntity> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseEntity.TABLE_SCHEMA);
         Key key = Key.builder().partitionValue(pk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-        SdkIterable<Page<ExerciseRecord>> pages = exerciseTable.query(queryConditional);
+        SdkIterable<Page<ExerciseEntity>> pages = exerciseTable.query(queryConditional);
     
         // Use Java Streams to process the results
         return StreamSupport.stream(pages.spliterator(), false)

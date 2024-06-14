@@ -1,9 +1,9 @@
 package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.ExerciseResultService;
-import com.binomiaux.archimedes.service.wrappers.S3ClientWrapper;
-import com.binomiaux.archimedes.repository.ExerciseResultRepository;
+import com.binomiaux.archimedes.service.awsservices.S3Service;
 import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +19,12 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
     @Autowired
     private ExerciseResultRepository exerciseResultRepository;
     @Autowired
-    private S3ClientWrapper s3ClientWrapper;
+    private S3Service s3Service;
 
     @Override
     public void create(ExerciseResult exerciseResult) {
         exerciseResultRepository.create(exerciseResult);
-        s3ClientWrapper.uploadWorksheet(exerciseResult.getS3Key(), exerciseResult.getWorksheetContent());
+        s3Service.uploadWorksheet(exerciseResult.getS3Key(), exerciseResult.getWorksheetContent());
     }
 
     @Override

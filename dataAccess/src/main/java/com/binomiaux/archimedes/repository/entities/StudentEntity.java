@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository.schema;
+package com.binomiaux.archimedes.repository.entities;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -6,7 +6,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class StudentRecord {
+public class StudentEntity {
     private String pk;
     private String sk;
     private String firstName;
@@ -64,5 +64,5 @@ public class StudentRecord {
         this.email = email;
     }
 
-    public static final TableSchema<StudentRecord> TABLE_SCHEMA = TableSchema.fromBean(StudentRecord.class);
+    public static final TableSchema<StudentEntity> TABLE_SCHEMA = TableSchema.fromBean(StudentEntity.class);
 }

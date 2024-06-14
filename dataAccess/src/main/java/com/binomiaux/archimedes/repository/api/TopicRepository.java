@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository;
+package com.binomiaux.archimedes.repository.api;
 
 import com.binomiaux.archimedes.model.Topic;
 

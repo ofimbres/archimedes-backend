@@ -1,6 +1,6 @@
 package com.binomiaux.archimedes.service.config;
 
-import com.binomiaux.archimedes.service.wrappers.S3ClientWrapper;
+import com.binomiaux.archimedes.service.awsservices.S3Service;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class S3ClientConfig {
+public class S3Config {
 
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -33,7 +33,7 @@ public class S3ClientConfig {
     }
 
     @Bean
-    public S3ClientWrapper s3ClientWrapper() {
-        return new S3ClientWrapper(s3Client());
+    public S3Service s3Service() {
+        return new S3Service(s3Client());
     }
 }

@@ -1,9 +1,9 @@
 package com.binomiaux.archimedes.repository.impl;
 
 import com.binomiaux.archimedes.model.Topic;
-import com.binomiaux.archimedes.repository.TopicRepository;
-import com.binomiaux.archimedes.repository.schema.TopicRecord;
-import com.binomiaux.archimedes.repository.converter.TopicRecordTransformer;
+import com.binomiaux.archimedes.repository.api.TopicRepository;
+import com.binomiaux.archimedes.repository.converter.TopicEntityTransformer;
+import com.binomiaux.archimedes.repository.entities.TopicEntity;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -26,26 +26,26 @@ public class TopicRepositoryImpl implements TopicRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private TopicRecordTransformer transformer = new TopicRecordTransformer();
+    private TopicEntityTransformer transformer = new TopicEntityTransformer();
 
     @Override
     public List<Topic> findAll() {
-        DynamoDbTable<TopicRecord> topicTable = enhancedClient.table(tableName, TopicRecord.TABLE_SCHEMA);
+        DynamoDbTable<TopicEntity> topicTable = enhancedClient.table(tableName, TopicEntity.TABLE_SCHEMA);
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder().partitionValue("TOPIC").build());
 
-        List<TopicRecord> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
+        List<TopicEntity> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
 
         return topicRecords.stream().map(transformer::transform).collect(Collectors.toList());
     }
 
     @Override
     public List<Topic> findByTopicId(String topicId) {
-        DynamoDbTable<TopicRecord> topicTable = enhancedClient.table("dev-archimedes-table", TopicRecord.TABLE_SCHEMA);
+        DynamoDbTable<TopicEntity> topicTable = enhancedClient.table("dev-archimedes-table", TopicEntity.TABLE_SCHEMA);
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder().partitionValue("TOPIC#" + topicId).build());
 
-        List<TopicRecord> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
+        List<TopicEntity> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
 
         return topicRecords.stream().map(transformer::transform).collect(Collectors.toList());
     }
