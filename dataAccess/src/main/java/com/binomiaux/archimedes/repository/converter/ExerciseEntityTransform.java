@@ -1,17 +1,17 @@
 package com.binomiaux.archimedes.repository.converter;
 
-import com.binomiaux.archimedes.repository.schema.ExerciseRecord;
 import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.repository.entities.ExerciseEntity;
 
-public class ExerciseRecordTransform implements RecordTransform<ExerciseRecord, Exercise> {
+public class ExerciseEntityTransform implements EntityTransform<ExerciseEntity, Exercise> {
     @Override
-    public Exercise transform(ExerciseRecord entity) {
+    public Exercise transform(ExerciseEntity entity) {
         Exercise model = new Exercise(entity.getCode(), entity.getName(), entity.getClassification(), entity.getPath());
         return model;
     }
 
     @Override
-    public ExerciseRecord untransform(Exercise model) {
+    public ExerciseEntity untransform(Exercise model) {
         return null;
     }
 }

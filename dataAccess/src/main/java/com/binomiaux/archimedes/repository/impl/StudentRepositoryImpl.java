@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.binomiaux.archimedes.repository.StudentRepository;
-import com.binomiaux.archimedes.repository.schema.StudentRecord;
-import com.binomiaux.archimedes.repository.converter.StudentRecordTransform;
+import com.binomiaux.archimedes.repository.api.StudentRepository;
+import com.binomiaux.archimedes.repository.converter.StudentEntityTransform;
+import com.binomiaux.archimedes.repository.entities.StudentEntity;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -23,15 +23,15 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private StudentRecordTransform studentRecordTransform = new StudentRecordTransform();
+    private StudentEntityTransform studentRecordTransform = new StudentEntityTransform();
 
     @Override
     public Student find(String id) {
         String pk = "STUDENT#" + id;
-        DynamoDbTable<StudentRecord> studentTable = enhancedClient.table(tableName, StudentRecord.TABLE_SCHEMA);
+        DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);
         Key key = Key.builder().partitionValue(pk).build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-        StudentRecord record = studentTable.getItem(request);
+        StudentEntity record = studentTable.getItem(request);
 
         return studentRecordTransform.transform(record);
     }

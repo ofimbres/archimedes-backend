@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.binomiaux.archimedes.repository.ExerciseResultRepository;
-import com.binomiaux.archimedes.repository.converter.ScoreRecordTransform;
-import com.binomiaux.archimedes.repository.schema.ExerciseResultRecord;
+import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
+import com.binomiaux.archimedes.repository.converter.ScoreEntityTransform;
+import com.binomiaux.archimedes.repository.entities.ExerciseResultEntity;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -30,12 +30,12 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private ScoreRecordTransform scoreRecordTransform = new ScoreRecordTransform();
+    private ScoreEntityTransform scoreEntityTransform = new ScoreEntityTransform();
 
     @Override
     public void create(ExerciseResult score) {
-        DynamoDbTable<ExerciseResultRecord> exerciseTable = enhancedClient.table(tableName, ExerciseResultRecord.TABLE_SCHEMA);
-        ExerciseResultRecord record = scoreRecordTransform.untransform(score);
+        DynamoDbTable<ExerciseResultEntity> exerciseTable = enhancedClient.table(tableName, ExerciseResultEntity.TABLE_SCHEMA);
+        ExerciseResultEntity record = scoreEntityTransform.untransform(score);
         exerciseTable.putItem(record);
     }
 
@@ -47,25 +47,25 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     @Override
     public ExerciseResult findByStudentIdAndExerciseCode(String classId, String studentId, String exerciseCode) {
         String pk = "CLASS#" + classId + "#STUDENT#" + studentId + "#EXERCISE#" + exerciseCode;
-        DynamoDbTable<ExerciseResultRecord> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseResultRecord.TABLE_SCHEMA);
+        DynamoDbTable<ExerciseResultEntity> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseResultEntity.TABLE_SCHEMA);
         Key key = Key.builder().partitionValue(pk).sortValue(pk).build();
-        ExerciseResultRecord record = exerciseTable.getItem(r -> r.key(key));
-        return scoreRecordTransform.transform(record);
+        ExerciseResultEntity record = exerciseTable.getItem(r -> r.key(key));
+        return scoreEntityTransform.transform(record);
     }
 
     @Override
     public List<ExerciseResult> findAllByClassIdAndExerciseCode(String classId, String exerciseCode) {
         String pk = "CLASS#" + classId;
         String sk = "EXERCISE#" + exerciseCode;
-        DynamoDbTable<ExerciseResultRecord> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseResultRecord.TABLE_SCHEMA);
-        DynamoDbIndex<ExerciseResultRecord> index = exerciseTable.index("gsi1"); // replace "gsi1" with the name of your index
+        DynamoDbTable<ExerciseResultEntity> exerciseTable = enhancedClient.table("dev-archimedes-table", ExerciseResultEntity.TABLE_SCHEMA);
+        DynamoDbIndex<ExerciseResultEntity> index = exerciseTable.index("gsi1"); // replace "gsi1" with the name of your index
         Key key = Key.builder().partitionValue(pk).sortValue(sk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-        SdkIterable<Page<ExerciseResultRecord>> pages = index.query(r -> r.queryConditional(queryConditional).limit(10));
+        SdkIterable<Page<ExerciseResultEntity>> pages = index.query(r -> r.queryConditional(queryConditional).limit(10));
 
         return StreamSupport.stream(pages.spliterator(), false)
                 .flatMap(page -> page.items().stream())
-                .map(scoreRecordTransform::transform)
+                .map(scoreEntityTransform::transform)
                 .collect(Collectors.toList());
     }
 }

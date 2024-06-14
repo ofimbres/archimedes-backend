@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository.schema;
+package com.binomiaux.archimedes.repository.entities;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -6,7 +6,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class TopicRecord {
+public class TopicEntity {
     private String pk;
     private String sk;
     private String id;
@@ -46,5 +46,5 @@ public class TopicRecord {
         this.topicName = topicName;
     }
 
-    public static final TableSchema<TopicRecord> TABLE_SCHEMA = TableSchema.fromBean(TopicRecord.class);
+    public static final TableSchema<TopicEntity> TABLE_SCHEMA = TableSchema.fromBean(TopicEntity.class);
 }

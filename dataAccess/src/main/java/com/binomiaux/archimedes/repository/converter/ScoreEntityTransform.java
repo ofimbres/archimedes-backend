@@ -1,18 +1,18 @@
 package com.binomiaux.archimedes.repository.converter;
 
-import com.binomiaux.archimedes.repository.schema.ExerciseResultRecord;
 import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.repository.entities.ExerciseResultEntity;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class ScoreRecordTransform implements RecordTransform<ExerciseResultRecord, ExerciseResult> {
+public class ScoreEntityTransform implements EntityTransform<ExerciseResultEntity, ExerciseResult> {
 
     @Override
-    public ExerciseResult transform(ExerciseResultRecord entity) {
+    public ExerciseResult transform(ExerciseResultEntity entity) {
         ExerciseResult model = new ExerciseResult();
         model.setScore(entity.getScore());
         model.setTimestamp(Instant.parse(entity.getTimestamp()));
@@ -27,9 +27,9 @@ public class ScoreRecordTransform implements RecordTransform<ExerciseResultRecor
     }
 
     @Override
-    public ExerciseResultRecord untransform(ExerciseResult model) {
+    public ExerciseResultEntity untransform(ExerciseResult model) {
 
-        ExerciseResultRecord entity = new ExerciseResultRecord();
+        ExerciseResultEntity entity = new ExerciseResultEntity();
         entity.setPk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().id() + "#EXERCISE#" + model.getExercise().id());
         entity.setSk("CLASS#" + model.getClassroom().getId() + "#STUDENT#" + model.getStudent().id() + "#EXERCISE#" + model.getExercise().id());
         //entity.setSk("TIMESTAMP#" + model.getTimestamp());

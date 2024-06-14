@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.repository.schema;
+package com.binomiaux.archimedes.repository.entities;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -8,7 +8,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class ExerciseResultMetadataRecord {
+public class ExerciseResultMetadataEntity {
     private String pk;
     private String sk;
     private String timestamp;
@@ -77,5 +77,5 @@ public class ExerciseResultMetadataRecord {
         this.gsisk = gsisk;
     }
 
-    public static final TableSchema<ExerciseResultMetadataRecord> TABLE_SCHEMA = TableSchema.fromBean(ExerciseResultMetadataRecord.class);
+    public static final TableSchema<ExerciseResultMetadataEntity> TABLE_SCHEMA = TableSchema.fromBean(ExerciseResultMetadataEntity.class);
 }

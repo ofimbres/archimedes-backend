@@ -1,13 +1,13 @@
 package com.binomiaux.archimedes.repository.converter;
 
-import com.binomiaux.archimedes.repository.schema.ExerciseResultMetadataRecord;
 import com.binomiaux.archimedes.model.ExerciseResultMetadata;
+import com.binomiaux.archimedes.repository.entities.ExerciseResultMetadataEntity;
 
 import java.time.Instant;
 
-public class ExerciseResultMetadataTransform implements RecordTransform<ExerciseResultMetadataRecord, ExerciseResultMetadata> {
+public class ExerciseResultMetadataEntityTransform implements EntityTransform<ExerciseResultMetadataEntity, ExerciseResultMetadata> {
     @Override
-    public ExerciseResultMetadata transform(ExerciseResultMetadataRecord entity) {
+    public ExerciseResultMetadata transform(ExerciseResultMetadataEntity entity) {
         ExerciseResultMetadata model = new ExerciseResultMetadata();
 
         model.setScore(entity.getScore());
@@ -17,7 +17,7 @@ public class ExerciseResultMetadataTransform implements RecordTransform<Exercise
     }
 
     @Override
-    public ExerciseResultMetadataRecord untransform(ExerciseResultMetadata model) {
+    public ExerciseResultMetadataEntity untransform(ExerciseResultMetadata model) {
         return null;
     }
 }
