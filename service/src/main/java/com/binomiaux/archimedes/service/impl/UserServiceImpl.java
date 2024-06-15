@@ -4,10 +4,17 @@ import com.binomiaux.archimedes.model.LoggedInUser;
 import com.binomiaux.archimedes.service.UserService;
 import com.binomiaux.archimedes.service.awsservices.CognitoService;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -42,4 +49,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Map<String, String> getUserAttributes(String username) {
+        return cognitoService.getUserAttributes(username).userAttributes().stream()
+            .collect(Collectors.toMap(AttributeType::name, AttributeType::value));
+    }
 }
