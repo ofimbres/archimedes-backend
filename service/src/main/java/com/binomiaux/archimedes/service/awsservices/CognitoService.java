@@ -9,6 +9,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUse
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
@@ -71,4 +73,30 @@ public class CognitoService {
 
         return cognitoIdentityProviderClient.adminInitiateAuth(authRequest);
     }
+
+    public AdminGetUserResponse getUserAttributes(String username) {
+        AdminGetUserRequest userRequest = AdminGetUserRequest.builder()
+                .userPoolId(userPoolId)
+                .username(username)
+                .build();
+    
+        return cognitoIdentityProviderClient.adminGetUser(userRequest);
+    }
+
+    public void forgotPassword() {
+
+    }
+
+    public void verifyCode() {
+
+    }
+
+    public void changePassword() {
+
+    }
+
+    public void logout() {
+
+    }
+
 }
