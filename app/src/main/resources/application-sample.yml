@@ -1,0 +1,47 @@
+cloud:
+  aws:
+    credentials:
+      access-key: <ACCESS KEY>
+      secret-key: <SECRET KEY>
+
+dynamodb:
+  table-name: <DYNAMO TABLE NAME>
+
+cognito:
+  user-pool-id: <USER POOL ID>
+  user-pool-client-id: <USER POOL CLIENT ID>
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          cognito:
+            clientName: <USER POOL CLIENT NAME>
+            client-secret: 
+            redirect-uri: 'http://localhost:8080/login/oauth2/code/cognito'
+            client-id: <USER POOL CLIENT ID>
+            scope: openid
+            authorization-grant-type: authorization_code
+        provider:
+          cognito:
+            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/<USER POOL ID>
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://cognito-idp.us-west-2.amazonaws.com/<USER POOL ID>/.well-known/jwks.json
+
+web:
+  cors:
+    allowedOrigins: 
+      - "http://localhost:3000" # Replace with the origin of your client application
+    allowedMethods: 
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allowedHeaders: 
+      - "Content-Type"
+      - "Authorization"
+    exposedHeaders: 
+      - "Custom-Header-1" # Replace with any custom headers your application uses
+    maxAge: 3600 # The maximum age (in seconds) of preflight requests. This is 1 hour.
