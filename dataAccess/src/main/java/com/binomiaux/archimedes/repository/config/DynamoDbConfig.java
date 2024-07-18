@@ -19,6 +19,19 @@ public class DynamoDbConfig {
     private String secretKey;
 
     @Bean
+    public DynamoDbClient dynamoDbClient() {
+        AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey));
+
+        DynamoDbClient standardClient = DynamoDbClient.builder()
+                .credentialsProvider(credentialsProvider)
+                .region(Region.US_WEST_2)
+                .build();
+
+        return standardClient;
+    }
+
+    @Bean
     public DynamoDbEnhancedClient dynamoDbEnhancedClient() {
         AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(accessKey, secretKey));

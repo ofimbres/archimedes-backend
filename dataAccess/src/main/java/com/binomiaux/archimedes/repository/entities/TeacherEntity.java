@@ -5,10 +5,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
-import java.util.List;
-
 @DynamoDbBean
-public class StudentEntity {
+public class TeacherEntity {
     private String pk;
     private String sk;
     private String type;
@@ -18,7 +16,23 @@ public class StudentEntity {
     private String username;
     private String email;
     private String schoolCode;
-    private List<Attends> attends;
+    private int maxPeriods;
+
+    public TeacherEntity() {
+    }
+
+    public TeacherEntity(String pk, String sk, String type, String code, String firstName, String lastName, String username,
+            String email, String schoolCode) {
+        this.pk = pk;
+        this.sk = sk;
+        this.type = type;
+        this.code = code;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.email = email;
+        this.schoolCode = schoolCode;
+    }
 
     @DynamoDbPartitionKey
     public String getPk() {
@@ -49,7 +63,7 @@ public class StudentEntity {
     public String getCode() {
         return code;
     }
-
+    
     public void setCode(String code) {
         this.code = code;
     }
@@ -94,35 +108,13 @@ public class StudentEntity {
         this.schoolCode = schoolCode;
     }
 
-    public List<Attends> getAttends() {
-        return attends;
+    public int getMaxPeriods() {
+        return maxPeriods;
     }
 
-    public void setAttends(List<Attends> attends) {
-        this.attends = attends;
+    public void setMaxPeriods(int maxPeriods) {
+        this.maxPeriods = maxPeriods;
     }
 
-    public static final TableSchema<StudentEntity> TABLE_SCHEMA = TableSchema.fromBean(StudentEntity.class);
-
-    @DynamoDbBean
-    public static class Attends {
-        public String teacherCode;
-        public String periodCode;
-
-        public String getTeacherCode() {
-            return teacherCode;
-        }
-
-        public void setTeacherCode(String teacherCode) {
-            this.teacherCode = teacherCode;
-        }
-
-        public String getPeriodCode() {
-            return periodCode;
-        }
-
-        public void setPeriodCode(String periodCode) {
-            this.periodCode = periodCode;
-        }
-    }
+    public static final TableSchema<TeacherEntity> TABLE_SCHEMA = TableSchema.fromBean(TeacherEntity.class);
 }

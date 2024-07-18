@@ -9,11 +9,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StudentServiceImpl implements StudentService {
+
     @Autowired
     private StudentRepository studentRepository;
 
     @Override
     public Student getStudent(String id) {
         return studentRepository.find(id);
+    }
+
+    @Override
+    public void create(Student student) {
+        studentRepository.create(student);
     }
 }
