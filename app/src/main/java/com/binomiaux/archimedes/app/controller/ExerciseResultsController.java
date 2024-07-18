@@ -1,10 +1,10 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Classroom;
+import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Exercise;
 import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.service.ClassroomService;
+import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.ExerciseService;
 import com.binomiaux.archimedes.service.StudentService;
@@ -36,7 +36,7 @@ public class ExerciseResultsController {
     @Autowired
     private StudentService mStudentService;
     @Autowired
-    private ClassroomService mClassroomService;
+    private PeriodService mClassroomService;
     @Autowired
     private ExerciseService mExerciseService;
 
@@ -59,7 +59,7 @@ public class ExerciseResultsController {
         ExerciseResult exerciseResult = new ExerciseResult();
         Student student = mStudentService.getStudent(request.getStudentId());
         Exercise exercise = mExerciseService.getExercise(request.getExerciseId());
-        Classroom classRoom = mClassroomService.getClassroom(request.getClassroomId());
+        Period classRoom = mClassroomService.getPeriod(request.getClassroomId());
 
         exerciseResult.setExercise(exercise);
         exerciseResult.setStudent(student);

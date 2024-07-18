@@ -8,7 +8,7 @@ import java.time.Instant;
 public class ExerciseResultMetadata {
     private Exercise exercise;
     private Student student;
-    private Classroom classroom;
+    private Period classroom;
     private int score;
     private Instant timestamp;
 }

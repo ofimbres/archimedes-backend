@@ -17,6 +17,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.text.TabExpander;
+
 @Repository
 public class TopicRepositoryImpl implements TopicRepository {
 
@@ -41,7 +43,7 @@ public class TopicRepositoryImpl implements TopicRepository {
 
     @Override
     public List<Topic> findByTopicId(String topicId) {
-        DynamoDbTable<TopicEntity> topicTable = enhancedClient.table("dev-archimedes-table", TopicEntity.TABLE_SCHEMA);
+        DynamoDbTable<TopicEntity> topicTable = enhancedClient.table(tableName, TopicEntity.TABLE_SCHEMA);
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder().partitionValue("TOPIC#" + topicId).build());
 

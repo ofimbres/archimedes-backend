@@ -9,7 +9,7 @@ public class ExerciseResult {
 
     private Exercise exercise;
     private Student student;
-    private Classroom classroom;
+    private Period classroom;
     private int score;
     private Instant timestamp;
     private String worksheetContent;
