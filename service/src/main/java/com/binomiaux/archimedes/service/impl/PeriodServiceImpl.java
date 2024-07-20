@@ -16,7 +16,7 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public Period getPeriod(String code) {
         Period classroom = new Period();
-        classroom.setCode("e46e7191-e31d-434a-aba3-b9a9c187a632");
+        classroom.setPeriodCode("e46e7191-e31d-434a-aba3-b9a9c187a632");
         classroom.setName("Math");
 
         return classroom;

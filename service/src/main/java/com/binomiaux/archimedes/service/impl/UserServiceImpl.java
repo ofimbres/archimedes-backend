@@ -43,14 +43,14 @@ public class UserServiceImpl implements UserService {
             cognitoService.addUserToGroup(userType, username);
 
             if (userType.equals("teachers")) {
-                Teacher teacher = new Teacher(null, givenName, familyName, email, schoolCode, username);
+                Teacher teacher = new Teacher(schoolCode, null, givenName, familyName, email, username);
                 teacherService.create(teacher);
                 
                 for (int i = 1; i <= 6; i++) {
-                    periodService.create(new Period(String.valueOf(i), "Period " + i, schoolCode, teacher.getCode()));
+                    periodService.create(new Period(schoolCode, teacher.getTeacherCode(), String.valueOf(i), "Period " + i));
                 }
             } else if (userType.equals("students")){
-                studentService.create(new Student(null, givenName, familyName, email, schoolCode, username));
+                studentService.create(new Student(schoolCode, null, givenName, familyName, email, username));
             }
         } catch (UsernameExistsException e) {
             throw new RuntimeException("Username already exists: " + username, e);

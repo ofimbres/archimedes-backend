@@ -10,7 +10,8 @@ public class SchoolEntity {
     private String pk;
     private String sk;
     private String type;
-    private String code;
+    private String id;
+    private String schoolCode;
     private int studentCount;
     private int teacherCount;
 
@@ -40,12 +41,20 @@ public class SchoolEntity {
         this.type = type;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSchoolCode() {
+        return schoolCode;
+    }
+
+    public void setSchoolCode(String schoolCode) {
+        this.schoolCode = schoolCode;
     }
 
     public int getStudentCount() {

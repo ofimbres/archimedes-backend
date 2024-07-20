@@ -12,11 +12,12 @@ public class PeriodEntity {
     private String pk;
     private String sk;
     private String type;
-    private String code;
-    private String name;
+    private String id;
     private String schoolCode;
     private String teacherCode;
-    private List<AttendedBy> attendedBy;
+    private String periodCode;
+    private String name;
+    private List<String> attendedBy;
 
     @DynamoDbPartitionKey
     public String getPk() {
@@ -44,20 +45,12 @@ public class PeriodEntity {
         this.type = type;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getSchoolCode() {
@@ -76,44 +69,29 @@ public class PeriodEntity {
         this.teacherCode = teacherCode;
     }
 
-    public void setAttendedBy(List<AttendedBy> attendedBy) {
+    public String getPeriodCode() {
+        return periodCode;
+    }
+
+    public void setPeriodCode(String periodCode) {
+        this.periodCode = periodCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAttendedBy(List<String> attendedBy) {
         this.attendedBy = attendedBy;
     }   
 
-    public List<AttendedBy> getAttendedBy() {
+    public List<String> getAttendedBy() {
         return attendedBy;
     }
 
     public static final TableSchema<PeriodEntity> TABLE_SCHEMA = TableSchema.fromBean(PeriodEntity.class);
-
-    @DynamoDbBean
-    public static class AttendedBy {
-        private String studentCode;
-        private String firstName;
-        private String lastName;
-
-        public String getStudentCode() {
-            return studentCode;
-        }
-
-        public void setStudentCode(String studentCode) {
-            this.studentCode = studentCode;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-    }
 }

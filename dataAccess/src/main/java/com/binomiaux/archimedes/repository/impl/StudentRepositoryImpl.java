@@ -2,6 +2,7 @@ package com.binomiaux.archimedes.repository.impl;
 
 import com.binomiaux.archimedes.repository.api.StudentRepository;
 import com.binomiaux.archimedes.repository.converter.StudentEntityTransform;
+import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEntity;
 
@@ -16,7 +17,7 @@ import com.binomiaux.archimedes.model.Student;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -33,10 +34,10 @@ public class StudentRepositoryImpl implements StudentRepository {
     private StudentEntityTransform studentRecordTransform = new StudentEntityTransform();
 
     @Override
-    public Student find(String id) {
-        String pk = "STUDENT#" + id;
+    public Student find(String studentId) {
+        String pk = "STUDENT#" + studentId;
         DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);
-        Key key = Key.builder().partitionValue(pk).build();
+        Key key = Key.builder().partitionValue(pk).sortValue("#").build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
         StudentEntity record = studentTable.getItem(request);
 
@@ -58,25 +59,20 @@ public class StudentRepositoryImpl implements StudentRepository {
         
         int nextStudentCode = schoolEntity.getStudentCount() + 1;
         schoolEntity.setStudentCount(nextStudentCode);
+        student.setStudentCode(String.valueOf(nextStudentCode));
 
         // Update teacher entity
         StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setPk("SCHOOL#" + student.getSchoolCode() + "#STUDENT#" + nextStudentCode);
+        studentEntity.setPk("STUDENT#" + student.getId());
         studentEntity.setSk("#");
         studentEntity.setType("STUDENT");
-        studentEntity.setCode(String.valueOf(nextStudentCode));
+        studentEntity.setId(student.getId());
+        studentEntity.setSchoolCode(student.getSchoolCode());
+        studentEntity.setStudentCode(student.getStudentCode());
         studentEntity.setFirstName(student.getFirstName());
         studentEntity.setLastName(student.getLastName());
         studentEntity.setEmail(student.getEmail());
-        studentEntity.setSchoolCode(student.getSchoolCode());
         studentEntity.setUsername(student.getUsername());
-
-        // TODO
-        // If getAttends is null, set a default empty list
-        /*List<StudentEntity.Attends> attends = student.getAttends() == null
-            ? List.of()
-            : student.getAttends().stream().map(this::convertToAttends).collect(Collectors.toList());
-        studentEntity.setAttends(attends);*/
         studentEntity.setAttends(Collections.emptyList());
 
         DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);
@@ -92,10 +88,25 @@ public class StudentRepositoryImpl implements StudentRepository {
         );
     }
 
-    /*private StudentEntity.Attends convertToAttends(Student.Attends input) {
-        StudentEntity.Attends attends = new StudentEntity.Attends();
-        attends.setTeacherCode(input.getTeacherCode());
-        attends.setPeriodCode(input.getPeriodCode());
-        return attends;
-    }*/
+    @Override
+    public void updateStudentPeriods(String studentId, List<String> periods) {
+        // Update student entity
+        DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);
+        StudentEntity studentEntity = studentTable.getItem(r -> r.key(k -> k.partitionValue("STUDENT#" + studentId).sortValue("#")));
+
+        studentEntity.setAttends(periods);
+        studentTable.updateItem(studentEntity);
+
+        // Update period entity
+        DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
+        for (String periodId : periods) {
+            PeriodEntity periodEntity = periodTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#")));
+
+            List<String> attendedBy = periodEntity.getAttendedBy();
+            attendedBy.add(studentId);
+
+            periodEntity.setAttendedBy(attendedBy);
+            periodTable.updateItem(periodEntity);
+        }
+    }
 }
