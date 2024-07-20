@@ -10,28 +10,30 @@ public class TeacherEntity {
     private String pk;
     private String sk;
     private String type;
-    private String code;
+    private String id;
+    private String schoolCode;
+    private String teacherCode;
     private String firstName;
     private String lastName;
     private String username;
     private String email;
-    private String schoolCode;
     private int maxPeriods;
 
     public TeacherEntity() {
     }
 
-    public TeacherEntity(String pk, String sk, String type, String code, String firstName, String lastName, String username,
-            String email, String schoolCode) {
+    public TeacherEntity(String pk, String sk, String type, String id, String schoolCode, String teacherCode, String firstName, String lastName,
+            String username, String email) {
         this.pk = pk;
         this.sk = sk;
         this.type = type;
-        this.code = code;
+        this.id = id;
+        this.schoolCode = schoolCode;
+        this.teacherCode = teacherCode;
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.email = email;
-        this.schoolCode = schoolCode;
     }
 
     @DynamoDbPartitionKey
@@ -60,12 +62,28 @@ public class TeacherEntity {
         this.type = type;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
-    
-    public void setCode(String code) {
-        this.code = code;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSchoolCode() {
+        return schoolCode;
+    }
+
+    public void setSchoolCode(String schoolCode) {
+        this.schoolCode = schoolCode;
+    }
+
+    public String getTeacherCode() {
+        return teacherCode;
+    }
+
+    public void setTeacherCode(String teacherCode) {
+        this.teacherCode = teacherCode;
     }
 
     public String getFirstName() {
@@ -98,14 +116,6 @@ public class TeacherEntity {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getSchoolCode() {
-        return schoolCode;
-    }
-
-    public void setSchoolCode(String schoolCode) {
-        this.schoolCode = schoolCode;
     }
 
     public int getMaxPeriods() {

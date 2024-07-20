@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Class controller.
  */
 @RestController
-@RequestMapping("/api/v1/class")
-public class ClassController {
+@RequestMapping("/api/v1/period")
+public class PeriodController {
 }

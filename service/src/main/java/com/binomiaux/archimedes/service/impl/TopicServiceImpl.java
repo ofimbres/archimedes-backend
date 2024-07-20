@@ -24,7 +24,7 @@ public class TopicServiceImpl implements TopicService {
         List<TopicHierarchy> topicHierarchy = new ArrayList<>();
 
         parents.stream().forEach(t -> {
-            List<TopicHierarchy> descendants = topicRepository.findByTopicId(t.id())
+            List<TopicHierarchy> descendants = topicRepository.findByTopicId(t.getId())
                     .stream()
                     .map(t2 -> new TopicHierarchy(t2))
                     .collect(Collectors.toList());

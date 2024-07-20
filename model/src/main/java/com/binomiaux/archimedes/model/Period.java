@@ -1,36 +1,31 @@
 package com.binomiaux.archimedes.model;
 
 public class Period {
-    private String code;
-    private String name;
     private String schoolCode;
     private String teacherCode;
+    private String periodCode;
+    private String name;
 
     public Period() {
-        
     }
 
-    public Period(String code, String name, String schoolCode, String teacherCode) {
-        this.code = code;
-        this.name = name;
+    public Period(String schoolCode, String teacherCode, String periodCode, String name) {
         this.schoolCode = schoolCode;
         this.teacherCode = teacherCode;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
+        this.periodCode = periodCode;
         this.name = name;
+    }
+
+    public String getId() {
+        return schoolCode + "-T" + teacherCode + "-" + periodCode;
+    }
+
+    public String getPeriodCode() {
+        return periodCode;
+    }
+
+    public void setPeriodCode(String periodCode) {
+        this.periodCode = periodCode;
     }
 
     public String getSchoolCode() {
@@ -49,33 +44,11 @@ public class Period {
         this.teacherCode = teacherCode;
     }
 
-    public static class AttendedBy {
-        private String studentCode;
-        private String firstName;
-        private String lastName;
+    public String getName() {
+        return name;
+    }
 
-        public String getStudentCode() {
-            return studentCode;
-        }
-
-        public void setStudentCode(String studentCode) {
-            this.studentCode = studentCode;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
+    public void setName(String name) {
+        this.name = name;
     }
 }

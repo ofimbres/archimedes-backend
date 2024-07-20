@@ -12,13 +12,14 @@ public class StudentEntity {
     private String pk;
     private String sk;
     private String type;
-    private String code;
+    private String id;
+    private String schoolCode;
+    private String studentCode;
     private String firstName;
     private String lastName;
     private String username;
     private String email;
-    private String schoolCode;
-    private List<Attends> attends;
+    private List<String> attends;
 
     @DynamoDbPartitionKey
     public String getPk() {
@@ -46,12 +47,28 @@ public class StudentEntity {
         this.type = type;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSchoolCode() {
+        return schoolCode;
+    }
+
+    public void setSchoolCode(String schoolCode) {
+        this.schoolCode = schoolCode;
+    }
+
+    public String getStudentCode() {
+        return studentCode;
+    }
+
+    public void setStudentCode(String studentCode) {
+        this.studentCode = studentCode;
     }
 
     public String getFirstName() {
@@ -86,43 +103,13 @@ public class StudentEntity {
         this.email = email;
     }
 
-    public String getSchoolCode() {
-        return schoolCode;
-    }
-
-    public void setSchoolCode(String schoolCode) {
-        this.schoolCode = schoolCode;
-    }
-
-    public List<Attends> getAttends() {
+    public List<String> getAttends() {
         return attends;
     }
 
-    public void setAttends(List<Attends> attends) {
+    public void setAttends(List<String> attends) {
         this.attends = attends;
     }
 
     public static final TableSchema<StudentEntity> TABLE_SCHEMA = TableSchema.fromBean(StudentEntity.class);
-
-    @DynamoDbBean
-    public static class Attends {
-        public String teacherCode;
-        public String periodCode;
-
-        public String getTeacherCode() {
-            return teacherCode;
-        }
-
-        public void setTeacherCode(String teacherCode) {
-            this.teacherCode = teacherCode;
-        }
-
-        public String getPeriodCode() {
-            return periodCode;
-        }
-
-        public void setPeriodCode(String periodCode) {
-            this.periodCode = periodCode;
-        }
-    }
 }

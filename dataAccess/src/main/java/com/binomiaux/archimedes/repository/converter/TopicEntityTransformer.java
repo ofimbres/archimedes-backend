@@ -13,8 +13,8 @@ public class TopicEntityTransformer implements EntityTransform<TopicEntity, Topi
     @Override
     public TopicEntity untransform(Topic model) {
         TopicEntity record = new TopicEntity();
-        record.setId(model.id());
-        record.setTopicName(model.name());
+        record.setId(model.getId());
+        record.setTopicName(model.getName());
 
         return record;
     }

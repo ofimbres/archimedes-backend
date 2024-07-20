@@ -12,7 +12,6 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public School getSchool(String id) {
         School school = new School();
-        school.setId("e868dec2-a788-43b7-96ff-43dbea97a64b");
         school.setName("Lamar");
         return null;
     }
@@ -20,7 +19,6 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     public List<School> getSchools() {
         School school = new School();
-        school.setId("e868dec2-a788-43b7-96ff-43dbea97a64b");
         school.setName("Lamar");
         return Arrays.asList(school);
     }

@@ -39,16 +39,19 @@ public class TeacherRepositoryImpl implements TeacherRepository {
         int nextTeacherCode = schoolEntity.getTeacherCount() + 1;
         schoolEntity.setTeacherCount(nextTeacherCode);
 
+        teacher.setTeacherCode(String.valueOf(nextTeacherCode));
+
         // Update teacher entity
         TeacherEntity teacherEntity = new TeacherEntity();
-        teacherEntity.setPk("SCHOOL#" + teacher.getSchoolCode() + "#TEACHER#" + nextTeacherCode);
+        teacherEntity.setPk("TEACHER#" + teacher.getId());
         teacherEntity.setSk("#");
         teacherEntity.setType("TEACHER");
-        teacherEntity.setCode(String.valueOf(nextTeacherCode));
+        teacherEntity.setId(teacher.getId());
+        teacherEntity.setSchoolCode(teacher.getSchoolCode());
+        teacherEntity.setTeacherCode(teacher.getTeacherCode());
         teacherEntity.setFirstName(teacher.getFirstName());
         teacherEntity.setLastName(teacher.getLastName());
         teacherEntity.setEmail(teacher.getEmail());
-        teacherEntity.setSchoolCode(teacher.getSchoolCode());
         teacherEntity.setUsername(teacher.getUsername());
         teacherEntity.setMaxPeriods(6); // TODO
 
@@ -63,7 +66,5 @@ public class TeacherRepositoryImpl implements TeacherRepository {
                 .build())
             .addUpdateItem(schoolTable, schoolEntity)
         );
-
-        teacher.setCode(String.valueOf(nextTeacherCode));
     }
 }

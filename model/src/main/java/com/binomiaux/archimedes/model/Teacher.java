@@ -1,34 +1,43 @@
 package com.binomiaux.archimedes.model;
 
 public class Teacher {
-
-    private String code;
+    private String schoolCode;
+    private String teacherCode;
     private String firstName;
     private String lastName;
     private String email;
-    private String schoolCode;
     private String username;
-    //private int maxPeriods;
 
     public Teacher() {
     }
 
-    public Teacher(String code, String firstName, String lastName, String email, String schoolId, String username) {
-        this.code = code;
+    public Teacher(String schoolCode, String teacherCode, String firstName, String lastName, String email, String username) {
+        this.schoolCode = schoolCode;
+        this.teacherCode = teacherCode;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.schoolCode = schoolId;
         this.username = username;
-        //this.maxPeriods = maxPeriods;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return schoolCode + "-T" + teacherCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public String getSchoolCode() {
+        return schoolCode;
+    }
+
+    public void setSchoolCode(String schoolCode) {
+        this.schoolCode = schoolCode;
+    }
+
+    public String getTeacherCode() {
+        return teacherCode;
+    }
+
+    public void setTeacherCode(String teacherCode) {
+        this.teacherCode = teacherCode;
     }
 
     public String getFirstName() {
@@ -55,14 +64,6 @@ public class Teacher {
         this.email = email;
     }
 
-    public String getSchoolCode() {
-        return schoolCode;
-    }
-
-    public void setSchoolCode(String schoolCode) {
-        this.schoolCode = schoolCode;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -70,12 +71,4 @@ public class Teacher {
     public void setUsername(String username) {
         this.username = username;
     }    
-
-    /*public int getMaxPeriods() {
-        return maxPeriods;
-    }
-
-    public void setMaxPeriods(int maxPeriods) {
-        this.maxPeriods = maxPeriods;
-    } */
 }
