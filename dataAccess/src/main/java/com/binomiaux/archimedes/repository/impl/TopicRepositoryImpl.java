@@ -17,8 +17,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.text.TabExpander;
-
 @Repository
 public class TopicRepositoryImpl implements TopicRepository {
 
