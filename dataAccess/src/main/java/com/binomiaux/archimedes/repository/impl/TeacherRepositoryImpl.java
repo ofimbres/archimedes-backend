@@ -28,7 +28,7 @@ public class TeacherRepositoryImpl implements TeacherRepository {
         // Update school entity
         DynamoDbTable<SchoolEntity> schoolTable = enhancedClient.table(tableName, SchoolEntity.TABLE_SCHEMA);
         SchoolEntity schoolEntity = schoolTable.getItem(r -> r.key(k -> k
-            .partitionValue("SCHOOL#" + teacher.getSchoolCode())
+            .partitionValue("SCHOOL#" + teacher.getSchoolId())
             .sortValue("#")
         ));
         
@@ -39,21 +39,24 @@ public class TeacherRepositoryImpl implements TeacherRepository {
         int nextTeacherCode = schoolEntity.getTeacherCount() + 1;
         schoolEntity.setTeacherCount(nextTeacherCode);
 
-        teacher.setTeacherCode(String.valueOf(nextTeacherCode));
+        teacher.setTeacherId(teacher.getSchoolId() + "-T" + String.valueOf(nextTeacherCode));
 
         // Update teacher entity
         TeacherEntity teacherEntity = new TeacherEntity();
-        teacherEntity.setPk("TEACHER#" + teacher.getId());
-        teacherEntity.setSk("#");
+        teacherEntity.setPk("SCHOOL#" + teacher.getSchoolId());
+        teacherEntity.setSk("TEACHER#" + teacher.getTeacherId());
         teacherEntity.setType("TEACHER");
-        teacherEntity.setId(teacher.getId());
-        teacherEntity.setSchoolCode(teacher.getSchoolCode());
-        teacherEntity.setTeacherCode(teacher.getTeacherCode());
+        teacherEntity.setSchoolId(teacher.getSchoolId());
+        teacherEntity.setTeacherId(teacher.getTeacherId());
         teacherEntity.setFirstName(teacher.getFirstName());
         teacherEntity.setLastName(teacher.getLastName());
         teacherEntity.setEmail(teacher.getEmail());
         teacherEntity.setUsername(teacher.getUsername());
         teacherEntity.setMaxPeriods(6); // TODO
+        teacherEntity.setGsi1pk("TEACHER#" + teacher.getTeacherId());
+        teacherEntity.setGsi1sk("TEACHER#" + teacher.getTeacherId());
+        teacherEntity.setGsi2pk("SCHOOL#" + teacher.getSchoolId());
+        teacherEntity.setGsi2sk("TEACHER#" + teacher.getFirstName() + " " + teacher.getLastName());
 
         DynamoDbTable<TeacherEntity> teacherTable = enhancedClient.table(tableName, TeacherEntity.TABLE_SCHEMA);
 

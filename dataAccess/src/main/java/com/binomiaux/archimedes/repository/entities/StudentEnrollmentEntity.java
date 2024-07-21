@@ -8,16 +8,15 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class PeriodEntity {
+public class StudentEnrollmentEntity {
     private String pk;
     private String sk;
     private String type;
-    private String schoolId;
-    private String teacherId;
     private String periodId;
-    private String name;
-    private String teacherFirstName;
-    private String teacherLastName;
+    private String studentId;
+    private String studentFirstName;
+    private String studentLastName;
+    private String periodName;
     private String gsi1pk;
     private String gsi1sk;
     private String gsi2pk;
@@ -49,22 +48,6 @@ public class PeriodEntity {
         this.type = type;
     }
 
-    public String getSchoolId() {
-        return schoolId;
-    }
-
-    public void setSchoolId(String schoolId) {
-        this.schoolId = schoolId;
-    }
-
-    public String getTeacherId() {
-        return teacherId;
-    }
-
-    public void setTeacherId(String teacherId) {
-        this.teacherId = teacherId;
-    }
-
     public String getPeriodId() {
         return periodId;
     }
@@ -73,28 +56,36 @@ public class PeriodEntity {
         this.periodId = periodId;
     }
 
-    public String getName() {
-        return name;
+    public String getStudentId() {
+        return studentId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
     }
 
-    public String getTeacherFirstName() {
-        return teacherFirstName;
+    public String getStudentFirstName() {
+        return studentFirstName;
     }
 
-    public void setTeacherFirstName(String teacherFirstName) {
-        this.teacherFirstName = teacherFirstName;
+    public void setStudentFirstName(String studentFirstName) {
+        this.studentFirstName = studentFirstName;
     }
 
-    public String getTeacherLastName() {
-        return teacherLastName;
+    public String getStudentLastName() {
+        return studentLastName;
     }
 
-    public void setTeacherLastName(String teacherLastName) {
-        this.teacherLastName = teacherLastName;
+    public void setStudentLastName(String studentLastName) {
+        this.studentLastName = studentLastName;
+    }
+
+    public void setPeriodName(String periodName) {
+        this.periodName = periodName;
+    }
+
+    public String getPeriodName() {
+        return periodName;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1")
@@ -133,5 +124,5 @@ public class PeriodEntity {
         this.gsi2sk = gsi2sk;
     }
 
-    public static final TableSchema<PeriodEntity> TABLE_SCHEMA = TableSchema.fromBean(PeriodEntity.class);
+    public static final TableSchema<StudentEnrollmentEntity> TABLE_SCHEMA = TableSchema.fromBean(StudentEnrollmentEntity.class);
 }

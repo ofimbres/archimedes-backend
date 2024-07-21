@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.model;
 
 public class Teacher {
-    private String schoolCode;
-    private String teacherCode;
+    private String schoolId;
+    private String teacherId;
     private String firstName;
     private String lastName;
     private String email;
@@ -11,33 +11,29 @@ public class Teacher {
     public Teacher() {
     }
 
-    public Teacher(String schoolCode, String teacherCode, String firstName, String lastName, String email, String username) {
-        this.schoolCode = schoolCode;
-        this.teacherCode = teacherCode;
+    public Teacher(String schoolId, String teacherId, String firstName, String lastName, String email, String username) {
+        this.schoolId = schoolId;
+        this.teacherId = teacherId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
     }
 
-    public String getId() {
-        return schoolCode + "-T" + teacherCode;
+    public String getSchoolId() {
+        return schoolId;
     }
 
-    public String getSchoolCode() {
-        return schoolCode;
+    public void setSchoolId(String schoolId) {
+        this.schoolId = schoolId;
     }
 
-    public void setSchoolCode(String schoolCode) {
-        this.schoolCode = schoolCode;
+    public String getTeacherId() {
+        return teacherId;
     }
 
-    public String getTeacherCode() {
-        return teacherCode;
-    }
-
-    public void setTeacherCode(String teacherCode) {
-        this.teacherCode = teacherCode;
+    public void setTeacherId(String teacherId) {
+        this.teacherId = teacherId;
     }
 
     public String getFirstName() {

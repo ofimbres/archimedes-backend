@@ -1,47 +1,43 @@
 package com.binomiaux.archimedes.model;
 
 public class Period {
-    private String schoolCode;
-    private String teacherCode;
-    private String periodCode;
+    private String schoolId;
+    private String teacherId;
+    private String periodId;
     private String name;
 
     public Period() {
     }
 
-    public Period(String schoolCode, String teacherCode, String periodCode, String name) {
-        this.schoolCode = schoolCode;
-        this.teacherCode = teacherCode;
-        this.periodCode = periodCode;
+    public Period(String schoolId, String teacherId, String periodId, String name) {
+        this.schoolId = schoolId;
+        this.teacherId = teacherId;
+        this.periodId = periodId;
         this.name = name;
     }
 
-    public String getId() {
-        return schoolCode + "-T" + teacherCode + "-" + periodCode;
+    public String getPeriodId() {
+        return periodId;
     }
 
-    public String getPeriodCode() {
-        return periodCode;
+    public void setPeriodId(String periodId) {
+        this.periodId = periodId;
     }
 
-    public void setPeriodCode(String periodCode) {
-        this.periodCode = periodCode;
+    public String getSchoolId() {
+        return schoolId;
     }
 
-    public String getSchoolCode() {
-        return schoolCode;
+    public void setSchoolId(String schoolId) {
+        this.schoolId = schoolId;
     }
 
-    public void setSchoolCode(String schoolCode) {
-        this.schoolCode = schoolCode;
+    public String getTeacherId() {
+        return teacherId;
     }
 
-    public String getTeacherCode() {
-        return teacherCode;
-    }
-
-    public void setTeacherCode(String teacherCode) {
-        this.teacherCode = teacherCode;
+    public void setTeacherId(String teacherId) {
+        this.teacherId = teacherId;
     }
 
     public String getName() {

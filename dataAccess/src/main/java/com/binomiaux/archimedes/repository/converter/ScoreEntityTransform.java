@@ -30,10 +30,10 @@ public class ScoreEntityTransform implements EntityTransform<ExerciseResultEntit
     public ExerciseResultEntity untransform(ExerciseResult model) {
 
         ExerciseResultEntity entity = new ExerciseResultEntity();
-        entity.setPk("CLASS#" + model.getClassroom().getPeriodCode() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id());
-        entity.setSk("CLASS#" + model.getClassroom().getPeriodCode() + "#STUDENT#" + model.getStudent().getId() + "#EXERCISE#" + model.getExercise().id());
+        entity.setPk("CLASS#" + model.getClassroom().getPeriodId() + "#STUDENT#" + model.getStudent().getStudentId() + "#EXERCISE#" + model.getExercise().id());
+        entity.setSk("CLASS#" + model.getClassroom().getPeriodId() + "#STUDENT#" + model.getStudent().getStudentId() + "#EXERCISE#" + model.getExercise().id());
         //entity.setSk("TIMESTAMP#" + model.getTimestamp());
-        entity.setGsipk("CLASS#" + model.getClassroom().getPeriodCode());
+        entity.setGsipk("CLASS#" + model.getClassroom().getPeriodId());
         entity.setGsisk("EXERCISE#" + model.getExercise().id());
         entity.setType("EXERCISE_RESULT");
 

@@ -7,4 +7,5 @@ import com.binomiaux.archimedes.model.Period;
 public interface PeriodRepository {
     void create(Period period);
     List<Period> getPeriodsByStudentId(String studentId);
+    List<Period> getPeriodsByTeacherId(String teacherId);
 }

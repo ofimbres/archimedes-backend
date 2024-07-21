@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import software.amazon.awssdk.enhanced.dynamodb.internal.converter.string.PeriodStringConverter;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.UsernameExistsException;
@@ -47,7 +46,7 @@ public class UserServiceImpl implements UserService {
                 teacherService.create(teacher);
                 
                 for (int i = 1; i <= 6; i++) {
-                    periodService.create(new Period(schoolCode, teacher.getTeacherCode(), String.valueOf(i), "Period " + i));
+                    periodService.create(new Period(schoolCode, teacher.getTeacherId(), String.valueOf(i), "Period " + i));
                 }
             } else if (userType.equals("students")){
                 studentService.create(new Student(schoolCode, null, givenName, familyName, email, username));
