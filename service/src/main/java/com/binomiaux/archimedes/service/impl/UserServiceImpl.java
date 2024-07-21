@@ -4,11 +4,14 @@ import com.binomiaux.archimedes.model.LoggedInUser;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.model.Teacher;
+import com.binomiaux.archimedes.model.UserRegistration;
 import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.StudentService;
 import com.binomiaux.archimedes.service.TeacherService;
 import com.binomiaux.archimedes.service.UserService;
 import com.binomiaux.archimedes.service.awsservices.CognitoService;
+
+import com.binomiaux.archimedes.service.exception.ArchimedesServiceException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotConfirmedException;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.UsernameExistsException;
 
 @Service
@@ -36,11 +40,16 @@ public class UserServiceImpl implements UserService {
     private PeriodService periodService;
 
     @Override
-    public void registerUser(String username, String password, String email, String givenName, String familyName, String schoolCode, String userType) {
+    public UserRegistration registerUser(String username, String password, String email, String givenName, String familyName, String schoolCode, String userType) {
         try {
+            if (cognitoService.isEmailRegistered(email)) {
+                throw new Exception("Email already registered: " + email);
+            }
+
             cognitoService.signUpUser(username, password, email, givenName, familyName);
             cognitoService.addUserToGroup(userType, username);
 
+            String userId = null;
             if (userType.equals("teachers")) {
                 Teacher teacher = new Teacher(schoolCode, null, givenName, familyName, email, username);
                 teacherService.create(teacher);
@@ -48,11 +57,18 @@ public class UserServiceImpl implements UserService {
                 for (int i = 1; i <= 6; i++) {
                     periodService.create(new Period(schoolCode, teacher.getTeacherId(), String.valueOf(i), "Period " + i));
                 }
+
+                userId = teacher.getTeacherId();
             } else if (userType.equals("students")){
-                studentService.create(new Student(schoolCode, null, givenName, familyName, email, username));
+                Student student = new Student(schoolCode, null, givenName, familyName, email, username);
+                studentService.create(student);
+                userId = student.getStudentId();
             }
+
+            UserRegistration userRegistration = new UserRegistration(userId, username, userType, false);
+            return userRegistration;
         } catch (UsernameExistsException e) {
-            throw new RuntimeException("Username already exists: " + username, e);
+            throw new ArchimedesServiceException("Username already exists: " + username, e);
         } catch (IllegalArgumentException e) {
             cognitoService.deleteUser(username);
             throw new RuntimeException(e.getMessage(), e);
@@ -71,6 +87,8 @@ public class UserServiceImpl implements UserService {
 
             LoggedInUser loggedInUser = new LoggedInUser(username, accessToken);
             return loggedInUser;
+        } catch (UserNotConfirmedException e) {
+            throw new ArchimedesServiceException("User not confirmed: " + username + ". Please confirm your account with the code sent to your email.", e);
         } catch (Exception e) {
             // Handle login errors
             return null;
@@ -88,8 +106,6 @@ public class UserServiceImpl implements UserService {
         try {
             cognitoService.sendCode(username);
         } catch (Exception e) {
-            // Log the exception
-            System.out.println("Error verifying code: " + e.getMessage());
             throw new RuntimeException("Error verifying code for user: " + username,  e);
         }
     }
@@ -122,8 +138,6 @@ public class UserServiceImpl implements UserService {
         try {
             cognitoService.confirmForgotPassword(username, newPassword, confirmationCode);
         } catch (Exception e) {
-            // Log the exception
-            System.out.println("Error initiating password reset: " + e.getMessage());
             throw new RuntimeException("Error initiating password reset for user: " + username, e);
         }
     }

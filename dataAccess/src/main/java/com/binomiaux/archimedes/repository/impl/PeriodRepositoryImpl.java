@@ -13,7 +13,6 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.repository.api.PeriodRepository;
 import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEnrollmentEntity;
-import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
