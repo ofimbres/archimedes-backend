@@ -15,9 +15,6 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
-    @Autowired
-    private PeriodRepository periodRepository;
-
     @Override
     public Student getStudent(String id) {
         return studentRepository.find(id);

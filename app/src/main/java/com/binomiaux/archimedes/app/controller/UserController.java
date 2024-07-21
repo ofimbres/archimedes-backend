@@ -1,8 +1,10 @@
 package com.binomiaux.archimedes.app.controller;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import com.binomiaux.archimedes.app.request.UserLoginRequest;
 import com.binomiaux.archimedes.app.request.UserRegistrationRequest;
 import com.binomiaux.archimedes.app.request.VerifyCodeRequest;
 import com.binomiaux.archimedes.model.LoggedInUser;
+import com.binomiaux.archimedes.model.UserRegistration;
 import com.binomiaux.archimedes.service.UserService;
 
 /**
@@ -32,20 +35,25 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest userRequest) {
         try {
-            userService.registerUser(userRequest.getUsername(), userRequest.getPassword(), userRequest.getEmail(), userRequest.getGivenName(), userRequest.getFamilyName(), userRequest.getSchoolCode(), userRequest.getUserType());
-            return ResponseEntity.ok().build();
+            UserRegistration userRegistration = userService.registerUser(userRequest.getUsername(), userRequest.getPassword(), userRequest.getEmail(), userRequest.getGivenName(), userRequest.getFamilyName(), userRequest.getSchoolCode(), userRequest.getUserType());
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "User registered successfully.",
+                "user", userRegistration));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLoginRequest userRequest) {
-        LoggedInUser loggedInUser = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
-        if (loggedInUser != null) {
-            return ResponseEntity.ok(loggedInUser);
-        } else {
-            return ResponseEntity.badRequest().body("Invalid username or password.");
+        try {
+            LoggedInUser loggedInUser = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
+            return ResponseEntity.ok(Map.of(
+                "message", "User logged in successfully.",
+                "user", loggedInUser
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -63,7 +71,7 @@ public class UserController {
     public ResponseEntity<?> sendCode(@RequestBody SendCodeRequest request) {
         try {
             userService.sendCode(request.getUsername());
-            return ResponseEntity.ok("Code sent successfully.");
+            return ResponseEntity.ok(Map.of("message", "Code sent successfully."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error sending code: " + e.getMessage());
         }
@@ -73,7 +81,7 @@ public class UserController {
     public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeRequest request) {
         try {
             userService.verifyCode(request.getUsername(), request.getConfirmationCode());
-            return ResponseEntity.ok("User verified successfully.");
+            return ResponseEntity.ok(Map.of("message", "User verified successfully."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error verifying code: " + e.getMessage());
         }
@@ -83,7 +91,7 @@ public class UserController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         try {
             userService.forgotPassword(request.getUsername());
-            return ResponseEntity.ok("Password reset initiated successfully.");
+            return ResponseEntity.ok(Map.of("message", "Password reset initiated successfully."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error initiating password reset: " + e.getMessage());
         }
@@ -93,7 +101,7 @@ public class UserController {
     public ResponseEntity<?> confirmForgotPassword(@RequestBody ConfirmForgotPasswordRequest request) {
         try {
             userService.confirmForgotPassword(request.getUsername(), request.getNewPassword(), request.getConfirmationCode());
-            return ResponseEntity.ok("Password reset confirmed successfully.");
+            return ResponseEntity.ok(Map.of("message", "Password reset confirmed successfully."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error confirming password reset: " + e.getMessage());
         }

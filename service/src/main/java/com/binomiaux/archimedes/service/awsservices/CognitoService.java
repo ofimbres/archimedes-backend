@@ -23,6 +23,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.ForgotPassw
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ForgotPasswordResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ResendConfirmationCodeRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ResendConfirmationCodeResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpRequest;
@@ -147,5 +149,16 @@ public class CognitoService {
             .username(username)
             .build();        
         return cognitoIdentityProviderClient.adminDeleteUser(adminDeleteUserRequest);
+    }
+
+        public boolean isEmailRegistered(String email) {
+        ListUsersRequest request = ListUsersRequest.builder()
+                .userPoolId(userPoolId)
+                .filter("email = \"" + email + "\"")
+                .build();
+
+        ListUsersResponse response = cognitoIdentityProviderClient.listUsers(request);
+
+        return !response.users().isEmpty();
     }
 }

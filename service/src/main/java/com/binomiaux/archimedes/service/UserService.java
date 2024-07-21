@@ -3,9 +3,10 @@ package com.binomiaux.archimedes.service;
 import java.util.Map;
 
 import com.binomiaux.archimedes.model.LoggedInUser;
+import com.binomiaux.archimedes.model.UserRegistration;
 
 public interface UserService {
-    void registerUser(String username, String password, String email,  String givenName, String familyName, String schoolCode, String userType);
+    UserRegistration registerUser(String username, String password, String email,  String givenName, String familyName, String schoolCode, String userType);
     LoggedInUser loginUser(String username, String password);
     Map<String, String> getUserAttributes(String username);
     void sendCode(String username);
