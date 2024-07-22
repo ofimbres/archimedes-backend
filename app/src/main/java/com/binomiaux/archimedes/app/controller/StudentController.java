@@ -17,15 +17,7 @@ public class StudentController {
 
     @PostMapping("/{studentId}/enrollments/{periodId}")
     public ResponseEntity<?> enrollStudentInPeriod(@PathVariable("studentId") String studentId, @PathVariable("periodId") String periodId) {
-        try {
-            boolean isRegistered = studentService.enrollStudentInPeriod(studentId, periodId);
-            if (isRegistered) {
-                return ResponseEntity.ok().body("Student registered to period successfully.");
-            } else {
-                return ResponseEntity.badRequest().body("Failed to register student to period.");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
-        }
+        boolean isRegistered = studentService.enrollStudentInPeriod(studentId, periodId);
+        return ResponseEntity.ok().body("Student registered to period successfully.");
     }
 }

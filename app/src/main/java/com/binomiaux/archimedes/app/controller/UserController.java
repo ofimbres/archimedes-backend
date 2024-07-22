@@ -1,6 +1,5 @@
 package com.binomiaux.archimedes.app.controller;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,37 +33,25 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest userRequest) {
-        try {
-            UserRegistration userRegistration = userService.registerUser(userRequest.getUsername(), userRequest.getPassword(), userRequest.getEmail(), userRequest.getGivenName(), userRequest.getFamilyName(), userRequest.getSchoolCode(), userRequest.getUserType());
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "message", "User registered successfully.",
-                "user", userRegistration));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
-        }
+        UserRegistration userRegistration = userService.registerUser(userRequest.getUsername(), userRequest.getPassword(), userRequest.getEmail(), userRequest.getGivenName(), userRequest.getFamilyName(), userRequest.getSchoolCode(), userRequest.getUserType());
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "message", "User registered successfully.",
+            "user", userRegistration));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLoginRequest userRequest) {
-        try {
-            LoggedInUser loggedInUser = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
-            return ResponseEntity.ok(Map.of(
-                "message", "User logged in successfully.",
-                "user", loggedInUser
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
-        }
+        LoggedInUser loggedInUser = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
+        return ResponseEntity.ok(Map.of(
+            "message", "User logged in successfully.",
+            "user", loggedInUser
+        ));
     }
 
     @GetMapping("/{username}/attributes")
     public ResponseEntity<?> getUserAttributes(@PathVariable String username) {
-        try {
-            Map<String, String> userAttributes = userService.getUserAttributes(username);
-            return ResponseEntity.ok(userAttributes);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error retrieving user attributes: " + e.getMessage());
-        }
+        Map<String, String> userAttributes = userService.getUserAttributes(username);
+        return ResponseEntity.ok(userAttributes);
     }
 
     @PostMapping("/sendCode")

@@ -6,6 +6,8 @@ import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEnrollmentEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEntity;
+import com.binomiaux.archimedes.repository.exception.ConflictOperationException;
+import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -56,8 +58,9 @@ public class StudentRepositoryImpl implements StudentRepository {
             .sortValue("#")
         ));
         
+        // TODO Move to service layer
         if (schoolEntity == null) {
-            throw new IllegalArgumentException("School not found");
+            throw new EntityNotFoundException("School " + student.getSchoolId() + " not found", null);
         }
         
         int nextStudentCode = schoolEntity.getStudentCount() + 1;
@@ -105,7 +108,7 @@ public class StudentRepositoryImpl implements StudentRepository {
             .map(x -> x.items())
             .flatMap(Collection::stream)
             .findFirst()
-            .orElse(null);
+            .get();
 
         DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
         QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("PERIOD#" + periodId));
@@ -117,16 +120,12 @@ public class StudentRepositoryImpl implements StudentRepository {
             .map(x -> x.items())
             .flatMap(Collection::stream)
             .findFirst()
-            .orElse(null);
-
-        if (studentEntity == null || periodEntity == null) {
-            throw new IllegalArgumentException("Student or period not found");
-        }
+            .get();
 
         DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
         StudentEnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
         if (studentEnrollmentEntity != null) {
-            throw new IllegalArgumentException("Student already enrolled in period");
+            throw new ConflictOperationException("Student " + studentId + " already enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
         }
 
         studentEnrollmentEntity = new StudentEnrollmentEntity();
