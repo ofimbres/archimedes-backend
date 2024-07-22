@@ -13,7 +13,9 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.repository.api.PeriodRepository;
 import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEnrollmentEntity;
+import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
+import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -30,6 +32,28 @@ public class PeriodRepositoryImpl implements PeriodRepository {
     private String tableName;
 
     @Override
+    public Period find(String periodId) {
+        DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
+
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("PERIOD#" + periodId));
+
+        SdkIterable<Page<PeriodEntity>> results = periodTable.index("gsi1")
+            .query(r -> r.queryConditional(queryConditional));
+
+        PeriodEntity periodEntity = results.stream()
+            .map(x -> x.items())
+            .flatMap(Collection::stream)
+            .findFirst()
+            .orElse(null);
+
+        Period period = new Period();
+        period.setPeriodId(periodEntity.getPeriodId());
+        period.setName(periodEntity.getName());
+
+        return period;
+    }
+
+    @Override
     public void create(Period period) {
         // Get teacher entity
         DynamoDbTable<TeacherEntity> teacherTable = enhancedClient.table(tableName, TeacherEntity.TABLE_SCHEMA);
@@ -39,7 +63,7 @@ public class PeriodRepositoryImpl implements PeriodRepository {
         ));
 
         if (teacherEntity == null) {
-            throw new IllegalArgumentException("Teacher not found");
+            throw new EntityNotFoundException("Teacher " + period.getTeacherId() + " not found", null);
         }
 
         period.setPeriodId(period.getTeacherId() + "-" + period.getPeriodId());

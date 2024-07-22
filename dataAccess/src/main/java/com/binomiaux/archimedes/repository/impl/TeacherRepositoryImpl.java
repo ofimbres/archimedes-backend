@@ -8,6 +8,7 @@ import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.repository.api.TeacherRepository;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
+import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -32,8 +33,9 @@ public class TeacherRepositoryImpl implements TeacherRepository {
             .sortValue("#")
         ));
         
+        // TODO Move to service layer
         if (schoolEntity == null) {
-            throw new IllegalArgumentException("School not found");
+            throw new EntityNotFoundException("School " + teacher.getSchoolId() + " not found", null);
         }
         
         int nextTeacherCode = schoolEntity.getTeacherCount() + 1;

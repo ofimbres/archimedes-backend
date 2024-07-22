@@ -12,6 +12,8 @@ import com.binomiaux.archimedes.service.UserService;
 import com.binomiaux.archimedes.service.awsservices.CognitoService;
 
 import com.binomiaux.archimedes.service.exception.ArchimedesServiceException;
+import com.binomiaux.archimedes.service.exception.EmailAlreadyInUseException;
+import com.binomiaux.archimedes.service.exception.UserAlreadyExistsException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public UserRegistration registerUser(String username, String password, String email, String givenName, String familyName, String schoolCode, String userType) {
         try {
             if (cognitoService.isEmailRegistered(email)) {
-                throw new Exception("Email already registered: " + email);
+                throw new EmailAlreadyInUseException("Email already registered: " + email, null);
             }
 
             cognitoService.signUpUser(username, password, email, givenName, familyName);
@@ -68,7 +70,7 @@ public class UserServiceImpl implements UserService {
             UserRegistration userRegistration = new UserRegistration(userId, username, userType, false);
             return userRegistration;
         } catch (UsernameExistsException e) {
-            throw new ArchimedesServiceException("Username already exists: " + username, e);
+            throw new UserAlreadyExistsException("Username already exists: " + username, e);
         } catch (IllegalArgumentException e) {
             cognitoService.deleteUser(username);
             throw new RuntimeException(e.getMessage(), e);
