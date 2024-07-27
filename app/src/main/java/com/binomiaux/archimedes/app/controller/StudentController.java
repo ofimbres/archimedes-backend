@@ -15,9 +15,9 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @PostMapping("/{studentId}/enrollments/{periodId}")
+    @PostMapping("/{studentId}/enrollment/{periodId}")
     public ResponseEntity<?> enrollStudentInPeriod(@PathVariable("studentId") String studentId, @PathVariable("periodId") String periodId) {
-        boolean isRegistered = studentService.enrollStudentInPeriod(studentId, periodId);
+        studentService.enrollStudentInPeriod(studentId, periodId);
         return ResponseEntity.ok().body("Student registered to period successfully.");
     }
 }

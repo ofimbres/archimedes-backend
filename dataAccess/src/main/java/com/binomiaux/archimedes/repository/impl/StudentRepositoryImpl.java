@@ -22,6 +22,9 @@ import software.amazon.awssdk.enhanced.dynamodb.model.TransactPutItemEnhancedReq
 import com.binomiaux.archimedes.model.Student;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +45,7 @@ public class StudentRepositoryImpl implements StudentRepository {
     public Student find(String studentId) {
         String pk = "STUDENT#" + studentId;
         DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);
-        Key key = Key.builder().partitionValue(pk).sortValue("#").build();
+        Key key = Key.builder().partitionValue(pk).sortValue("#METADATA").build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
         StudentEntity record = studentTable.getItem(request);
 
@@ -55,7 +58,7 @@ public class StudentRepositoryImpl implements StudentRepository {
         DynamoDbTable<SchoolEntity> schoolTable = enhancedClient.table(tableName, SchoolEntity.TABLE_SCHEMA);
         SchoolEntity schoolEntity = schoolTable.getItem(r -> r.key(k -> k
             .partitionValue("SCHOOL#" + student.getSchoolId())
-            .sortValue("#")
+            .sortValue("#METADATA")
         ));
         
         // TODO Move to service layer
@@ -69,8 +72,8 @@ public class StudentRepositoryImpl implements StudentRepository {
 
         // Update teacher entity
         StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setPk("SCHOOL#" + student.getSchoolId());
-        studentEntity.setSk("STUDENT#" + student.getStudentId());
+        studentEntity.setPk("STUDENT#" + student.getStudentId());
+        studentEntity.setSk("#METADATA");
         studentEntity.setType("STUDENT");
         studentEntity.setSchoolId(student.getSchoolId());
         studentEntity.setStudentId(student.getStudentId());
@@ -78,7 +81,7 @@ public class StudentRepositoryImpl implements StudentRepository {
         studentEntity.setLastName(student.getLastName());
         studentEntity.setEmail(student.getEmail());
         studentEntity.setUsername(student.getUsername());
-        studentEntity.setGsi1pk("STUDENT#" + student.getStudentId());
+        studentEntity.setGsi1pk("SCHOOL#" + student.getSchoolId());
         studentEntity.setGsi1sk("STUDENT#" + student.getStudentId());
         studentEntity.setGsi2pk("SCHOOL#" + student.getSchoolId());
         studentEntity.setGsi2sk("STUDENT#" + student.getFirstName() + " " + student.getLastName());
@@ -99,9 +102,9 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Override
     public void enrollInPeriod(String studentId, String periodId) {
         DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);    
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId).sortValue("STUDENT#" + studentId));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId).sortValue("#METADATA"));
 
-        SdkIterable<Page<StudentEntity>> results = studentTable.index("gsi1")
+        SdkIterable<Page<StudentEntity>> results = studentTable//.index("gsi1")
             .query(r -> r.queryConditional(queryConditional));
 
         StudentEntity studentEntity = results.stream()
@@ -111,9 +114,9 @@ public class StudentRepositoryImpl implements StudentRepository {
             .get();
 
         DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
-        QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("PERIOD#" + periodId));
+        QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#METADATA"));
 
-        SdkIterable<Page<PeriodEntity>> results2 = periodTable.index("gsi1")
+        SdkIterable<Page<PeriodEntity>> results2 = periodTable//.index("gsi1")
             .query(r -> r.queryConditional(queryConditional2));
 
         PeriodEntity periodEntity = results2.stream()
@@ -129,17 +132,45 @@ public class StudentRepositoryImpl implements StudentRepository {
         }
 
         studentEnrollmentEntity = new StudentEnrollmentEntity();
-        studentEnrollmentEntity.setPk("PERIOD#" + periodId);
-        studentEnrollmentEntity.setSk("STUDENT#" + studentId);
+        studentEnrollmentEntity.setPk("STUDENT#" + studentId);
+        studentEnrollmentEntity.setSk("PERIOD#" + periodId);
         studentEnrollmentEntity.setType("ENROLLMENT");
         studentEnrollmentEntity.setStudentId(studentId);
         studentEnrollmentEntity.setPeriodId(periodId);
         studentEnrollmentEntity.setStudentFirstName(studentEntity.getFirstName());
         studentEnrollmentEntity.setStudentLastName(studentEntity.getLastName());
         studentEnrollmentEntity.setPeriodName(periodEntity.getName());
-        studentEnrollmentEntity.setGsi1pk("STUDENT#" + studentId);
-        studentEnrollmentEntity.setGsi1sk("PERIOD#" + periodId);
+        studentEnrollmentEntity.setGsi1pk("PERIOD#" + periodId);
+        studentEnrollmentEntity.setGsi1sk("STUDENT#" + studentId);
 
         studentEnrollmentTable.putItem(studentEnrollmentEntity);
+    }
+
+    @Override
+    public List<Student> getStudentsByPeriod(String periodId) {
+        // PERIOD#1234-T1-6,	ENROLLMENT#
+        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#"));
+
+        SdkIterable<Page<StudentEnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
+            .query(r -> r.queryConditional(queryConditional));
+
+        List<StudentEnrollmentEntity> studentEnrollmentEntityList = results.stream()
+            .map(x -> x.items())
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
+        List<Student> students = new ArrayList<>();
+        for (StudentEnrollmentEntity studentEnrollmentEntity : studentEnrollmentEntityList) {
+            Student student = new Student();
+            student.setStudentId(studentEnrollmentEntity.getStudentId());
+            student.setFirstName(studentEnrollmentEntity.getStudentFirstName());
+            student.setLastName(studentEnrollmentEntity.getStudentLastName());
+            //student.setEmail(studentEnrollmentEntity.getStudentEmail());
+            //student.setUsername(studentEnrollmentEntity.getStudentUsername());
+            students.add(student);
+        }
+
+        return students;
     }
 }
