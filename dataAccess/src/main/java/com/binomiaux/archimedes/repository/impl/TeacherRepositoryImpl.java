@@ -30,7 +30,7 @@ public class TeacherRepositoryImpl implements TeacherRepository {
         DynamoDbTable<SchoolEntity> schoolTable = enhancedClient.table(tableName, SchoolEntity.TABLE_SCHEMA);
         SchoolEntity schoolEntity = schoolTable.getItem(r -> r.key(k -> k
             .partitionValue("SCHOOL#" + teacher.getSchoolId())
-            .sortValue("#")
+            .sortValue("#METADATA")
         ));
         
         // TODO Move to service layer
@@ -45,8 +45,8 @@ public class TeacherRepositoryImpl implements TeacherRepository {
 
         // Update teacher entity
         TeacherEntity teacherEntity = new TeacherEntity();
-        teacherEntity.setPk("SCHOOL#" + teacher.getSchoolId());
-        teacherEntity.setSk("TEACHER#" + teacher.getTeacherId());
+        teacherEntity.setPk("TEACHER#" + teacher.getTeacherId());
+        teacherEntity.setSk("#METADATA");
         teacherEntity.setType("TEACHER");
         teacherEntity.setSchoolId(teacher.getSchoolId());
         teacherEntity.setTeacherId(teacher.getTeacherId());
@@ -55,7 +55,7 @@ public class TeacherRepositoryImpl implements TeacherRepository {
         teacherEntity.setEmail(teacher.getEmail());
         teacherEntity.setUsername(teacher.getUsername());
         teacherEntity.setMaxPeriods(6); // TODO
-        teacherEntity.setGsi1pk("TEACHER#" + teacher.getTeacherId());
+        teacherEntity.setGsi1pk("SCHOOL#" + teacher.getSchoolId());
         teacherEntity.setGsi1sk("TEACHER#" + teacher.getTeacherId());
         teacherEntity.setGsi2pk("SCHOOL#" + teacher.getSchoolId());
         teacherEntity.setGsi2sk("TEACHER#" + teacher.getFirstName() + " " + teacher.getLastName());

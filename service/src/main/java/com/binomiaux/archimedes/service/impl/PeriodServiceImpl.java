@@ -6,6 +6,7 @@ import com.binomiaux.archimedes.repository.api.PeriodRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class PeriodServiceImpl implements PeriodService {
@@ -25,5 +26,9 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public void create(Period period) {
         periodRepository.create(period);
+    }
+
+    public List<Period> getPeriodsByTeacher(String teacherId) {
+        return periodRepository.getPeriodsByTeacher(teacherId);
     }
 }
