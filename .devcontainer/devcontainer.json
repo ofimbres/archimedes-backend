@@ -1,11 +1,11 @@
 {
-  "name": "Java 17",
+  "name": "Java 21",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
-      "version": "none",
+      "version": "21",
       "installGradle": "true"
     }
   },
