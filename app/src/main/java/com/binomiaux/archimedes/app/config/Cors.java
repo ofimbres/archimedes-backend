@@ -1,7 +1,7 @@
 package com.binomiaux.archimedes.app.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 import java.util.List;
 
@@ -9,7 +9,6 @@ import java.util.List;
  * Configuration web properties such as CORS.
  */
 @ConfigurationProperties(prefix = "web.cors")
-@ConstructorBinding
 public class Cors {
     private final List<String> allowedOrigins;
     private final List<String> allowedMethods;
@@ -17,6 +16,7 @@ public class Cors {
     private final List<String> exposedHeaders;
     private final long maxAge;
 
+    @ConstructorBinding
     public Cors(List<String> allowedOrigins, List<String> allowedMethods, long maxAge,
                                 List<String> allowedHeaders, List<String> exposedHeaders) {
         this.allowedOrigins = allowedOrigins;

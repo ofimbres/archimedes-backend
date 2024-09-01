@@ -38,14 +38,22 @@ public class CognitoSecurityConfiguration {
                 .oauth2Login()
                 .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
 
-        http.authorizeRequests()
+
+        /*http.authorizeRequests()
+>>>>>>> Stashed changes
                 .antMatchers("/healthcheck/").permitAll()
+=======
+        
+        http.authorizeHttpRequests()
+                .requestMatchers("/healthcheck/").permitAll()
+>>>>>>> Stashed changes
                 .anyRequest().authenticated().and()
                 .oauth2ResourceServer().jwt();
 
-        http.cors();
+        http.cors();*/
 
-        return http.build();
+        return http.csrf().disable().build();
+        //return http.build();
     }
 
     @Profile("dev")
@@ -53,7 +61,7 @@ public class CognitoSecurityConfiguration {
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .authorizeRequests()
+                .authorizeHttpRequests()
                 .anyRequest().permitAll();
 
         http.cors();
