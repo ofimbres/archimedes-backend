@@ -1,7 +1,6 @@
 package com.binomiaux.archimedes.service;
 
 import com.binomiaux.archimedes.model.Period;
-import com.binomiaux.archimedes.model.Student;
 
 import java.util.List;
 

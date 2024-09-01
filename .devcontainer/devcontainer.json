@@ -1,20 +1,32 @@
 {
-  "name": "Java 17",
+  "name": "Java 21",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
+<<<<<<< HEAD
       "version": "none",
       "installGradle": "true"
     }
+=======
+      "version": "21",
+      "installGradle": "true"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "aws-cli": "latest"
+>>>>>>> dev
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "vscjava.vscode-spring-initializr",
         "vscjava.vscode-gradle",
+<<<<<<< HEAD
         "github.copilot-chat"
+=======
+        "ms-azuretools.vscode-docker"
+>>>>>>> dev
       ]
     }
   }

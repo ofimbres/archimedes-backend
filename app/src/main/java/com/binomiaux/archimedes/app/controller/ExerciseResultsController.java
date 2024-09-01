@@ -4,9 +4,9 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Exercise;
 import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.ExerciseService;
+import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.StudentService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class ExerciseResultsController {
     @Autowired
     private StudentService mStudentService;
     @Autowired
-    private PeriodService mClassroomService;
+    private PeriodService mPeriodService;
     @Autowired
     private ExerciseService mExerciseService;
 
@@ -59,7 +59,13 @@ public class ExerciseResultsController {
         ExerciseResult exerciseResult = new ExerciseResult();
         Student student = mStudentService.getStudent(request.getStudentId());
         Exercise exercise = mExerciseService.getExercise(request.getExerciseId());
-        Period classRoom = mClassroomService.getPeriod(request.getClassroomId());
+
+        Period classRoom = mPeriodService.getPeriod(request.getClassroomId());
+
+        //Classroom classroom = mClassroomService.getClassroom(request.getClassroomId());
+        //String id = UUID.randomUUID().toString() + ".html";
+
+        //Period classRoom = mClassroomService.find(request.getClassroomId());
 
         exerciseResult.setExercise(exercise);
         exerciseResult.setStudent(student);

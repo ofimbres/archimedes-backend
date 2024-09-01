@@ -2,8 +2,8 @@ package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
-import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
+import com.binomiaux.archimedes.model.ExerciseResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

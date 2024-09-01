@@ -26,4 +26,6 @@ hs_err_pid*
 .idea/
 .gradle/
 **/build/*
+
 app/src/main/resources/application-*.yml
+app/bin/
