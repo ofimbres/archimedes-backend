@@ -1,11 +1,14 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.1'
-    id 'io.spring.dependency-management' version '1.0.12.RELEASE'
     id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
 
 repositories {
     mavenCentral()
@@ -15,8 +18,8 @@ dependencies {
     implementation 'software.amazon.awssdk:dynamodb:2.+'
     implementation 'software.amazon.awssdk:dynamodb-enhanced:2.+'
 
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 

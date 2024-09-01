@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+version 'unspecified'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(platform("software.amazon.awssdk:bom:2.20.56"))
+    implementation("software.amazon.awssdk:dynamodb")
+    implementation("software.amazon.awssdk:dynamodb-enhanced")
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation project(':model')
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}

@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.service.impl;
 
-import com.binomiaux.archimedes.model.pojo.Topic;
-import com.binomiaux.archimedes.model.pojo.TopicHierarchy;
-import com.binomiaux.archimedes.repository.TopicRepository;
+import com.binomiaux.archimedes.model.Topic;
+import com.binomiaux.archimedes.model.TopicHierarchy;
+import com.binomiaux.archimedes.repository.api.TopicRepository;
 import com.binomiaux.archimedes.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,12 +24,14 @@ public class TopicServiceImpl implements TopicService {
         List<TopicHierarchy> topicHierarchy = new ArrayList<>();
 
         parents.stream().forEach(t -> {
-            List<TopicHierarchy> descendants = topicRepository.findByTopicId(t.id())
+            List<TopicHierarchy> descendants = topicRepository.findByTopicId(t.getId())
                     .stream()
-                    .map(t2 -> new TopicHierarchy(t2.id(), t2.name(), new ArrayList<TopicHierarchy>()))
+                    .map(t2 -> new TopicHierarchy(t2))
                     .collect(Collectors.toList());
 
-            TopicHierarchy th = new TopicHierarchy(t.id(), t.name(), descendants);
+            TopicHierarchy th = new TopicHierarchy(t);
+            th.setDescendants(descendants);
+
             topicHierarchy.add(th);
         });
         return topicHierarchy;

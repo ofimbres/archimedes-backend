@@ -1,12 +1,12 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.pojo.Classroom;
-import com.binomiaux.archimedes.model.pojo.Exercise;
-import com.binomiaux.archimedes.model.pojo.ExerciseResult;
-import com.binomiaux.archimedes.model.pojo.Student;
-import com.binomiaux.archimedes.service.ClassroomService;
+import com.binomiaux.archimedes.model.Period;
+import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.ExerciseService;
+import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.StudentService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class ExerciseResultsController {
     @Autowired
     private StudentService mStudentService;
     @Autowired
-    private ClassroomService mClassroomService;
+    private PeriodService mPeriodService;
     @Autowired
     private ExerciseService mExerciseService;
 
@@ -56,13 +56,26 @@ public class ExerciseResultsController {
 
     @PostMapping("/")
     public ResponseEntity<ExerciseResult> create(@RequestBody CreateExerciseResultRequest request) {
+        ExerciseResult exerciseResult = new ExerciseResult();
         Student student = mStudentService.getStudent(request.getStudentId());
         Exercise exercise = mExerciseService.getExercise(request.getExerciseId());
-        Classroom classroom = mClassroomService.getClassroom(request.getClassroomId());
-        String id = UUID.randomUUID().toString() + ".html";
 
-        ExerciseResult exerciseResult = new ExerciseResult(exercise, student, classroom, request.getScore(),
-            Instant.now(), request.getWorksheetContentCopy(), id);
+        Period classRoom = mPeriodService.getPeriod(request.getClassroomId());
+
+        //Classroom classroom = mClassroomService.getClassroom(request.getClassroomId());
+        //String id = UUID.randomUUID().toString() + ".html";
+
+        //Period classRoom = mClassroomService.find(request.getClassroomId());
+
+        exerciseResult.setExercise(exercise);
+        exerciseResult.setStudent(student);
+        exerciseResult.setClassroom(classRoom);
+        exerciseResult.setScore(request.getScore());
+        exerciseResult.setTimestamp(Instant.now());
+        exerciseResult.setWorksheetContent(request.getWorksheetContentCopy());
+
+        String id = UUID.randomUUID().toString();
+        exerciseResult.setS3Key(id + ".html");
 
         mExerciseResultService.create(exerciseResult);
         return ok(exerciseResult);
@@ -72,7 +85,7 @@ public class ExerciseResultsController {
     public ResponseEntity<String> download(@PathVariable String fileName) {
         /*List<ExerciseResult> exerciseResults = mExerciseResultService.getByClassAndExercise(
                 "e46e7191-e31d-434a-aba3-b9a9c187a632", "WN16");
-        String filename =  "";*/
+        String filename = "";*/
 
         /*ByteArrayOutputStream downloadInputStream = null;
         return ok()

@@ -1,37 +1,49 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.1'
-    id 'io.spring.dependency-management' version '1.0.12.RELEASE'
     id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'application'
     id 'checkstyle'
-    id 'war'
+    id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
+group 'com.binomiaux'
 version '1.0-SNAPSHOT'
 
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
     implementation project(':model')
-    implementation project(':repository')
+    implementation project(':dataAccess')
     implementation project(':service')
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.security:spring-security-oauth2-client:5.8.0'
-    implementation 'org.springframework.security:spring-security-oauth2-jose'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:2.7.5'
-    implementation 'org.springframework.security:spring-security-config:5.7.3'
-    implementation 'org.springframework.boot:spring-boot-starter-security:2.7.5'
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+    implementation 'org.springframework.security:spring-security-oauth2-client'
+    //implementation 'org.springframework.security:spring-security-oauth2-jose:5.8.0'
+    implementation 'org.springframework.security:spring-security-config'
+    //implementation 'org.springframework.security:spring-security-web'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.3.3'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+
 }
 
 test {
@@ -47,8 +59,10 @@ bootJar {
 }
 
 jar {
-    enabled = false
+    enabled = true
 }
+
+
 
 checkstyle {
     toolVersion '7.8.1'
