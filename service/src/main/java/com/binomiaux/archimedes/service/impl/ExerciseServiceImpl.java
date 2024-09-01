@@ -2,8 +2,8 @@ package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.ExerciseService;
 
-import com.binomiaux.archimedes.repository.ExerciseRepository;
-import com.binomiaux.archimedes.model.pojo.Exercise;
+import com.binomiaux.archimedes.repository.api.ExerciseRepository;
+import com.binomiaux.archimedes.model.Exercise;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,6 +3,7 @@ package com.binomiaux.archimedes.app.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,39 +18,59 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({ WebConfigProperties.class })
+@EnableConfigurationProperties({ Cors.class })
 public class CognitoSecurityConfiguration {
-    private final WebConfigProperties webConfigProperties;
+    private final Cors cors;
 
-    public CognitoSecurityConfiguration(WebConfigProperties webConfigProperties) {
-        this.webConfigProperties = webConfigProperties;
+    public CognitoSecurityConfiguration(Cors cors) {
+        this.cors = cors;
     }
 
+    @Profile("!dev")
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        /*http
+        http
                 .csrf().disable()
                 .oauth2Client()
                 .and()
                 .logout()
                 .and()
                 .oauth2Login()
-                .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");*/
+                .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
+
 
         /*http.authorizeRequests()
+>>>>>>> Stashed changes
                 .antMatchers("/healthcheck/").permitAll()
+=======
+        
+        http.authorizeHttpRequests()
+                .requestMatchers("/healthcheck/").permitAll()
+>>>>>>> Stashed changes
                 .anyRequest().authenticated().and()
                 .oauth2ResourceServer().jwt();
 
+        http.cors();*/
+
+        return http.csrf().disable().build();
+        //return http.build();
+    }
+
+    @Profile("dev")
+    @Bean
+    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeHttpRequests()
+                .anyRequest().permitAll();
+
         http.cors();
 
-        return http.build();*/
-        return http.csrf().disable().build();
+        return http.build();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        WebConfigProperties.Cors cors = webConfigProperties.getCors();
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(cors.getAllowedOrigins());
         configuration.setAllowedMethods(cors.getAllowedMethods());

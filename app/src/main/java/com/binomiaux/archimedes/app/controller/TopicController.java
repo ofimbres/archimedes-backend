@@ -1,7 +1,7 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.pojo.Exercise;
-import com.binomiaux.archimedes.model.pojo.TopicHierarchy;
+import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.model.TopicHierarchy;
 import com.binomiaux.archimedes.service.ExerciseService;
 import com.binomiaux.archimedes.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.binomiaux.archimedes.service;
 
-import com.binomiaux.archimedes.model.pojo.School;
+import com.binomiaux.archimedes.model.School;
 
 import java.util.List;
 
