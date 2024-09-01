@@ -27,5 +27,5 @@ hs_err_pid*
 .gradle/
 **/build/*
 
-app/src/main/resources/*.yml
+app/src/main/resources/application-*.yml
 app/bin/
