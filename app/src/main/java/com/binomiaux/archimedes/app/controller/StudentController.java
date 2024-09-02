@@ -1,7 +1,7 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.model.Period;
+import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +44,3 @@ public class StudentController {
         return ResponseEntity.ok().body(periods);
     }
 }
-

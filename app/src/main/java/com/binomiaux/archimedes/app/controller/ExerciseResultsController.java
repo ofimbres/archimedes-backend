@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Exercise;
 import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.ExerciseService;
