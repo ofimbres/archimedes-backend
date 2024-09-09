@@ -147,6 +147,18 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
+    public void unrollInPeriod(String studentId, String periodId) {
+        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
+        StudentEnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
+
+        if (studentEnrollmentEntity != null) {
+            throw new ConflictOperationException("Student " + studentId + " is not enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
+        }
+
+        studentEnrollmentTable.deleteItem(studentEnrollmentEntity);
+    }
+
+    @Override
     public List<Student> getStudentsByPeriod(String periodId) {
         // PERIOD#1234-T1-6,	ENROLLMENT#
         DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);

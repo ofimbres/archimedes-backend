@@ -19,7 +19,7 @@ import java.util.List;
  * Topic controller.
  */
 @RestController
-@RequestMapping("/api/v1/topic")
+@RequestMapping("/api/v1/topics")
 public class TopicController {
     @Autowired
     private TopicService topicService;
@@ -37,7 +37,7 @@ public class TopicController {
         return ok(exercises);
     }
 
-    @GetMapping("/{topicId}/subtopic/{subtopicId}/exercises")
+    @GetMapping("/{topicId}/subtopics/{subtopicId}/exercises")
     public ResponseEntity<List<Exercise>> get(@PathVariable String topicId, @PathVariable String subtopicId) {
         var exercises = exerciseService.getExercisesByTopicIdAndSubtopicId(topicId, subtopicId);
         return ok(exercises);

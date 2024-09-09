@@ -67,6 +67,7 @@ public class UserServiceImpl implements UserService {
                 userId = student.getStudentId();
             }
 
+            cognitoService.addUserAttribute(username, "custom:userId", userId);
             UserRegistration userRegistration = new UserRegistration(userId, username, userType, false);
             return userRegistration;
         } catch (UsernameExistsException e) {

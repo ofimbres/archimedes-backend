@@ -15,7 +15,7 @@ import static org.springframework.http.ResponseEntity.ok;
  * Exercise controller.
  */
 @RestController
-@RequestMapping("/api/v1/exercise")
+@RequestMapping("/api/v1/exercises")
 public class ExerciseController {
 
     @Autowired
