@@ -45,6 +45,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public void unrollStudentInPeriod(String studentId, String periodId) {
+        studentRepository.unrollInPeriod(studentId, periodId);
+    }
+
+    @Override
     public List<Period> getPeriodsByStudent(String studentId) {
         return periodRepository.getPeriodsByStudent(studentId);
     }

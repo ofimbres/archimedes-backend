@@ -11,6 +11,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDelete
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminDeleteUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthFlowType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ChangePasswordRequest;
@@ -31,6 +33,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpReque
 import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpResponse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,8 +93,32 @@ public class CognitoService {
                 .userPoolId(userPoolId)
                 .username(username)
                 .build();
-    
         return cognitoIdentityProviderClient.adminGetUser(userRequest);
+    }
+
+    public AdminUpdateUserAttributesResponse addUserAttribute(String username, String attributeName, String attributeValue) {
+        AttributeType userAttribute = AttributeType.builder()
+                .name(attributeName)
+                .value(attributeValue)
+                .build();
+
+        AdminUpdateUserAttributesRequest updateUserAttributesRequest = AdminUpdateUserAttributesRequest.builder()
+                .userPoolId(userPoolId)
+                .username(username)
+                .userAttributes(Collections.singletonList(userAttribute))
+                .build();
+
+        return cognitoIdentityProviderClient.adminUpdateUserAttributes(updateUserAttributesRequest);
+    }
+
+    public AdminUpdateUserAttributesResponse updateUserAttributes(String username, Map<String, String> attributes) {
+        List<AttributeType> attributeTypes = new ArrayList<>();
+        attributes.forEach((key, value) -> attributeTypes.add(AttributeType.builder().name(key).value(value).build()));
+
+        return cognitoIdentityProviderClient.adminUpdateUserAttributes(r -> r
+            .userPoolId(userPoolId)
+            .username(username)
+            .userAttributes(attributeTypes));
     }
 
     public ResendConfirmationCodeResponse sendCode(String username) {
@@ -151,7 +178,7 @@ public class CognitoService {
         return cognitoIdentityProviderClient.adminDeleteUser(adminDeleteUserRequest);
     }
 
-        public boolean isEmailRegistered(String email) {
+    public boolean isEmailRegistered(String email) {
         ListUsersRequest request = ListUsersRequest.builder()
                 .userPoolId(userPoolId)
                 .filter("email = \"" + email + "\"")

@@ -23,11 +23,11 @@ import com.binomiaux.archimedes.model.UserRegistration;
 import com.binomiaux.archimedes.service.UserService;
 
 /**
- * User controller.
+ * Auth controller.
  */
 @RestController
-@RequestMapping("/api/v1/user")
-public class UserController {
+@RequestMapping("/api/v1/auth")
+public class AuthController {
     @Autowired
     private UserService userService;
 
@@ -54,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok(userAttributes);
     }
 
-    @PostMapping("/sendCode")
+    @PostMapping("/send-code")
     public ResponseEntity<?> sendCode(@RequestBody SendCodeRequest request) {
         try {
             userService.sendCode(request.getUsername());
@@ -64,7 +64,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/verifyCode")
+    @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeRequest request) {
         try {
             userService.verifyCode(request.getUsername(), request.getConfirmationCode());
@@ -74,7 +74,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/forgotPassword")
+    @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         try {
             userService.forgotPassword(request.getUsername());
@@ -84,7 +84,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/confirmForgotPassword")
+    @PostMapping("/confirm-forgot-password")
     public ResponseEntity<?> confirmForgotPassword(@RequestBody ConfirmForgotPasswordRequest request) {
         try {
             userService.confirmForgotPassword(request.getUsername(), request.getNewPassword(), request.getConfirmationCode());

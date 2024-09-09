@@ -16,6 +16,7 @@
       "extensions": [
         "vscjava.vscode-spring-initializr",
         "vscjava.vscode-gradle",
+        "vscjava.vscode-java-pack",
         "ms-azuretools.vscode-docker",
         "github.copilot-chat"
       ]

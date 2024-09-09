@@ -8,6 +8,7 @@ import java.util.List;
 public interface StudentService {
     void create(Student student);
     boolean enrollStudentInPeriod(String studentId, String periodId);
+    void unrollStudentInPeriod(String studentId, String periodId);
 
     Student getStudent(String id);
     List<Period> getPeriodsByStudent(String studentId);
