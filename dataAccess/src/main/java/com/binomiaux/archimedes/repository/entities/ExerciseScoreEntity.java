@@ -8,17 +8,15 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class ExerciseResultEntity {
+public class ExerciseScoreEntity {
     private String pk;
     private String sk;
-    private String exerciseResultId;
-    private String firstName;
-    private String lastName;
+    private String studentId;
     private String exerciseId;
-    private String exerciseName;
-    private String timestamp;
-    private int score;
-    private String path;
+    private String periodId;
+    private int tries;
+    private String bestExerciseResult;
+    private int bestScore;
     private String type;
     private String gsi1pk;
     private String gsi1sk;
@@ -29,7 +27,7 @@ public class ExerciseResultEntity {
     public String getPk() {
         return pk;
     }
-
+    
     public void setPk(String pk) {
         this.pk = pk;
     }
@@ -43,28 +41,12 @@ public class ExerciseResultEntity {
         this.sk = sk;
     }
 
-    public String getExerciseResultId() {
-        return exerciseResultId;
+    public String getStudentId() {
+        return studentId;
     }
 
-    public void setExerciseResultId(String exerciseResultId) {
-        this.exerciseResultId = exerciseResultId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
     }
 
     public String getExerciseId() {
@@ -75,36 +57,36 @@ public class ExerciseResultEntity {
         this.exerciseId = exerciseId;
     }
 
-    public String getExerciseName() {
-        return exerciseName;
+    public String getPeriodId() {
+        return periodId;
     }
 
-    public void setExerciseName(String exerciseName) {
-        this.exerciseName = exerciseName;
+    public void setPeriodId(String periodId) {
+        this.periodId = periodId;
     }
 
-    public String getTimestamp() {
-        return timestamp;
+    public int getTries() {
+        return tries;
     }
 
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
+    public void setTries(int tries) {
+        this.tries = tries;
     }
 
-    public int getScore() {
-        return score;
+    public String getBestExerciseResult() {
+        return bestExerciseResult;
     }
 
-    public void setScore(int score) {
-        this.score = score;
-    }
-    
-    public String getPath() {
-        return path;
+    public void setBestExerciseResult(String bestExerciseResult) {
+        this.bestExerciseResult = bestExerciseResult;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public int getBestScore() {
+        return bestScore;
+    }
+
+    public void setBestScore(int bestScore) {
+        this.bestScore = bestScore;
     }
 
     public String getType() {
@@ -151,5 +133,5 @@ public class ExerciseResultEntity {
         this.gsi2sk = gsi2sk;
     }
 
-    public static final TableSchema<ExerciseResultEntity> TABLE_SCHEMA = TableSchema.fromBean(ExerciseResultEntity.class);
+    public static final TableSchema<ExerciseScoreEntity> TABLE_SCHEMA = TableSchema.fromBean(ExerciseScoreEntity.class);
 }
