@@ -4,6 +4,7 @@ import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
 import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
 import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.ExerciseScore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +29,17 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
     }
 
     @Override
-    public Iterable<ExerciseResult> getByStudent(String classId, String studentId, String exerciseCode) {
+    public Iterable<ExerciseResult> getByStudent(String classId, String studentId, String exerciseId) {
         return null;
     }
 
     @Override
-    public ExerciseResult getByStudentAndExercise(String classId, String studentId, String exerciseCode) {
-        return exerciseResultRepository.findByStudentIdAndExerciseCode(classId, studentId, exerciseCode);
+    public ExerciseScore getByStudentAndExercise(String classId, String studentId, String exerciseId) {
+        return exerciseResultRepository.findByStudentIdAndExerciseId(classId, studentId, exerciseId);
     }
 
     @Override
-    public List<ExerciseResult> getByClassAndExercise(String className, String exerciseCode) {
-        return exerciseResultRepository.findAllByClassIdAndExerciseCode(className, exerciseCode);
+    public List<ExerciseScore> getByClassAndExercise(String className, String exerciseId) {
+        return exerciseResultRepository.findAllByClassIdAndExerciseId(className, exerciseId);
     }
 }

@@ -2,6 +2,7 @@ package com.binomiaux.archimedes.app.controller;
 
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
+    //@Autowired
+    //private ExerciseResultService exerciseResultService;
+
     @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
     @GetMapping("/{studentId}")
     public ResponseEntity<Student> get(@PathVariable String studentId) {
@@ -39,15 +43,15 @@ public class StudentController {
         return ResponseEntity.ok().body(periods);
     }
 
-    @GetMapping("/{studentId}/reports")
-    public ResponseEntity<?> getReportsByStudent(@PathVariable("studentId") String studentId) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-        //return ResponseEntity.ok().body(studentService.getReportsByStudent(studentId));
-    }
+    // @GetMapping("/{studentId}/reports")
+    // public ResponseEntity<?> getReportsByStudent(@PathVariable("studentId") String studentId) {
+    //     throw new UnsupportedOperationException("Not implemented yet.");
+    //     //return ResponseEntity.ok().body(studentService.getReportsByStudent(studentId));
+    // }
 
-    @GetMapping("/{studentId}/exercises/{exerciseId}/reports")
-    public ResponseEntity<?> getReportsByStudentAndExercise(@PathVariable("studentId") String studentId, @PathVariable("exerciseId") String exerciseId) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-        //return ResponseEntity.ok().body(studentService.getReportsByStudentAndExercise(studentId, exerciseId));
-    }
+    // @GetMapping("/{studentId}/exercises/{exerciseId}/reports")
+    // public ResponseEntity<?> getReportsByStudentAndExercise(@PathVariable("studentId") String studentId, @PathVariable("exerciseId") String exerciseId) {
+    //     exerciseResultService.getByStudentAndExercise(exerciseId, studentId, exerciseId)
+    //     //return ResponseEntity.ok().body(studentService.getReportsByStudentAndExercise(studentId, exerciseId));
+    // }
 }
