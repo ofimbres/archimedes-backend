@@ -15,8 +15,8 @@ public class ExerciseScoreEntity {
     private String exerciseId;
     private String periodId;
     private int tries;
-    private String bestExerciseResult;
-    private int bestScore;
+    private String exerciseResult;
+    private int score;
     private String type;
     private String gsi1pk;
     private String gsi1sk;
@@ -73,20 +73,20 @@ public class ExerciseScoreEntity {
         this.tries = tries;
     }
 
-    public String getBestExerciseResult() {
-        return bestExerciseResult;
+    public String getExerciseResult() {
+        return exerciseResult;
     }
 
-    public void setBestExerciseResult(String bestExerciseResult) {
-        this.bestExerciseResult = bestExerciseResult;
+    public void setExerciseResult(String exerciseResult) {
+        this.exerciseResult = exerciseResult;
     }
 
-    public int getBestScore() {
-        return bestScore;
+    public int getScore() {
+        return score;
     }
 
-    public void setBestScore(int bestScore) {
-        this.bestScore = bestScore;
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public String getType() {

@@ -7,20 +7,20 @@ public class ExerciseScore {
     private Student student;
     private Period period;
     private int tries;
-    private int bestScore;
-    private String bestExerciseResult;
+    private int score;
+    private String exerciseResult;
     //private Instant timestamp;
 
     public ExerciseScore() {
     }
 
-    public ExerciseScore(Exercise exercise, Student student, Period period, int tries, int bestScore, String bestExerciseResult/*, Instant timestamp*/) {
+    public ExerciseScore(Exercise exercise, Student student, Period period, int tries, int score, String exerciseResult/*, Instant timestamp*/) {
         this.exercise = exercise;
         this.student = student;
         this.period = period;
         this.tries = tries;
-        this.bestScore = bestScore;
-        this.bestExerciseResult = bestExerciseResult;
+        this.score = score;
+        this.exerciseResult = exerciseResult;
         //this.timestamp = timestamp;
     }
 
@@ -56,20 +56,20 @@ public class ExerciseScore {
         this.tries = tries;
     }
 
-    public int getBestScore() {
-        return bestScore;
+    public int getScore() {
+        return score;
     }
 
-    public void setBestScore(int bestScore) {
-        this.bestScore = bestScore;
+    public void setScore(int score) {
+        this.score = score;
     }
 
-    public String getBestExerciseResult() {
-        return bestExerciseResult;
+    public String getExerciseResult() {
+        return exerciseResult;
     }
 
-    public void setBestExerciseResult(String bestExerciseResult) {
-        this.bestExerciseResult = bestExerciseResult;
+    public void setExerciseResult(String exerciseResult) {
+        this.exerciseResult = exerciseResult;
     }
 
     /*public Instant getTimestamp() {
