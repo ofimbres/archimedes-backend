@@ -3,6 +3,7 @@ package com.binomiaux.archimedes.service.impl;
 import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
 import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
+import com.binomiaux.archimedes.repository.api.ExerciseScoreRepository;
 import com.binomiaux.archimedes.model.ExerciseResult;
 import com.binomiaux.archimedes.model.ExerciseScore;
 
@@ -19,13 +20,38 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
 
     @Autowired
     private ExerciseResultRepository exerciseResultRepository;
+
     @Autowired
-    private S3Service s3ClientWrapper;
+    private ExerciseScoreRepository exerciseScoreRepository;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Override
     public void create(ExerciseResult exerciseResult) {
         exerciseResultRepository.create(exerciseResult);
-        s3ClientWrapper.uploadWorksheet(exerciseResult.getS3Key(), exerciseResult.getWorksheetContent());
+
+        ExerciseScore exerciseScore = exerciseScoreRepository.find(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getExercise().getExerciseId());
+
+        if (exerciseScore == null) {
+            exerciseScore = new ExerciseScore();
+            exerciseScore.setExercise(exerciseResult.getExercise());
+            exerciseScore.setStudent(exerciseResult.getStudent());
+            exerciseScore.setPeriod(exerciseResult.getPeriod());
+            exerciseScore.setTries(1);
+            exerciseScore.setScore(exerciseResult.getScore());
+            exerciseScore.setExerciseResult(exerciseResult.getS3Key());
+        } else {
+            if (exerciseResult.getScore() > exerciseScore.getScore()) {
+                exerciseScore.setTries(exerciseScore.getTries() + 1);
+                exerciseScore.setScore(exerciseResult.getScore());
+                exerciseScore.setExerciseResult(exerciseResult.getS3Key());
+            }
+        }
+
+        exerciseScoreRepository.create(exerciseScore);
+
+        s3Service.uploadWorksheet(exerciseResult.getS3Key(), exerciseResult.getWorksheetContent());
     }
 
     @Override

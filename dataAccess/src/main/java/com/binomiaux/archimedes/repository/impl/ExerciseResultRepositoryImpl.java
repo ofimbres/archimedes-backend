@@ -40,65 +40,32 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     private String tableName;
 
     @Override
-    public void create(ExerciseResult score) {
+    public void create(ExerciseResult result) {
         // exercise score
         DynamoDbTable<ExerciseResultEntity> exerciseResultTable = enhancedClient.table(tableName, ExerciseResultEntity.TABLE_SCHEMA);
         ExerciseResultEntity record = new ExerciseResultEntity();
         String exerciseResultId = UUID.randomUUID().toString();
         record.setPk("EXERCISE_RESULT#" + exerciseResultId);
         record.setSk("#METADATA");
-        record.setGsi1pk("STUDENT#" + score.getStudent().getSchoolId());
+        record.setGsi1pk("STUDENT#" + result.getStudent().getSchoolId());
         
-        LocalDate localDate = score.getTimestamp().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDate = result.getTimestamp().atZone(ZoneId.systemDefault()).toLocalDate();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String formattedDate = localDate.format(formatter);
         record.setGsi1sk("DATE#" + formattedDate);
 
-        record.setGsi2pk("STUDENT#" + score.getStudent().getSchoolId());
-        record.setGsi2sk("EXERCISE#" + score.getExercise().getExerciseId());
+        record.setGsi2pk("STUDENT#" + result.getStudent().getSchoolId());
+        record.setGsi2sk("EXERCISE#" + result.getExercise().getExerciseId());
 
         record.setType("EXERCISE_RESULT");
 
         record.setExerciseResultId(exerciseResultId);
-        record.setPath(score.getS3Key());
-        record.setScore(score.getScore());
-        record.setTimestamp(score.getTimestamp().toString());
-        record.setExerciseId(score.getExercise().getExerciseId());
+        record.setPath(result.getS3Key());
+        record.setScore(result.getScore());
+        record.setTimestamp(result.getTimestamp().toString());
+        record.setExerciseId(result.getExercise().getExerciseId());
 
         exerciseResultTable.putItem(record);
-
-        // student exercise score
-        // TODO to different repo
-        DynamoDbTable<ExerciseScoreEntity> exerciseScoreTable = enhancedClient.table(tableName, ExerciseScoreEntity.TABLE_SCHEMA);
-
-        // get best record
-        ExerciseScoreEntity exerciseScoreEntity = exerciseScoreTable.getItem(r -> r.key(Key.builder().partitionValue("PERIOD#" + score.getPeriod().getPeriodId() + "#STUDENT#" + score.getStudent().getStudentId()).sortValue("#SCORES#EXERCISE#" + score.getExercise().getExerciseId()).build()));
-        if (exerciseScoreEntity == null) {
-            //createExerciseScore(score, exerciseScoreTable, exerciseResultId);
-            //ExerciseScoreEntity exerciseScoreRecord = new ExerciseScoreEntity();
-            exerciseScoreEntity = new ExerciseScoreEntity();
-            exerciseScoreEntity.setPk("PERIOD#" + score.getPeriod().getPeriodId() + "#STUDENT#" + score.getStudent().getSchoolId());
-            exerciseScoreEntity.setSk("#SCORES#EXERCISE#" + score.getExercise().getExerciseId());
-            exerciseScoreEntity.setGsi1pk("PERIOD#" + score.getPeriod().getPeriodId());
-            exerciseScoreEntity.setGsi1sk("#SCORES#EXERCISE#" + score.getExercise().getExerciseId());
-            exerciseScoreEntity.setType("EXERCISE_SCORE");
-            exerciseScoreEntity.setExerciseId(exerciseResultId);
-            exerciseScoreEntity.setStudentId(score.getStudent().getStudentId());
-            exerciseScoreEntity.setPeriodId(score.getPeriod().getPeriodId());
-            exerciseScoreEntity.setTries(1);
-            exerciseScoreEntity.setBestScore(score.getScore());
-            exerciseScoreEntity.setBestExerciseResult(exerciseResultId);
-        } else {
-            if (score.getScore() > exerciseScoreEntity.getBestScore()) {
-                exerciseScoreEntity.setTries(exerciseScoreEntity.getTries() + 1);
-                exerciseScoreEntity.setBestScore(score.getScore());
-                exerciseScoreEntity.setBestExerciseResult(exerciseResultId);
-            }
-        }
-
-        exerciseScoreTable.putItem(exerciseScoreEntity);
-
-        // period score
     }
 
 
@@ -146,8 +113,8 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
         exerciseScore.setStudent(student);
         exerciseScore.setPeriod(period);
         exerciseScore.setTries(entity.getTries());
-        exerciseScore.setBestScore(entity.getBestScore());
-        exerciseScore.setBestExerciseResult(entity.getBestExerciseResult());
+        exerciseScore.setScore(entity.getScore());
+        exerciseScore.setExerciseResult(entity.getExerciseResult());
 
         return exerciseScore;
     }

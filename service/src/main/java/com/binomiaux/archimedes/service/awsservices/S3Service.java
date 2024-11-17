@@ -6,9 +6,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
+
 public class S3Service {
     private final S3Client s3Client;
-    private static final String BUCKET_NAME = "archimedes-exercise-results";
+
+    @Value("${s3.exercise-results-bucket-name}")
+    private String exerciseResultsBucketName;
 
     public S3Service(S3Client client) {
         s3Client = client;
