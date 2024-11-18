@@ -12,7 +12,7 @@ import com.binomiaux.archimedes.service.TeacherService;
 import com.binomiaux.archimedes.service.UserService;
 import com.binomiaux.archimedes.service.awsservices.CognitoService;
 
-import com.binomiaux.archimedes.service.exception.ArchimedesServiceException;
+import com.binomiaux.archimedes.exception.ArchimedesServiceException;
 
 import java.util.Map;
 import java.util.stream.Collectors;

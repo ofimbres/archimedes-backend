@@ -1,8 +1,10 @@
 package com.binomiaux.archimedes.service.impl;
 
 import com.binomiaux.archimedes.service.StudentService;
+import com.binomiaux.archimedes.model.Enrollment;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.repository.api.EnrollmentRepository;
 import com.binomiaux.archimedes.repository.api.PeriodRepository;
 import com.binomiaux.archimedes.repository.api.StudentRepository;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
@@ -20,6 +22,9 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+
     @Override
     public Student getStudent(String id) {
         return studentRepository.find(id);
@@ -32,21 +37,28 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public boolean enrollStudentInPeriod(String studentId, String periodId) {
-        if (studentRepository.find(studentId) == null) {
+        Student student = studentRepository.find(studentId);
+        Period period = periodRepository.find(periodId);
+
+        if (student == null) {
             throw new EntityNotFoundException("Student " + studentId + " not found", null);
         }
 
-        if (periodRepository.find(periodId) == null) {
+        if (period == null) {
             throw new EntityNotFoundException("Period " + periodId + " not found", null);
         }
 
-        studentRepository.enrollInPeriod(studentId, periodId);
+        Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
+        enrollment.setPeriod(period);
+
+        enrollmentRepository.create(enrollment);
         return true;
     }
 
     @Override
     public void unrollStudentInPeriod(String studentId, String periodId) {
-        studentRepository.unrollInPeriod(studentId, periodId);
+        enrollmentRepository.delete(studentId, periodId);
     }
 
     @Override

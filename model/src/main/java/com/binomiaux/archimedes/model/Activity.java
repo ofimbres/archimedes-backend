@@ -1,27 +1,27 @@
 package com.binomiaux.archimedes.model;
 
-public class Exercise {
-    private String exerciseId;
+public class Activity {
+    private String activityId;
     private String name;
     private String classification;
     private String path;
 
-    public Exercise() {
+    public Activity() {
     }
 
-    public Exercise(String exerciseId, String name, String classification, String path) {
-        this.exerciseId = exerciseId;
+    public Activity(String activityId, String name, String classification, String path) {
+        this.activityId = activityId;
         this.name = name;
         this.classification = classification;
         this.path = path;
     }
 
-    public String getExerciseId() {
-        return exerciseId;
+    public String getActivityId() {
+        return activityId;
     }
 
-    public void setExerciseId(String exerciseId) {
-        this.exerciseId = exerciseId;
+    public void setExerciseId(String activityId) {
+        this.activityId = activityId;
     }
 
     public String getName() {

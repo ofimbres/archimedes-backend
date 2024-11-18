@@ -8,7 +8,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class StudentEnrollmentEntity {
+public class EnrollmentEntity {
     private String pk;
     private String sk;
     private String type;
@@ -124,5 +124,5 @@ public class StudentEnrollmentEntity {
         this.gsi2sk = gsi2sk;
     }
 
-    public static final TableSchema<StudentEnrollmentEntity> TABLE_SCHEMA = TableSchema.fromBean(StudentEnrollmentEntity.class);
+    public static final TableSchema<EnrollmentEntity> TABLE_SCHEMA = TableSchema.fromBean(EnrollmentEntity.class);
 }

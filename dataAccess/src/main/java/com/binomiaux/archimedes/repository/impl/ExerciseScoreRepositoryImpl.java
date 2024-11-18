@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.model.Activity;
 import com.binomiaux.archimedes.model.ExerciseScore;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
@@ -28,16 +28,16 @@ public class ExerciseScoreRepositoryImpl implements ExerciseScoreRepository {
 
         ExerciseScoreEntity exerciseScoreEntity = new ExerciseScoreEntity();
         exerciseScoreEntity.setPk("PERIOD#" + score.getPeriod().getPeriodId() + "#STUDENT#" + score.getStudent().getSchoolId());
-        exerciseScoreEntity.setSk("#SCORES#EXERCISE#" + score.getExercise().getExerciseId());
+        exerciseScoreEntity.setSk("#SCORES#EXERCISE#" + score.getExercise().getActivityId());
         exerciseScoreEntity.setGsi1pk("PERIOD#" + score.getPeriod().getPeriodId());
-        exerciseScoreEntity.setGsi1sk("#SCORES#EXERCISE#" + score.getExercise().getExerciseId());
+        exerciseScoreEntity.setGsi1sk("#SCORES#EXERCISE#" + score.getExercise().getActivityId());
         exerciseScoreEntity.setType("EXERCISE_SCORE");
-        exerciseScoreEntity.setExerciseId(score.getExercise().getExerciseId());
+        exerciseScoreEntity.setExerciseId(score.getExercise().getActivityId());
         exerciseScoreEntity.setStudentId(score.getStudent().getStudentId());
         exerciseScoreEntity.setPeriodId(score.getPeriod().getPeriodId());
         exerciseScoreEntity.setTries(score.getTries());
         exerciseScoreEntity.setScore(score.getScore());
-        exerciseScoreEntity.setExerciseResult(score.getExercise().getExerciseId());
+        exerciseScoreEntity.setExerciseResult(score.getExercise().getActivityId());
 
         exerciseScoreTable.putItem(exerciseScoreEntity);
     }
@@ -52,7 +52,7 @@ public class ExerciseScoreRepositoryImpl implements ExerciseScoreRepository {
             return null;
         }
 
-        Exercise exercise = new Exercise();
+        Activity exercise = new Activity();
         exercise.setExerciseId(exerciseScoreEntity.getExerciseId());
 
         Student student = new Student();

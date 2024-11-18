@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.repository.api.PeriodRepository;
 import com.binomiaux.archimedes.repository.entities.PeriodEntity;
-import com.binomiaux.archimedes.repository.entities.StudentEnrollmentEntity;
+import com.binomiaux.archimedes.repository.entities.EnrollmentEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
 
@@ -88,21 +88,21 @@ public class PeriodRepositoryImpl implements PeriodRepository {
 
     @Override
     public List<Period> getPeriodsByStudent(String studentId) {
-        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
+        DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
 
         // LOOK UP BY GS1PK, AND GS1SK
         QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("STUDENT#" + studentId).sortValue("PERIOD#"));
 
-        SdkIterable<Page<StudentEnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
+        SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
             .query(r -> r.queryConditional(queryConditional));
 
-        List<StudentEnrollmentEntity> results2 = results.stream()
+        List<EnrollmentEntity> results2 = results.stream()
             .map(Page::items)
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
 
         List<Period> periods = new ArrayList<>();
-        for (StudentEnrollmentEntity entity : results2) {
+        for (EnrollmentEntity entity : results2) {
                 Period period = new Period();
                 period.setPeriodId(entity.getPeriodId());
                 period.setName(entity.getPeriodName());

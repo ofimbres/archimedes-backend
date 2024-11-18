@@ -4,7 +4,7 @@ import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
 import com.binomiaux.archimedes.repository.api.ExerciseResultRepository;
 import com.binomiaux.archimedes.repository.api.ExerciseScoreRepository;
-import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.ActivityResult;
 import com.binomiaux.archimedes.model.ExerciseScore;
 
 import org.slf4j.Logger;
@@ -28,10 +28,10 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
     private S3Service s3Service;
 
     @Override
-    public void create(ExerciseResult exerciseResult) {
+    public void create(ActivityResult exerciseResult) {
         exerciseResultRepository.create(exerciseResult);
 
-        ExerciseScore exerciseScore = exerciseScoreRepository.find(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getExercise().getExerciseId());
+        ExerciseScore exerciseScore = exerciseScoreRepository.find(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getExercise().getActivityId());
 
         if (exerciseScore == null) {
             exerciseScore = new ExerciseScore();
@@ -55,7 +55,7 @@ public class ExerciseResultServiceImpl implements ExerciseResultService {
     }
 
     @Override
-    public Iterable<ExerciseResult> getByStudent(String classId, String studentId, String exerciseId) {
+    public Iterable<ActivityResult> getByStudent(String classId, String studentId, String exerciseId) {
         return null;
     }
 
