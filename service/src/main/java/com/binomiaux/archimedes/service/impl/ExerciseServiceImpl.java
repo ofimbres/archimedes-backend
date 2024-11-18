@@ -1,9 +1,9 @@
 package com.binomiaux.archimedes.service.impl;
 
-import com.binomiaux.archimedes.service.ExerciseService;
+import com.binomiaux.archimedes.service.ActivityService;
 
-import com.binomiaux.archimedes.repository.api.ExerciseRepository;
-import com.binomiaux.archimedes.model.Exercise;
+import com.binomiaux.archimedes.repository.api.ActivityRepository;
+import com.binomiaux.archimedes.model.Activity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,24 +13,24 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ExerciseServiceImpl implements ExerciseService {
+public class ExerciseServiceImpl implements ActivityService {
     private static final Logger log = LoggerFactory.getLogger(ExerciseServiceImpl.class);
 
     @Autowired
-    private ExerciseRepository exerciseRepository;
+    private ActivityRepository exerciseRepository;
 
     @Override
-    public Exercise getExercise(String exerciseId) {
-        return exerciseRepository.findByCode(exerciseId);
+    public Activity getActivity(String activityId) {
+        return exerciseRepository.findByCode(activityId);
     }
 
     @Override
-    public List<Exercise> getExercisesByTopicId(String topicId) {
+    public List<Activity> getActivitiesByTopicId(String topicId) {
         return exerciseRepository.findByTopic(topicId);
     }
 
     @Override
-    public List<Exercise> getExercisesByTopicIdAndSubtopicId(String topicId, String subtopicId) {
+    public List<Activity> getActivitiesByTopicIdAndSubtopicId(String topicId, String subtopicId) {
         return exerciseRepository.findByTopicAndSubtopic(topicId, subtopicId);
     }
 }

@@ -2,9 +2,9 @@ package com.binomiaux.archimedes.model;
 
 import java.time.Instant;
 
-public class ExerciseResult {
+public class ActivityResult {
 
-    private Exercise exercise;
+    private Activity exercise;
     private Student student;
     private Period period;
     private int score;
@@ -12,11 +12,11 @@ public class ExerciseResult {
     private String worksheetContent;
     private String s3Key;
 
-    public Exercise getExercise() {
+    public Activity getExercise() {
         return exercise;
     }
 
-    public void setExercise(Exercise exercise) {
+    public void setExercise(Activity exercise) {
         this.exercise = exercise;
     }
 

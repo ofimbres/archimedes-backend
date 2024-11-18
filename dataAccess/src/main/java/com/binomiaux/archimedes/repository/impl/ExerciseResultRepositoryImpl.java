@@ -12,8 +12,8 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
-import com.binomiaux.archimedes.model.Exercise;
-import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.Activity;
+import com.binomiaux.archimedes.model.ActivityResult;
 import com.binomiaux.archimedes.model.ExerciseScore;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
@@ -40,7 +40,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
     private String tableName;
 
     @Override
-    public void create(ExerciseResult result) {
+    public void create(ActivityResult result) {
         // exercise score
         DynamoDbTable<ExerciseResultEntity> exerciseResultTable = enhancedClient.table(tableName, ExerciseResultEntity.TABLE_SCHEMA);
         ExerciseResultEntity record = new ExerciseResultEntity();
@@ -55,7 +55,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
         record.setGsi1sk("DATE#" + formattedDate);
 
         record.setGsi2pk("STUDENT#" + result.getStudent().getSchoolId());
-        record.setGsi2sk("EXERCISE#" + result.getExercise().getExerciseId());
+        record.setGsi2sk("EXERCISE#" + result.getExercise().getActivityId());
 
         record.setType("EXERCISE_RESULT");
 
@@ -63,7 +63,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
         record.setPath(result.getS3Key());
         record.setScore(result.getScore());
         record.setTimestamp(result.getTimestamp().toString());
-        record.setExerciseId(result.getExercise().getExerciseId());
+        record.setExerciseId(result.getExercise().getActivityId());
 
         exerciseResultTable.putItem(record);
     }
@@ -71,7 +71,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
 
 
     @Override
-    public List<ExerciseResult> findByStudentId(String classId, String studentId, String exerciseId) {
+    public List<ActivityResult> findByStudentId(String classId, String studentId, String exerciseId) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
@@ -102,7 +102,7 @@ public class ExerciseResultRepositoryImpl implements ExerciseResultRepository {
 
     private ExerciseScore transform(ExerciseScoreEntity entity) {
         ExerciseScore exerciseScore = new ExerciseScore();
-        Exercise exercise = new Exercise();
+        Activity exercise = new Activity();
         exercise.setExerciseId(entity.getExerciseId());
         Student student = new Student();
         student.setStudentId(entity.getStudentId());

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.binomiaux.archimedes.repository.exception.ConflictOperationException;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
-import com.binomiaux.archimedes.service.exception.ArchimedesServiceException;
+import com.binomiaux.archimedes.exception.ArchimedesServiceException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {

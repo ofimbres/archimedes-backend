@@ -1,12 +1,12 @@
 package com.binomiaux.archimedes.app.controller;
 
 import com.binomiaux.archimedes.app.request.CreateReportRequest;
-import com.binomiaux.archimedes.model.Exercise;
-import com.binomiaux.archimedes.model.ExerciseResult;
+import com.binomiaux.archimedes.model.Activity;
+import com.binomiaux.archimedes.model.ActivityResult;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.service.ActivityService;
 import com.binomiaux.archimedes.service.ExerciseResultService;
-import com.binomiaux.archimedes.service.ExerciseService;
 import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +35,13 @@ public class ReportController {
     @Autowired
     private PeriodService periodService;
     @Autowired
-    private ExerciseService exerciseService;
+    private ActivityService activityService;
 
     @PostMapping("/")
-    public ResponseEntity<ExerciseResult> create(@RequestBody CreateReportRequest request) {
-        ExerciseResult exerciseResult = new ExerciseResult();
+    public ResponseEntity<ActivityResult> create(@RequestBody CreateReportRequest request) {
+        ActivityResult exerciseResult = new ActivityResult();
         Student student = studentService.getStudent(request.getStudentId());
-        Exercise exercise = exerciseService.getExercise(request.getExerciseId());
+        Activity exercise = activityService.getActivity(request.getExerciseId());
         Period period = periodService.getPeriod(request.getPeriodId());
 
         exerciseResult.setExercise(exercise);

@@ -3,7 +3,7 @@ package com.binomiaux.archimedes.model;
 import java.time.Instant;
 
 public class ExerciseScore {
-    private Exercise exercise;
+    private Activity exercise;
     private Student student;
     private Period period;
     private int tries;
@@ -14,7 +14,7 @@ public class ExerciseScore {
     public ExerciseScore() {
     }
 
-    public ExerciseScore(Exercise exercise, Student student, Period period, int tries, int score, String exerciseResult/*, Instant timestamp*/) {
+    public ExerciseScore(Activity exercise, Student student, Period period, int tries, int score, String exerciseResult/*, Instant timestamp*/) {
         this.exercise = exercise;
         this.student = student;
         this.period = period;
@@ -24,11 +24,11 @@ public class ExerciseScore {
         //this.timestamp = timestamp;
     }
 
-    public Exercise getExercise() {
+    public Activity getExercise() {
         return exercise;
     }
 
-    public void setExercise(Exercise exercise) {
+    public void setExercise(Activity exercise) {
         this.exercise = exercise;
     }
 

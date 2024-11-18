@@ -4,7 +4,7 @@ import com.binomiaux.archimedes.repository.api.StudentRepository;
 import com.binomiaux.archimedes.repository.converter.StudentEntityTransform;
 import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
-import com.binomiaux.archimedes.repository.entities.StudentEnrollmentEntity;
+import com.binomiaux.archimedes.repository.entities.EnrollmentEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.exception.ConflictOperationException;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
@@ -99,90 +99,90 @@ public class StudentRepositoryImpl implements StudentRepository {
         );
     }
 
-    @Override
-    public void enrollInPeriod(String studentId, String periodId) {
-        DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);    
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId).sortValue("#METADATA"));
+    // @Override
+    // public void enrollInPeriod(String studentId, String periodId) {
+    //     DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);    
+    //     QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId).sortValue("#METADATA"));
 
-        SdkIterable<Page<StudentEntity>> results = studentTable//.index("gsi1")
-            .query(r -> r.queryConditional(queryConditional));
+    //     SdkIterable<Page<StudentEntity>> results = studentTable//.index("gsi1")
+    //         .query(r -> r.queryConditional(queryConditional));
 
-        StudentEntity studentEntity = results.stream()
-            .map(x -> x.items())
-            .flatMap(Collection::stream)
-            .findFirst()
-            .get();
+    //     StudentEntity studentEntity = results.stream()
+    //         .map(x -> x.items())
+    //         .flatMap(Collection::stream)
+    //         .findFirst()
+    //         .get();
 
-        DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
-        QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#METADATA"));
+    //     DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
+    //     QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#METADATA"));
 
-        SdkIterable<Page<PeriodEntity>> results2 = periodTable//.index("gsi1")
-            .query(r -> r.queryConditional(queryConditional2));
+    //     SdkIterable<Page<PeriodEntity>> results2 = periodTable//.index("gsi1")
+    //         .query(r -> r.queryConditional(queryConditional2));
 
-        PeriodEntity periodEntity = results2.stream()
-            .map(x -> x.items())
-            .flatMap(Collection::stream)
-            .findFirst()
-            .get();
+    //     PeriodEntity periodEntity = results2.stream()
+    //         .map(x -> x.items())
+    //         .flatMap(Collection::stream)
+    //         .findFirst()
+    //         .get();
 
-        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
-        StudentEnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
-        if (studentEnrollmentEntity != null) {
-            throw new ConflictOperationException("Student " + studentId + " already enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
-        }
+    //     DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
+    //     EnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
+    //     if (studentEnrollmentEntity != null) {
+    //         throw new ConflictOperationException("Student " + studentId + " already enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
+    //     }
 
-        studentEnrollmentEntity = new StudentEnrollmentEntity();
-        studentEnrollmentEntity.setPk("STUDENT#" + studentId);
-        studentEnrollmentEntity.setSk("PERIOD#" + periodId);
-        studentEnrollmentEntity.setType("ENROLLMENT");
-        studentEnrollmentEntity.setStudentId(studentId);
-        studentEnrollmentEntity.setPeriodId(periodId);
-        studentEnrollmentEntity.setStudentFirstName(studentEntity.getFirstName());
-        studentEnrollmentEntity.setStudentLastName(studentEntity.getLastName());
-        studentEnrollmentEntity.setPeriodName(periodEntity.getName());
-        studentEnrollmentEntity.setGsi1pk("PERIOD#" + periodId);
-        studentEnrollmentEntity.setGsi1sk("STUDENT#" + studentId);
+    //     studentEnrollmentEntity = new EnrollmentEntity();
+    //     studentEnrollmentEntity.setPk("STUDENT#" + studentId);
+    //     studentEnrollmentEntity.setSk("PERIOD#" + periodId);
+    //     studentEnrollmentEntity.setType("ENROLLMENT");
+    //     studentEnrollmentEntity.setStudentId(studentId);
+    //     studentEnrollmentEntity.setPeriodId(periodId);
+    //     studentEnrollmentEntity.setStudentFirstName(studentEntity.getFirstName());
+    //     studentEnrollmentEntity.setStudentLastName(studentEntity.getLastName());
+    //     studentEnrollmentEntity.setPeriodName(periodEntity.getName());
+    //     studentEnrollmentEntity.setGsi1pk("PERIOD#" + periodId);
+    //     studentEnrollmentEntity.setGsi1sk("STUDENT#" + studentId);
 
-        studentEnrollmentTable.putItem(studentEnrollmentEntity);
-    }
+    //     studentEnrollmentTable.putItem(studentEnrollmentEntity);
+    // }
 
-    @Override
-    public void unrollInPeriod(String studentId, String periodId) {
-        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
-        StudentEnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
+    // @Override
+    // public void unrollInPeriod(String studentId, String periodId) {
+    //     DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
+    //     EnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#" + studentId)));
 
-        if (studentEnrollmentEntity != null) {
-            throw new ConflictOperationException("Student " + studentId + " is not enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
-        }
+    //     if (studentEnrollmentEntity != null) {
+    //         throw new ConflictOperationException("Student " + studentId + " is not enrolled in period " + periodId, null, "STUDENT_ALREADY_ENROLLED");
+    //     }
 
-        studentEnrollmentTable.deleteItem(studentEnrollmentEntity);
-    }
+    //     studentEnrollmentTable.deleteItem(studentEnrollmentEntity);
+    // }
 
-    @Override
-    public List<Student> getStudentsByPeriod(String periodId) {
-        // PERIOD#1234-T1-6,	ENROLLMENT#
-        DynamoDbTable<StudentEnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, StudentEnrollmentEntity.TABLE_SCHEMA);
-        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#"));
+    // @Override
+    // public List<Student> getStudentsByPeriod(String periodId) {
+    //     // PERIOD#1234-T1-6,	ENROLLMENT#
+    //     DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
+    //     QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#"));
 
-        SdkIterable<Page<StudentEnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
-            .query(r -> r.queryConditional(queryConditional));
+    //     SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
+    //         .query(r -> r.queryConditional(queryConditional));
 
-        List<StudentEnrollmentEntity> studentEnrollmentEntityList = results.stream()
-            .map(x -> x.items())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+    //     List<EnrollmentEntity> studentEnrollmentEntityList = results.stream()
+    //         .map(x -> x.items())
+    //         .flatMap(Collection::stream)
+    //         .collect(Collectors.toList());
 
-        List<Student> students = new ArrayList<>();
-        for (StudentEnrollmentEntity studentEnrollmentEntity : studentEnrollmentEntityList) {
-            Student student = new Student();
-            student.setStudentId(studentEnrollmentEntity.getStudentId());
-            student.setFirstName(studentEnrollmentEntity.getStudentFirstName());
-            student.setLastName(studentEnrollmentEntity.getStudentLastName());
-            //student.setEmail(studentEnrollmentEntity.getStudentEmail());
-            //student.setUsername(studentEnrollmentEntity.getStudentUsername());
-            students.add(student);
-        }
+    //     List<Student> students = new ArrayList<>();
+    //     for (EnrollmentEntity studentEnrollmentEntity : studentEnrollmentEntityList) {
+    //         Student student = new Student();
+    //         student.setStudentId(studentEnrollmentEntity.getStudentId());
+    //         student.setFirstName(studentEnrollmentEntity.getStudentFirstName());
+    //         student.setLastName(studentEnrollmentEntity.getStudentLastName());
+    //         //student.setEmail(studentEnrollmentEntity.getStudentEmail());
+    //         //student.setUsername(studentEnrollmentEntity.getStudentUsername());
+    //         students.add(student);
+    //     }
 
-        return students;
-    }
+    //     return students;
+    // }
 }

@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.service.exception;
+package com.binomiaux.archimedes.exception;
 
 public class ArchimedesServiceException extends RuntimeException {
 
