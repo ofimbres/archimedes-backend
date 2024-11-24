@@ -1,8 +1,6 @@
 package com.binomiaux.archimedes.app.controller;
 
-import com.binomiaux.archimedes.model.ExerciseScore;
 import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.service.ExerciseResultService;
 import com.binomiaux.archimedes.service.StudentService;
 import com.binomiaux.archimedes.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.http.ResponseEntity.ok;
 
 import java.util.List;
 
@@ -32,49 +28,22 @@ public class PeriodController {
     @Autowired
     private StudentService studentService;
 
-    @Autowired
-    private ExerciseResultService exerciseResultService;
 
-
-    @GetMapping("/{periodId}/students")
+    @GetMapping("/{periodId}/students/enrollments")
     public ResponseEntity<List<Student>> get(@PathVariable String periodId) {
         List<Student> students = teacherService.getStudentsByPeriod(periodId);
         return ResponseEntity.ok().body(students);
     }
 
-    @PostMapping("/{periodId}/students/{studentId}")
+    @PostMapping("/{periodId}/students/{studentId}/enrollments")
     public ResponseEntity<?> enrollStudentInPeriod(@PathVariable("periodId") String periodId, @PathVariable("studentId") String studentId) {
         studentService.enrollStudentInPeriod(studentId, periodId);
         return ResponseEntity.status(HttpStatus.CREATED).body("Student added to period successfully.");
     }
 
-    @DeleteMapping("/{periodId}/students/{studentId}")
+    @DeleteMapping("/{periodId}/students/{studentId}/enrollments")
     public ResponseEntity<?> unenrollStudentInPeriod(@PathVariable("periodId") String periodId, @PathVariable("studentId") String studentId) {
         studentService.enrollStudentInPeriod(studentId, periodId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{periodId}/scores")
-    public ResponseEntity<?> getReportsByPeriod(@PathVariable("periodId") String periodId) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-        //return ResponseEntity.ok().body(teacherService.getReportsByPeriod(periodId));
-    }
-
-    @GetMapping("/{periodId}/exercises/{exerciseId}/scores")
-    public ResponseEntity<?> getReportsByPeriodAndExercise(@PathVariable("periodId") String periodId, @PathVariable("exerciseId") String exerciseId) {
-        List<ExerciseScore> exerciseScores = exerciseResultService.getByClassAndExercise(periodId, exerciseId);
-        return ResponseEntity.ok().body(exerciseScores);
-    }
-
-    @GetMapping("/{periodId}/students/{studentId}/scores")
-    public ResponseEntity<?> getReportsByStudent(@PathVariable("periodId") String periodId, @PathVariable("studentId") String studentId) {
-        throw new UnsupportedOperationException("Not implemented yet.");
-        //List<ExerciseScore> exerciseScores = exerciseResultService.getByStudent(periodId, studentId);
-    }
-
-    @GetMapping("/{periodId}/students/{studentId}/exercises/{exerciseId}/scores")
-    public ResponseEntity<?> getReportsByStudentAndExercise(@PathVariable("periodId") String periodId, @PathVariable("studentId") String studentId, @PathVariable("exerciseId") String exerciseId) {
-        ExerciseScore exerciseScore = exerciseResultService.getByStudentAndExercise(periodId, studentId, exerciseId);
-        return ResponseEntity.ok().body(exerciseScore);
     }
 }

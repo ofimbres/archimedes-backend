@@ -8,6 +8,8 @@ import com.binomiaux.archimedes.model.Teacher;
 
 public interface TeacherService {
     void create(Teacher teacher);
+    Teacher getTeacher(String id);
+
     List<Student> getStudentsByPeriod(String periodId);
     List<Period> getPeriodsByTeacher(String teacherId);
 }

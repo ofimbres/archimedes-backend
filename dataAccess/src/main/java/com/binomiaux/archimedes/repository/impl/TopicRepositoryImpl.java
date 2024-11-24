@@ -2,8 +2,8 @@ package com.binomiaux.archimedes.repository.impl;
 
 import com.binomiaux.archimedes.model.Topic;
 import com.binomiaux.archimedes.repository.api.TopicRepository;
-import com.binomiaux.archimedes.repository.converter.TopicEntityTransformer;
 import com.binomiaux.archimedes.repository.entities.TopicEntity;
+import com.binomiaux.archimedes.repository.mapper.TopicMapper;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -26,7 +26,7 @@ public class TopicRepositoryImpl implements TopicRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private TopicEntityTransformer transformer = new TopicEntityTransformer();
+    private TopicMapper mapper = TopicMapper.INSTANCE;
 
     @Override
     public List<Topic> findAll() {
@@ -36,7 +36,7 @@ public class TopicRepositoryImpl implements TopicRepository {
 
         List<TopicEntity> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
 
-        return topicRecords.stream().map(transformer::transform).collect(Collectors.toList());
+        return topicRecords.stream().map(mapper::entityToActivityResult).collect(Collectors.toList());
     }
 
     @Override
@@ -47,6 +47,6 @@ public class TopicRepositoryImpl implements TopicRepository {
 
         List<TopicEntity> topicRecords = topicTable.query(queryConditional).items().stream().collect(Collectors.toList());
 
-        return topicRecords.stream().map(transformer::transform).collect(Collectors.toList());
+        return topicRecords.stream().map(mapper::entityToActivityResult).collect(Collectors.toList());
     }
 }

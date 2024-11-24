@@ -1,8 +1,8 @@
 package com.binomiaux.archimedes.repository.impl;
 
 import com.binomiaux.archimedes.repository.api.ActivityRepository;
-import com.binomiaux.archimedes.repository.converter.ActivityEntityTransform;
 import com.binomiaux.archimedes.repository.entities.ActivityEntity;
+import com.binomiaux.archimedes.repository.mapper.ActivityMapper;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -31,7 +31,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private ActivityEntityTransform transformer = new ActivityEntityTransform();
+    private ActivityMapper mapper = ActivityMapper.INSTANCE;
 
     @Override
     public Activity findByCode(String exerciseCode) {
@@ -50,7 +50,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             return null;
         }
 
-        return transformer.transform(record.get());
+        return mapper.entityToActivity(record.get());
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
         return StreamSupport.stream(pages.spliterator(), false)
                 .flatMap(page -> page.items().stream())
-                .map(transformer::transform)
+                .map(mapper::entityToActivity)
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +79,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
         // Use Java Streams to process the results
         return StreamSupport.stream(pages.spliterator(), false)
                 .flatMap(page -> page.items().stream())
-                .map(transformer::transform)
+                .map(mapper::entityToActivity)
                 .collect(Collectors.toList());
     }
 }

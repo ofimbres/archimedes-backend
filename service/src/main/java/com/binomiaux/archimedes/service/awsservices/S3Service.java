@@ -1,38 +1,60 @@
 package com.binomiaux.archimedes.service.awsservices;
 
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import org.springframework.beans.factory.annotation.Value;
+import java.time.Duration;
+import java.net.URL;
 
 public class S3Service {
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
-    @Value("${s3.exercise-results-bucket-name}")
-    private String exerciseResultsBucketName;
-
-    public S3Service(S3Client client) {
-        s3Client = client;
+    public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
+        this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
     }
 
-    public void uploadWorksheet(String key, String fileContent) {
-        File tmpFile = null;
-        try {
-            tmpFile = File.createTempFile(key, ".tmp");
-            FileWriter writer = new FileWriter(tmpFile);
-            writer.write(fileContent);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public PutObjectResponse uploadFile(String bucketName, String key, String fileContent, String contentType) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(fileContent)
+                .build();
 
-        // PutObjectRequest request = new PutObjectRequest(BUCKET_NAME, key, tmpFile);
-        // ObjectMetadata metadata = new ObjectMetadata();
-        // metadata.setContentType("text/html");
-        // request.setMetadata(metadata);
-        // s3Client.putObject(request);
+        return s3Client.putObject(putObjectRequest, RequestBody.fromString(fileContent));
+    }
+
+    public ResponseInputStream<GetObjectResponse> readFile(String bucketName, String key) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        return s3Client.getObject(getObjectRequest);
+    }
+
+    public URL generatePresignedUrl(String bucketName, String key, Duration duration) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(duration)
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        PresignedGetObjectRequest presignedGetObjectRequest = s3Presigner.presignGetObject(getObjectPresignRequest);
+
+        return presignedGetObjectRequest.url();
     }
 }
