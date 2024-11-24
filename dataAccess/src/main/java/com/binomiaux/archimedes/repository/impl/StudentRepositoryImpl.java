@@ -1,30 +1,19 @@
 package com.binomiaux.archimedes.repository.impl;
 
 import com.binomiaux.archimedes.repository.api.StudentRepository;
-import com.binomiaux.archimedes.repository.converter.StudentEntityTransform;
-import com.binomiaux.archimedes.repository.entities.PeriodEntity;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
-import com.binomiaux.archimedes.repository.entities.EnrollmentEntity;
 import com.binomiaux.archimedes.repository.entities.StudentEntity;
-import com.binomiaux.archimedes.repository.exception.ConflictOperationException;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
+import com.binomiaux.archimedes.repository.mapper.StudentMapper;
 
-import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactPutItemEnhancedRequest;
 
 import com.binomiaux.archimedes.model.Student;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +28,7 @@ public class StudentRepositoryImpl implements StudentRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private StudentEntityTransform studentRecordTransform = new StudentEntityTransform();
+    private StudentMapper mapper = StudentMapper.INSTANCE;
 
     @Override
     public Student find(String studentId) {
@@ -49,7 +38,7 @@ public class StudentRepositoryImpl implements StudentRepository {
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
         StudentEntity record = studentTable.getItem(request);
 
-        return studentRecordTransform.transform(record);
+        return mapper.entityToStudent(record);
     }
 
     @Override

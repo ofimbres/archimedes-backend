@@ -26,14 +26,16 @@ public class TeacherServiceImpl implements TeacherService {
     private PeriodRepository periodRepository;
 
     @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
     private EnrollmentRepository enrollmentRepository;
 
     @Override
     public void create(Teacher teacher) {
         teacherRepository.create(teacher);
+    }
+
+    @Override
+    public Teacher getTeacher(String id) {
+        return teacherRepository.find(id);
     }
 
     @Override

@@ -1,23 +1,24 @@
 package com.binomiaux.archimedes.model;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public class ActivityResult {
 
-    private Activity exercise;
+    private Activity activity;
     private Student student;
     private Period period;
     private int score;
     private Instant timestamp;
     private String worksheetContent;
-    private String s3Key;
+    private String resourcePath;
 
-    public Activity getExercise() {
-        return exercise;
+    public Activity getActivity() {
+        return activity;
     }
 
-    public void setExercise(Activity exercise) {
-        this.exercise = exercise;
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
     public Student getStudent() {
@@ -60,11 +61,11 @@ public class ActivityResult {
         this.worksheetContent = worksheetContent;
     }
 
-    public String getS3Key() {
-        return s3Key;
+    public String getResourcePath() {
+        return resourcePath;
     }
 
-    public void setS3Key(String s3Key) {
-        this.s3Key = s3Key;
+    public void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath;
     }
 }

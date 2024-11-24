@@ -2,34 +2,34 @@ package com.binomiaux.archimedes.model;
 
 import java.time.Instant;
 
-public class ExerciseScore {
-    private Activity exercise;
+public class ActivityScore {
+    private Activity activity;
     private Student student;
     private Period period;
     private int tries;
     private int score;
-    private String exerciseResult;
-    //private Instant timestamp;
+    private ActivityResult activityResult;
+    private Instant timestamp;
 
-    public ExerciseScore() {
+    public ActivityScore() {
     }
 
-    public ExerciseScore(Activity exercise, Student student, Period period, int tries, int score, String exerciseResult/*, Instant timestamp*/) {
-        this.exercise = exercise;
+    public ActivityScore(Activity activity, Student student, Period period, int tries, int score, ActivityResult activityResult, Instant timestamp) {
+        this.activity = activity;
         this.student = student;
         this.period = period;
         this.tries = tries;
         this.score = score;
-        this.exerciseResult = exerciseResult;
-        //this.timestamp = timestamp;
+        this.activityResult = activityResult;
+        this.timestamp = timestamp;
     }
 
-    public Activity getExercise() {
-        return exercise;
+    public Activity getActivity() {
+        return activity;
     }
 
-    public void setExercise(Activity exercise) {
-        this.exercise = exercise;
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
     public Student getStudent() {
@@ -64,19 +64,19 @@ public class ExerciseScore {
         this.score = score;
     }
 
-    public String getExerciseResult() {
-        return exerciseResult;
+    public ActivityResult getActivityResult() {
+        return activityResult;
     }
 
-    public void setExerciseResult(String exerciseResult) {
-        this.exerciseResult = exerciseResult;
+    public void setActivityResult(ActivityResult activityResult) {
+        this.activityResult = activityResult;
     }
 
-    /*public Instant getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
-    }*/
+    }
 }

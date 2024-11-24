@@ -5,6 +5,7 @@ public class Activity {
     private String name;
     private String classification;
     private String path;
+    private String url;
 
     public Activity() {
     }
@@ -20,7 +21,7 @@ public class Activity {
         return activityId;
     }
 
-    public void setExerciseId(String activityId) {
+    public void setActivityId(String activityId) {
         this.activityId = activityId;
     }
 
@@ -46,5 +47,13 @@ public class Activity {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

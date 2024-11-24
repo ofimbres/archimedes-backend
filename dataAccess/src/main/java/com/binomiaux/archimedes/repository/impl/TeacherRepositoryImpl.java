@@ -7,12 +7,16 @@ import org.springframework.stereotype.Repository;
 import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.repository.api.TeacherRepository;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
+import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
+import com.binomiaux.archimedes.repository.mapper.TeacherMapper;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactPutItemEnhancedRequest;
 
 @Repository
@@ -23,6 +27,19 @@ public class TeacherRepositoryImpl implements TeacherRepository {
 
     @Value("${dynamodb.table-name}")
     private String tableName;
+
+    private TeacherMapper mapper = TeacherMapper.INSTANCE;
+
+    @Override
+    public Teacher find(String teacherId) {
+        String pk = "TEACHER#" + teacherId;
+        DynamoDbTable<TeacherEntity> studentTable = enhancedClient.table(tableName, TeacherEntity.TABLE_SCHEMA);
+        Key key = Key.builder().partitionValue(pk).sortValue("#METADATA").build();
+        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
+        TeacherEntity record = studentTable.getItem(request);
+
+        return mapper.entityToTeacher(record);
+    }
 
     @Override
     public void create(Teacher teacher) {
