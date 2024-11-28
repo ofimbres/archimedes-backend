@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface ActivityResultService {
     void create(ActivityResult exerciseResult);
-    Iterable<ActivityResult> getByStudent(String classId, String studentId, String exerciseCode);
-    ActivityScore getByStudentAndExercise(String classId, String studentId, String exerciseCode);
-    List<ActivityScore> getByClassAndExercise(String className, String exerciseCode);
+    
+    List<ActivityScore> getScoresByPeriodAndStudent(String periodId, String studentId);
+    List<ActivityScore> getScoresByPeriod(String periodId);
+    ActivityScore getScoresByPeriodAndStudentAndActivity(String periodId, String studentId, String activityId);
+    List<ActivityScore> getScoresByPeriodAndActivity(String periodId, String activityId);
 }

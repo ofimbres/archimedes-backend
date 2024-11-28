@@ -31,13 +31,13 @@ public class TopicController {
         return ok(topicService.getTopicsHierarchy());
     }
 
-    @GetMapping("/{topicId}/exercises")
+    @GetMapping("/{topicId}/activities")
     public ResponseEntity<List<Activity>> get(@PathVariable String topicId) {
         var activities = activityService.getActivitiesByTopicId(topicId);
         return ok(activities);
     }
 
-    @GetMapping("/{topicId}/subtopics/{subtopicId}/exercises")
+    @GetMapping("/{topicId}/subtopics/{subtopicId}/activities")
     public ResponseEntity<List<Activity>> get(@PathVariable String topicId, @PathVariable String subtopicId) {
         var activities = activityService.getActivitiesByTopicIdAndSubtopicId(topicId, subtopicId);
         return ok(activities);

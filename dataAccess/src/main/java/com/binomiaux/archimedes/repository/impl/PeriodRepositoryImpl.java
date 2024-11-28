@@ -93,7 +93,7 @@ public class PeriodRepositoryImpl implements PeriodRepository {
         // LOOK UP BY GS1PK, AND GS1SK
         QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("STUDENT#" + studentId).sortValue("PERIOD#"));
 
-        SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable.index("gsi1")
+        SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable
             .query(r -> r.queryConditional(queryConditional));
 
         List<EnrollmentEntity> results2 = results.stream()
