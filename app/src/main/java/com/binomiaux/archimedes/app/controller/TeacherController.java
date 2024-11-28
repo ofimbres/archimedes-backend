@@ -24,7 +24,7 @@ public class TeacherController {
     private TeacherService teacherService;
 
     @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
-    @GetMapping("/{studentId}")
+    @GetMapping("/{teacherId}")
     public ResponseEntity<Teacher> get(@PathVariable String teacherId) {
         return ResponseEntity.ok(teacherService.getTeacher(teacherId));
     }

@@ -1,7 +1,6 @@
 package com.binomiaux.archimedes.model;
 
 import java.time.Instant;
-import java.util.Optional;
 
 public class ActivityResult {
 

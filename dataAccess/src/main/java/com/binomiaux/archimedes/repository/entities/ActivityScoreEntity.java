@@ -12,6 +12,8 @@ public class ActivityScoreEntity {
     private String pk;
     private String sk;
     private String studentId;
+    private String studentFirstName;
+    private String studentLastName;
     private String exerciseId;
     private String periodId;
     private int tries;
@@ -47,6 +49,22 @@ public class ActivityScoreEntity {
 
     public void setStudentId(String studentId) {
         this.studentId = studentId;
+    }
+
+    public String getStudentFirstName() {
+        return studentFirstName;
+    }
+
+    public void setStudentFirstName(String studentFirstName) {
+        this.studentFirstName = studentFirstName;
+    }
+
+    public String getStudentLastName() {
+        return studentLastName;
+    }
+
+    public void setStudentLastName(String studentLastName) {
+        this.studentLastName = studentLastName;
     }
 
     public String getExerciseId() {

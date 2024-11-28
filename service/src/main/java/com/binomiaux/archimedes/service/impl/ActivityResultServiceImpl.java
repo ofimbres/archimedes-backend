@@ -4,8 +4,10 @@ import com.binomiaux.archimedes.service.ActivityResultService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
 import com.binomiaux.archimedes.repository.api.ActivityResultRepository;
 import com.binomiaux.archimedes.repository.api.ActivityScoreRepository;
+import com.binomiaux.archimedes.repository.api.StudentRepository;
 import com.binomiaux.archimedes.model.ActivityResult;
 import com.binomiaux.archimedes.model.ActivityScore;
+import com.binomiaux.archimedes.model.Student;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ActivityResultServiceImpl implements ActivityResultService {
@@ -25,6 +26,9 @@ public class ActivityResultServiceImpl implements ActivityResultService {
 
     @Autowired
     private ActivityScoreRepository activityScoreRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @Autowired
     private S3Service s3Service;
@@ -40,19 +44,24 @@ public class ActivityResultServiceImpl implements ActivityResultService {
 
         activityResultRepository.create(exerciseResult);
 
-        ActivityScore exerciseScore = activityScoreRepository.find(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getActivity().getActivityId());
+        Student student = studentRepository.find(exerciseResult.getStudent().getStudentId());
+        ActivityScore exerciseScore = activityScoreRepository.findByPeriodAndStudentAndActivity(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getActivity().getActivityId());
 
         if (exerciseScore == null) {
             exerciseScore = new ActivityScore();
             exerciseScore.setActivity(exerciseResult.getActivity());
-            exerciseScore.setStudent(exerciseResult.getStudent());
+            exerciseScore.setStudent(student);
             exerciseScore.setPeriod(exerciseResult.getPeriod());
             exerciseScore.setTries(1);
             exerciseScore.setScore(exerciseResult.getScore());
             exerciseScore.setActivityResult(exerciseResult);
         } else {
+            exerciseScore.setActivity(exerciseResult.getActivity());
+            exerciseScore.setStudent(student);
+            exerciseScore.setPeriod(exerciseResult.getPeriod());
+            exerciseScore.setTries(exerciseScore.getTries() + 1);
+
             if (exerciseResult.getScore() > exerciseScore.getScore()) {
-                exerciseScore.setTries(exerciseScore.getTries() + 1);
                 exerciseScore.setScore(exerciseResult.getScore());
                 exerciseScore.setActivityResult(exerciseResult);
             }
@@ -65,19 +74,22 @@ public class ActivityResultServiceImpl implements ActivityResultService {
     }
 
     @Override
-    public Iterable<ActivityResult> getByStudent(String classId, String studentId, String exerciseId) {
-        return null;
+    public List<ActivityScore> getScoresByPeriodAndStudent(String periodId, String studentId) {
+        throw new UnsupportedOperationException("Unimplemented method 'getScoresByStudent'");
     }
 
     @Override
-    public ActivityScore getByStudentAndExercise(String classId, String studentId, String exerciseId) {
-        return null;
-        //return activityResultRepository.findByStudentIdAndExerciseId(classId, studentId, exerciseId);
+    public List<ActivityScore> getScoresByPeriod(String periodId) {
+        throw new UnsupportedOperationException("Unimplemented method 'getScoresByPeriod'");
     }
 
     @Override
-    public List<ActivityScore> getByClassAndExercise(String className, String exerciseId) {
-        return null;
-        //return activityResultRepository.findAllByClassIdAndExerciseId(className, exerciseId);
+    public ActivityScore getScoresByPeriodAndStudentAndActivity(String periodId, String studentId, String activityId) {
+        return activityScoreRepository.findByPeriodAndStudentAndActivity(periodId, studentId, activityId);
+    }
+
+    @Override
+    public List<ActivityScore> getScoresByPeriodAndActivity(String periodId, String activityId) {
+        return activityScoreRepository.findByPeriodAndActivity(periodId, activityId);
     }
 }

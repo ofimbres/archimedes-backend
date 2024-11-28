@@ -34,29 +34,6 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Override
     public void create(Enrollment enrollment) {
-        // DynamoDbTable<StudentEntity> studentTable = enhancedClient.table(tableName, StudentEntity.TABLE_SCHEMA);    
-        // QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId).sortValue("#METADATA"));
-
-        // SdkIterable<Page<StudentEntity>> results = studentTable//.index("gsi1")
-        //     .query(r -> r.queryConditional(queryConditional));
-
-        // StudentEntity studentEntity = results.stream()
-        //     .map(x -> x.items())
-        //     .flatMap(Collection::stream)
-        //     .findFirst()
-        //     .get();
-
-        // DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
-        // QueryConditional queryConditional2 = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#METADATA"));
-
-        // SdkIterable<Page<PeriodEntity>> results2 = periodTable//.index("gsi1")
-        //     .query(r -> r.queryConditional(queryConditional2));
-
-        // PeriodEntity periodEntity = results2.stream()
-        //     .map(x -> x.items())
-        //     .flatMap(Collection::stream)
-        //     .findFirst()
-        //     .get();
         Period period = enrollment.getPeriod();
         Student student = enrollment.getStudent();
 
@@ -88,8 +65,27 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Override
     public List<Enrollment> getEnrollmentsByPeriod(String periodId) {
-        // TODO Auto-generated method stub
-        return null;
+        DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
+
+        // from gs1 
+
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId).sortValue("STUDENT#"));
+
+        SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
+
+        // TODO: Create a mapper
+        List<Enrollment> enrollments = results.stream()
+            .map(x -> x.items())
+            .flatMap(Collection::stream)
+            .map(e -> {
+                Enrollment enrollment = new Enrollment();
+                enrollment.setPeriod(new Period(null, null, e.getPeriodId(), e.getPeriodName()));
+                enrollment.setStudent(new Student(null, e.getStudentId(), e.getStudentFirstName(), e.getStudentLastName(), null, null));
+                return enrollment;
+            })
+            .collect(Collectors.toList());
+
+        return enrollments;
     }
 
 }
