@@ -8,4 +8,4 @@ public interface ActivityRepository {
     Activity findByCode(String code);
     List<Activity> findByTopic(String topicId);
     List<Activity> findByTopicAndSubtopic(String topicId, String subtopicId);
-}
+}  

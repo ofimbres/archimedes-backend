@@ -10,7 +10,6 @@ import com.binomiaux.archimedes.repository.entities.TopicEntity;
 public interface TopicMapper {
     TopicMapper INSTANCE = Mappers.getMapper( TopicMapper.class );
  
-    //@Mapping(source = "numberOfSeats", target = "seatCount")
     TopicEntity activityResultToEntity(Topic model);
     Topic entityToActivityResult(TopicEntity entity);
 }

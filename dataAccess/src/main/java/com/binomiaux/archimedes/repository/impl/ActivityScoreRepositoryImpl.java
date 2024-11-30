@@ -65,6 +65,38 @@ public class ActivityScoreRepositoryImpl implements ActivityScoreRepository {
     }
 
     @Override
+    public List<ActivityScore> findByPeriodAndStudent(String periodId, String studentId) {
+        DynamoDbTable<ActivityScoreEntity> exerciseScoreTable = enhancedClient.table(tableName, ActivityScoreEntity.TABLE_SCHEMA);
+
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId + "#STUDENT#" + studentId).sortValue("#SCORES#"));
+        SdkIterable<Page<ActivityScoreEntity>> results = exerciseScoreTable.query(r -> r.queryConditional(queryConditional));
+    
+        List<ActivityScore> scores = results.stream()
+            .map(Page::items)
+            .flatMap(Collection::stream)
+            .map(mapper::entityToActivityResult)
+            .collect(Collectors.toList());
+    
+        return scores;
+    }
+
+    @Override
+    public List<ActivityScore> findByPeriod(String periodId) {
+        DynamoDbTable<ActivityScoreEntity> exerciseScoreTable = enhancedClient.table(tableName, ActivityScoreEntity.TABLE_SCHEMA);
+
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#SCORES#"));
+        SdkIterable<Page<ActivityScoreEntity>> results = exerciseScoreTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
+    
+        List<ActivityScore> scores = results.stream()
+            .map(Page::items)
+            .flatMap(Collection::stream)
+            .map(mapper::entityToActivityResult)
+            .collect(Collectors.toList());
+    
+        return scores;
+    }
+
+    @Override
     public void create(ActivityScore score) {
         DynamoDbTable<ActivityScoreEntity> exerciseScoreTable = enhancedClient.table(tableName, ActivityScoreEntity.TABLE_SCHEMA);
 
@@ -73,15 +105,15 @@ public class ActivityScoreRepositoryImpl implements ActivityScoreRepository {
         exerciseScoreEntity.setSk("#SCORES#ACTIVITY#" + score.getActivity().getActivityId());
         exerciseScoreEntity.setGsi1pk("PERIOD#" + score.getPeriod().getPeriodId());
         exerciseScoreEntity.setGsi1sk("#SCORES#ACTIVITY#" + score.getActivity().getActivityId());
-        exerciseScoreEntity.setType("EXERCISE_SCORE");
-        exerciseScoreEntity.setExerciseId(score.getActivity().getActivityId());
+        exerciseScoreEntity.setType("ACTIVITY_SCORE");
+        exerciseScoreEntity.setActivityId(score.getActivity().getActivityId());
         exerciseScoreEntity.setStudentId(score.getStudent().getStudentId());
         exerciseScoreEntity.setStudentFirstName(score.getStudent().getFirstName());
         exerciseScoreEntity.setStudentLastName(score.getStudent().getLastName());
         exerciseScoreEntity.setPeriodId(score.getPeriod().getPeriodId());
         exerciseScoreEntity.setTries(score.getTries());
         exerciseScoreEntity.setScore(score.getScore());
-        exerciseScoreEntity.setExerciseResult(score.getActivity().getActivityId());
+        exerciseScoreEntity.setActivityResultId(score.getActivityResult().getActivityResultId());
 
         exerciseScoreTable.putItem(exerciseScoreEntity);
     }

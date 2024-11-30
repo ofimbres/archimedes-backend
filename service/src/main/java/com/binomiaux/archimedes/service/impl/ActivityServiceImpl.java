@@ -40,8 +40,9 @@ public class ActivityServiceImpl implements ActivityService {
     public Activity getActivity(String activityId) {
         Activity activity = exerciseRepository.findByCode(activityId);
         //URL url = s3Service.generatePresignedUrl(exerciseBucketName, activity.getPath(), Duration.ofMinutes(15));
-        String fileName = activity.getPath().substring(activity.getPath().lastIndexOf('/') + 1); // TODO: Workaround
-        String fullMiniQuizUrl = miniQuizBaseUrl + fileName;
+        //String fileName = activity.getPath().substring(activity.getPath().lastIndexOf('/') + 1); // TODO: Workaround
+        //String fullMiniQuizUrl = miniQuizBaseUrl + fileName;
+        String fullMiniQuizUrl = miniQuizBaseUrl + activity.getPath();
         activity.setUrl(fullMiniQuizUrl);
         return activity;
     }

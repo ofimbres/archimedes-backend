@@ -11,11 +11,11 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 public class ActivityResultEntity {
     private String pk;
     private String sk;
-    private String exerciseResultId;
+    private String activityResultId;
     private String firstName;
     private String lastName;
-    private String exerciseId;
-    private String exerciseName;
+    private String activityId;
+    private String activityName;
     private String timestamp;
     private int score;
     private String path;
@@ -43,12 +43,12 @@ public class ActivityResultEntity {
         this.sk = sk;
     }
 
-    public String getExerciseResultId() {
-        return exerciseResultId;
+    public String getActivityResultId() {
+        return activityResultId;
     }
 
-    public void setExerciseResultId(String exerciseResultId) {
-        this.exerciseResultId = exerciseResultId;
+    public void setActivityResultId(String activityResultId) {
+        this.activityResultId = activityResultId;
     }
 
     public String getFirstName() {
@@ -67,20 +67,20 @@ public class ActivityResultEntity {
         this.lastName = lastName;
     }
 
-    public String getExerciseId() {
-        return exerciseId;
+    public String getActivityId() {
+        return activityId;
     }
 
-    public void setExerciseId(String exerciseId) {
-        this.exerciseId = exerciseId;
+    public void setActivityId(String activityId) {
+        this.activityId = activityId;
     }
 
-    public String getExerciseName() {
-        return exerciseName;
+    public String getActivityName() {
+        return activityName;
     }
 
-    public void setExerciseName(String exerciseName) {
-        this.exerciseName = exerciseName;
+    public void setActivityName(String activityName) {
+        this.activityName = activityName;
     }
 
     public String getTimestamp() {
