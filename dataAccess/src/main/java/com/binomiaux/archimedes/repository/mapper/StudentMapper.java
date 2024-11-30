@@ -10,7 +10,6 @@ import com.binomiaux.archimedes.repository.entities.StudentEntity;
 public interface StudentMapper {
     StudentMapper INSTANCE = Mappers.getMapper( StudentMapper.class );
  
-    //@Mapping(source = "numberOfSeats", target = "seatCount")
     StudentEntity studentToEntity(Student model);
     Student entityToStudent(StudentEntity entity);
 }

@@ -35,7 +35,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
     @Override
     public Activity findByCode(String exerciseCode) {
-        String pk = "EXERCISE#" + exerciseCode;
+        String pk = "ACTIVITY#" + exerciseCode;
         DynamoDbTable<ActivityEntity> exerciseTable = enhancedClient.table(tableName, ActivityEntity.TABLE_SCHEMA);
         DynamoDbIndex<ActivityEntity> index = exerciseTable.index("gsi1");
         Key key = Key.builder().partitionValue(pk).build();
@@ -56,8 +56,8 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     @Override
     public List<Activity> findByTopic(String topicId) {
         String pk = "TOPIC#" + topicId;
-        DynamoDbTable<ActivityEntity> exerciseTable = enhancedClient.table(tableName, ActivityEntity.TABLE_SCHEMA);
-        DynamoDbIndex<ActivityEntity> index = exerciseTable.index("gsi2");
+        DynamoDbTable<ActivityEntity> activityTable = enhancedClient.table(tableName, ActivityEntity.TABLE_SCHEMA);
+        DynamoDbIndex<ActivityEntity> index = activityTable.index("gsi2");
         Key key = Key.builder().partitionValue(pk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
         SdkIterable<Page<ActivityEntity>> pages = index.query(queryConditional);
@@ -71,10 +71,10 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     @Override
     public List<Activity> findByTopicAndSubtopic(String topicId, String subtopicId) {
         String pk = "TOPIC#" + topicId + "#SUBTOPIC#" + subtopicId;
-        DynamoDbTable<ActivityEntity> exerciseTable = enhancedClient.table(tableName, ActivityEntity.TABLE_SCHEMA);
+        DynamoDbTable<ActivityEntity> activityTable = enhancedClient.table(tableName, ActivityEntity.TABLE_SCHEMA);
         Key key = Key.builder().partitionValue(pk).build();
         QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-        SdkIterable<Page<ActivityEntity>> pages = exerciseTable.query(queryConditional);
+        SdkIterable<Page<ActivityEntity>> pages = activityTable.query(queryConditional);
     
         // Use Java Streams to process the results
         return StreamSupport.stream(pages.spliterator(), false)

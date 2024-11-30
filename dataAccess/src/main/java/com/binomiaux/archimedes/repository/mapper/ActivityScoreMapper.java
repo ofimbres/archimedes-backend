@@ -14,12 +14,13 @@ public interface ActivityScoreMapper {
     @Mapping(source = "student.studentId", target = "studentId")
     @Mapping(source = "student.firstName", target = "studentFirstName")
     @Mapping(source = "student.lastName", target = "studentLastName")
-    @Mapping(source = "activity.activityId", target = "exerciseId")
+    @Mapping(source = "activity.activityId", target = "activityId")
     ActivityScoreEntity activityResultToEntity(ActivityScore entity);
+    
     @Mapping(source = "studentId", target = "student.studentId")
     @Mapping(source = "studentFirstName", target = "student.firstName")
     @Mapping(source = "studentLastName", target = "student.lastName")
-    @Mapping(source = "exerciseId", target = "activity.activityId")
+    @Mapping(source = "activityId", target = "activity.activityId")
     ActivityScore entityToActivityResult(ActivityScoreEntity model);
 }
 

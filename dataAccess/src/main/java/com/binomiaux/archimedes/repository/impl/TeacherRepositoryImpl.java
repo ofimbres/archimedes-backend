@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.repository.api.TeacherRepository;
 import com.binomiaux.archimedes.repository.entities.SchoolEntity;
-import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.entities.TeacherEntity;
 import com.binomiaux.archimedes.repository.exception.EntityNotFoundException;
 import com.binomiaux.archimedes.repository.mapper.TeacherMapper;

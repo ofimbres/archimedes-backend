@@ -8,6 +8,8 @@ public interface ActivityScoreRepository {
     ActivityScore findByPeriodAndStudentAndActivity(String periodId, String studentId, String activityId);
     List<ActivityScore> findByPeriodAndActivity(String periodId, String activityId);
 
-    // List<ActivityScore> findByStudentIdAndDate(String studentId, String activityId);
+    List<ActivityScore> findByPeriodAndStudent(String periodId, String studentId);
+    List<ActivityScore> findByPeriod(String periodId);
+
     void create(ActivityScore activityScore);
 }

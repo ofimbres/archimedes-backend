@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ActivityResultServiceImpl implements ActivityResultService {
@@ -41,6 +42,8 @@ public class ActivityResultServiceImpl implements ActivityResultService {
         // Upload the worksheet content to S3
         String resourcePath = "mini-quiz/" + exerciseResult.getStudent().getStudentId() + "/" + exerciseResult.getActivity().getActivityId() + "/" + System.currentTimeMillis() + ".html";
         exerciseResult.setResourcePath(resourcePath);
+        String exerciseResultId = UUID.randomUUID().toString();
+        exerciseResult.setActivityResultId(exerciseResultId);
 
         activityResultRepository.create(exerciseResult);
 
@@ -75,12 +78,24 @@ public class ActivityResultServiceImpl implements ActivityResultService {
 
     @Override
     public List<ActivityScore> getScoresByPeriodAndStudent(String periodId, String studentId) {
-        throw new UnsupportedOperationException("Unimplemented method 'getScoresByStudent'");
+        return activityScoreRepository.findByPeriodAndStudent(periodId, studentId);
+
+        // List<ActivityScore> scores = activityScoreRepository.findByPeriod(periodId);
+        // return scores.stream()
+        //     .mapToInt(ActivityScore::getScore)
+        //     .average()
+        //     .orElse(0.0);
     }
 
     @Override
     public List<ActivityScore> getScoresByPeriod(String periodId) {
-        throw new UnsupportedOperationException("Unimplemented method 'getScoresByPeriod'");
+        return activityScoreRepository.findByPeriod(periodId);
+
+        // List<ActivityScore> scores = activityScoreRepository.findByPeriod(periodId);
+        // return scores.stream()
+        //     .mapToInt(ActivityScore::getScore)
+        //     .average()
+        //     .orElse(0.0);
     }
 
     @Override

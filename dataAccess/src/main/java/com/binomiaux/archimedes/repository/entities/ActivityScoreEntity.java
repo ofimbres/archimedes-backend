@@ -14,10 +14,10 @@ public class ActivityScoreEntity {
     private String studentId;
     private String studentFirstName;
     private String studentLastName;
-    private String exerciseId;
+    private String activityId;
     private String periodId;
     private int tries;
-    private String exerciseResult;
+    private String activityResultId;
     private int score;
     private String type;
     private String gsi1pk;
@@ -67,12 +67,12 @@ public class ActivityScoreEntity {
         this.studentLastName = studentLastName;
     }
 
-    public String getExerciseId() {
-        return exerciseId;
+    public String getActivityId() {
+        return activityId;
     }
 
-    public void setExerciseId(String exerciseId) {
-        this.exerciseId = exerciseId;
+    public void setActivityId(String activityId) {
+        this.activityId = activityId;
     }
 
     public String getPeriodId() {
@@ -91,12 +91,12 @@ public class ActivityScoreEntity {
         this.tries = tries;
     }
 
-    public String getExerciseResult() {
-        return exerciseResult;
+    public String getActivityResultId() {
+        return activityResultId;
     }
 
-    public void setExerciseResult(String exerciseResult) {
-        this.exerciseResult = exerciseResult;
+    public void setActivityResultId(String activityResultId) {
+        this.activityResultId = activityResultId;
     }
 
     public int getScore() {

@@ -10,7 +10,6 @@ import com.binomiaux.archimedes.repository.entities.TeacherEntity;
 public interface TeacherMapper {
     TeacherMapper INSTANCE = Mappers.getMapper( TeacherMapper.class );
  
-    //@Mapping(source = "numberOfSeats", target = "seatCount")
     TeacherEntity teacherToEntity(Teacher model);
     Teacher entityToTeacher(TeacherEntity entity);
 }

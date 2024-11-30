@@ -36,7 +36,7 @@ public class PeriodRepositoryImpl implements PeriodRepository {
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId).sortValue("#METADATA"));
 
-        SdkIterable<Page<PeriodEntity>> results = periodTable//.index("gsi1")
+        SdkIterable<Page<PeriodEntity>> results = periodTable
             .query(r -> r.queryConditional(queryConditional));
 
         PeriodEntity periodEntity = results.stream()
@@ -90,7 +90,6 @@ public class PeriodRepositoryImpl implements PeriodRepository {
     public List<Period> getPeriodsByStudent(String studentId) {
         DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
 
-        // LOOK UP BY GS1PK, AND GS1SK
         QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("STUDENT#" + studentId).sortValue("PERIOD#"));
 
         SdkIterable<Page<EnrollmentEntity>> results = studentEnrollmentTable
@@ -117,7 +116,6 @@ public class PeriodRepositoryImpl implements PeriodRepository {
     public List<Period> getPeriodsByTeacher(String teacherId) {
         DynamoDbTable<PeriodEntity> periodTable = enhancedClient.table(tableName, PeriodEntity.TABLE_SCHEMA);
 
-        // LOOK UP BY GS1PK, AND GS1SK
         QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue("TEACHER#" + teacherId).sortValue("PERIOD#"));
 
         SdkIterable<Page<PeriodEntity>> results = periodTable.index("gsi1").query(r -> r.queryConditional(queryConditional));

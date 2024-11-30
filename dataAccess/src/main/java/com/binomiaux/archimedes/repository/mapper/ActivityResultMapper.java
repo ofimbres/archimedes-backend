@@ -11,7 +11,6 @@ import com.binomiaux.archimedes.repository.entities.ActivityResultEntity;
 public interface ActivityResultMapper {
     ActivityResultMapper INSTANCE = Mappers.getMapper( ActivityResultMapper.class );
  
-    //@Mapping(source = "numberOfSeats", target = "seatCount")
     ActivityResultEntity activityResultToEntity(ActivityResult entity);
     ActivityResult entityToActivityResult(ActivityResultEntity model);
 }

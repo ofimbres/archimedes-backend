@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public class ActivityResult {
 
+    private String activityResultId;
     private Activity activity;
     private Student student;
     private Period period;
@@ -11,6 +12,14 @@ public class ActivityResult {
     private Instant timestamp;
     private String worksheetContent;
     private String resourcePath;
+
+    public String getActivityResultId() {
+        return activityResultId;
+    }
+
+    public void setActivityResultId(String activityResultId) {
+        this.activityResultId = activityResultId;
+    }
 
     public Activity getActivity() {
         return activity;
