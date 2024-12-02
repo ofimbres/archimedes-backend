@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,45 +35,48 @@ public class CognitoSecurityConfiguration {
         this.cors = cors;
     }
 
-    @Profile("!dev")
+    // prod
+    //@Profile("!dev")
+//     @Bean
+//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//         http
+//                 .csrf().disable()
+//                 .oauth2Client()
+//                 .and()
+//                 .logout()
+//                 .and()
+//                 .oauth2Login()
+//                 .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
+
+
+//         /*http.authorizeRequests()
+// >>>>>>> Stashed changes
+//                 .antMatchers("/healthcheck/").permitAll()
+// =======
+        
+//         http.authorizeHttpRequests()
+//                 .requestMatchers("/healthcheck/").permitAll()
+// >>>>>>> Stashed changes
+//                 .anyRequest().authenticated().and()
+//                 .oauth2ResourceServer().jwt();
+
+//         http.cors();*/
+
+//         return http.csrf().disable().build();
+//         //return http.build();
+//     }
+
+    //@Profile("dev")
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .oauth2Client()
-                .and()
-                .logout()
-                .and()
-                .oauth2Login()
-                .redirectionEndpoint().baseUri("/login/oauth2/code/cognito");
-
-
-        /*http.authorizeRequests()
->>>>>>> Stashed changes
-                .antMatchers("/healthcheck/").permitAll()
-=======
-        
-        http.authorizeHttpRequests()
-                .requestMatchers("/healthcheck/").permitAll()
->>>>>>> Stashed changes
-                .anyRequest().authenticated().and()
-                .oauth2ResourceServer().jwt();
-
-        http.cors();*/
-
-        return http.csrf().disable().build();
-        //return http.build();
-    }
-
-    @Profile("dev")
-    @Bean
-    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
-                .authorizeHttpRequests()
-                .anyRequest().permitAll();
-
-        http.cors();
+                .csrf(csrf ->
+                    csrf.disable())
+                .authorizeHttpRequests(requests -> 
+                    requests.anyRequest().permitAll())
+                .cors((cors -> {
+                    cors.configurationSource(corsConfigurationSource());
+                }));
 
         return http.build();
     }
@@ -106,9 +108,14 @@ public class CognitoSecurityConfiguration {
         configuration.setMaxAge(cors.getMaxAge());
         configuration.setAllowedHeaders(cors.getAllowedHeaders());
         configuration.setExposedHeaders(cors.getExposedHeaders());
+        // configuration.addAllowedOrigin("http://localhost:3000"); // Allow all origins, change this to specific origins in production
+        // configuration.addAllowedMethod("*"); // Allow all methods (GET, POST, etc.)
+        // configuration.addAllowedHeader("*"); // Allow all headers
+        // configuration.setAllowCredentials(true); // Allow credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
