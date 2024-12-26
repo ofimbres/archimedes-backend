@@ -60,7 +60,16 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
 
     @Override
     public void delete(String studentId, String periodId) {
-        // TODO Auto-generated method stub
+        DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
+        
+        // Create the key to identify the item to be deleted
+        Key key = Key.builder()
+            .partitionValue("STUDENT#" + studentId)
+            .sortValue("PERIOD#" + periodId)
+            .build();
+            
+        // Perform the delete operation
+        studentEnrollmentTable.deleteItem(key);
     }
 
     @Override
