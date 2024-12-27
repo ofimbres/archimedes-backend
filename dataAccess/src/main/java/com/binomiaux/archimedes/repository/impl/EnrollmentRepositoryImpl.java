@@ -39,7 +39,7 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         Student student = enrollment.getStudent();
 
         DynamoDbTable<EnrollmentEntity> studentEnrollmentTable = enhancedClient.table(tableName, EnrollmentEntity.TABLE_SCHEMA);
-        EnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("PERIOD#" + period.getPeriodId()).sortValue("STUDENT#" + student.getStudentId())));
+        EnrollmentEntity studentEnrollmentEntity = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue("STUDENT#" + student.getStudentId()).sortValue("PERIOD#" + period.getPeriodId())));
         if (studentEnrollmentEntity != null) {
             throw new ConflictOperationException("Student " + student.getStudentId() + " already enrolled in period " + period.getPeriodId(), null, "STUDENT_ALREADY_ENROLLED");
         }
@@ -66,7 +66,7 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
         // Create the key to identify the item to be deleted
         Key key = Key.builder()
             .partitionValue("STUDENT#" + studentId)
-            .sortValue("PERIOD#" + periodId)
+            .sortValue("PERIOD#" + periodId) 
             .build();
             
         // Perform the delete operation
