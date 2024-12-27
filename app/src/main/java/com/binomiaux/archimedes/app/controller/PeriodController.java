@@ -43,7 +43,7 @@ public class PeriodController {
 
     @DeleteMapping("/{periodId}/students/{studentId}/enrollments")
     public ResponseEntity<?> unenrollStudentInPeriod(@PathVariable("periodId") String periodId, @PathVariable("studentId") String studentId) {
-        studentService.enrollStudentInPeriod(studentId, periodId);
+        studentService.unrollStudentInPeriod(studentId, periodId);
         return ResponseEntity.noContent().build();
     }
 }
