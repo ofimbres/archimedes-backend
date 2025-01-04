@@ -1,12 +1,12 @@
 package com.binomiaux.archimedes.service;
 
-import com.binomiaux.archimedes.model.ActivityResult;
 import com.binomiaux.archimedes.model.ActivityScore;
+import com.binomiaux.archimedes.model.ActivitySubmission;
 
 import java.util.List;
 
-public interface ActivityResultService {
-    void create(ActivityResult exerciseResult);
+public interface ActivitySubmissionService {
+    ActivitySubmission createActivitySubmission(ActivitySubmission activitySubmission);
     
     List<ActivityScore> getScoresByPeriodAndStudent(String periodId, String studentId);
     List<ActivityScore> getScoresByPeriod(String periodId);

@@ -8,11 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import com.binomiaux.archimedes.model.Activity;
 import com.binomiaux.archimedes.model.ActivityScore;
-import com.binomiaux.archimedes.model.Enrollment;
-import com.binomiaux.archimedes.model.Period;
-import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.repository.api.ActivityScoreRepository;
 import com.binomiaux.archimedes.repository.entities.ActivityScoreEntity;
 import com.binomiaux.archimedes.repository.mapper.ActivityScoreMapper;
@@ -113,7 +109,7 @@ public class ActivityScoreRepositoryImpl implements ActivityScoreRepository {
         exerciseScoreEntity.setPeriodId(score.getPeriod().getPeriodId());
         exerciseScoreEntity.setTries(score.getTries());
         exerciseScoreEntity.setScore(score.getScore());
-        exerciseScoreEntity.setActivityResultId(score.getActivityResult().getActivityResultId());
+        exerciseScoreEntity.setActivityResultId(score.getActivitySubmission().getActivityResultId());
 
         exerciseScoreTable.putItem(exerciseScoreEntity);
     }

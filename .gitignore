@@ -29,3 +29,4 @@ hs_err_pid*
 
 app/src/main/resources/application-*.yml
 app/bin/
+dataAccess/bin/

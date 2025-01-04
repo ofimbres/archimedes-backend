@@ -9,8 +9,6 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.repository.api.EnrollmentRepository;
 import com.binomiaux.archimedes.repository.entities.EnrollmentEntity;
-import com.binomiaux.archimedes.repository.entities.PeriodEntity;
-import com.binomiaux.archimedes.repository.entities.StudentEntity;
 import com.binomiaux.archimedes.repository.exception.ConflictOperationException;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
@@ -22,7 +20,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Repository

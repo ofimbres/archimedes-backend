@@ -1,10 +1,19 @@
 package com.binomiaux.archimedes.app.request;
 
-public class ActivityResultRequest {
+public class ActivitySubmissionRequest {
+    private String activityId;
     private String studentId;
     private String periodId;
     private String worksheetContent;
     private int score;
+
+    public String getActivityId() {
+        return activityId;
+    }
+
+    public void setActivityId(String activityId) {
+        this.activityId = activityId;
+    }
 
     public String getStudentId() {
         return studentId;

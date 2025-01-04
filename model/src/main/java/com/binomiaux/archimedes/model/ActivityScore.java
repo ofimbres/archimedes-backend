@@ -8,19 +8,19 @@ public class ActivityScore {
     private Period period;
     private int tries;
     private int score;
-    private ActivityResult activityResult;
+    private ActivitySubmission activitySubmission;
     private Instant timestamp;
 
     public ActivityScore() {
     }
 
-    public ActivityScore(Activity activity, Student student, Period period, int tries, int score, ActivityResult activityResult, Instant timestamp) {
+    public ActivityScore(Activity activity, Student student, Period period, int tries, int score, ActivitySubmission activitySubmission, Instant timestamp) {
         this.activity = activity;
         this.student = student;
         this.period = period;
         this.tries = tries;
         this.score = score;
-        this.activityResult = activityResult;
+        this.activitySubmission = activitySubmission;
         this.timestamp = timestamp;
     }
 
@@ -64,12 +64,12 @@ public class ActivityScore {
         this.score = score;
     }
 
-    public ActivityResult getActivityResult() {
-        return activityResult;
+    public ActivitySubmission getActivitySubmission() {
+        return activitySubmission;
     }
 
-    public void setActivityResult(ActivityResult activityResult) {
-        this.activityResult = activityResult;
+    public void setActivitySubmission(ActivitySubmission activitySubmission) {
+        this.activitySubmission = activitySubmission;
     }
 
     public Instant getTimestamp() {
