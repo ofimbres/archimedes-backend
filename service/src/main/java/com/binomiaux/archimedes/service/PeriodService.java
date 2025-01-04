@@ -5,7 +5,8 @@ import com.binomiaux.archimedes.model.Period;
 import java.util.List;
 
 public interface PeriodService {
-    Period getPeriod(String code);
-    void create(Period period);
-    List<Period> getPeriodsByTeacher(String teacherId);
+    Period getPeriodById(String code);
+    void createPeriod(Period period);
+    List<Period> getPeriodsByTeacherId(String teacherId);
+    List<Period> getPeriodsByStudentId(String studentId);
 }

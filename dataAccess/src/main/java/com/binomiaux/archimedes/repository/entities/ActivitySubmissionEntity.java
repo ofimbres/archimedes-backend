@@ -8,7 +8,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
-public class ActivityResultEntity {
+public class ActivitySubmissionEntity {
     private String pk;
     private String sk;
     private String activityResultId;
@@ -151,5 +151,5 @@ public class ActivityResultEntity {
         this.gsi2sk = gsi2sk;
     }
 
-    public static final TableSchema<ActivityResultEntity> TABLE_SCHEMA = TableSchema.fromBean(ActivityResultEntity.class);
+    public static final TableSchema<ActivitySubmissionEntity> TABLE_SCHEMA = TableSchema.fromBean(ActivitySubmissionEntity.class);
 }

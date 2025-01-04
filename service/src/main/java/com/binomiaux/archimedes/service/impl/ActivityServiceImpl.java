@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.net.URL;
-import java.time.Duration;
 
 @Service
 public class ActivityServiceImpl implements ActivityService {

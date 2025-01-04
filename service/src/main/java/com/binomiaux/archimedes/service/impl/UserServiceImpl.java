@@ -5,7 +5,6 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
 import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.model.UserRegistration;
-import com.binomiaux.archimedes.service.ArchimedesServiceScan;
 import com.binomiaux.archimedes.service.PeriodService;
 import com.binomiaux.archimedes.service.StudentService;
 import com.binomiaux.archimedes.service.TeacherService;
@@ -54,16 +53,16 @@ public class UserServiceImpl implements UserService {
             String userId = null;
             if (userType.equals("teachers")) {
                 Teacher teacher = new Teacher(schoolCode, null, givenName, familyName, email, username);
-                teacherService.create(teacher);
+                teacherService.createTeacher(teacher);
                 
                 for (int i = 1; i <= 6; i++) {
-                    periodService.create(new Period(schoolCode, teacher.getTeacherId(), String.valueOf(i), "Period " + i));
+                    periodService.createPeriod(new Period(schoolCode, teacher.getTeacherId(), String.valueOf(i), "Period " + i));
                 }
 
                 userId = teacher.getTeacherId();
             } else if (userType.equals("students")){
                 Student student = new Student(schoolCode, null, givenName, familyName, email, username);
-                studentService.create(student);
+                studentService.createStudent(student);
                 userId = student.getStudentId();
             }
 

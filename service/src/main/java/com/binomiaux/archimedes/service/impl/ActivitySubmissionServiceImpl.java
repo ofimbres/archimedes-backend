@@ -1,11 +1,11 @@
 package com.binomiaux.archimedes.service.impl;
 
-import com.binomiaux.archimedes.service.ActivityResultService;
+import com.binomiaux.archimedes.service.ActivitySubmissionService;
 import com.binomiaux.archimedes.service.awsservices.S3Service;
-import com.binomiaux.archimedes.repository.api.ActivityResultRepository;
+import com.binomiaux.archimedes.repository.api.ActivitySubmissionRepository;
 import com.binomiaux.archimedes.repository.api.ActivityScoreRepository;
 import com.binomiaux.archimedes.repository.api.StudentRepository;
-import com.binomiaux.archimedes.model.ActivityResult;
+import com.binomiaux.archimedes.model.ActivitySubmission;
 import com.binomiaux.archimedes.model.ActivityScore;
 import com.binomiaux.archimedes.model.Student;
 
@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ActivityResultServiceImpl implements ActivityResultService {
-    private static final Logger log = LoggerFactory.getLogger(ActivityResultServiceImpl.class);
+public class ActivitySubmissionServiceImpl implements ActivitySubmissionService {
+    private static final Logger log = LoggerFactory.getLogger(ActivitySubmissionService.class);
 
     @Autowired
-    private ActivityResultRepository activityResultRepository;
+    private ActivitySubmissionRepository activityResultRepository;
 
     @Autowired
     private ActivityScoreRepository activityScoreRepository;
@@ -38,42 +38,44 @@ public class ActivityResultServiceImpl implements ActivityResultService {
     private String exerciseResultsBucketName;  
 
     @Override
-    public void create(ActivityResult exerciseResult) {
+    public ActivitySubmission createActivitySubmission(ActivitySubmission activitySubmission) {
         // Upload the worksheet content to S3
-        String resourcePath = "mini-quiz/" + exerciseResult.getStudent().getStudentId() + "/" + exerciseResult.getActivity().getActivityId() + "/" + System.currentTimeMillis() + ".html";
-        exerciseResult.setResourcePath(resourcePath);
+        String resourcePath = "mini-quiz/" + activitySubmission.getStudent().getStudentId() + "/" + activitySubmission.getActivity().getActivityId() + "/" + System.currentTimeMillis() + ".html";
+        activitySubmission.setResourcePath(resourcePath);
         String exerciseResultId = UUID.randomUUID().toString();
-        exerciseResult.setActivityResultId(exerciseResultId);
+        activitySubmission.setActivityResultId(exerciseResultId);
 
-        activityResultRepository.create(exerciseResult);
+        activityResultRepository.create(activitySubmission);
 
-        Student student = studentRepository.find(exerciseResult.getStudent().getStudentId());
-        ActivityScore exerciseScore = activityScoreRepository.findByPeriodAndStudentAndActivity(exerciseResult.getPeriod().getPeriodId(), exerciseResult.getStudent().getStudentId(), exerciseResult.getActivity().getActivityId());
+        Student student = studentRepository.find(activitySubmission.getStudent().getStudentId());
+        ActivityScore exerciseScore = activityScoreRepository.findByPeriodAndStudentAndActivity(activitySubmission.getPeriod().getPeriodId(), activitySubmission.getStudent().getStudentId(), activitySubmission.getActivity().getActivityId());
 
         if (exerciseScore == null) {
             exerciseScore = new ActivityScore();
-            exerciseScore.setActivity(exerciseResult.getActivity());
+            exerciseScore.setActivity(activitySubmission.getActivity());
             exerciseScore.setStudent(student);
-            exerciseScore.setPeriod(exerciseResult.getPeriod());
+            exerciseScore.setPeriod(activitySubmission.getPeriod());
             exerciseScore.setTries(1);
-            exerciseScore.setScore(exerciseResult.getScore());
-            exerciseScore.setActivityResult(exerciseResult);
+            exerciseScore.setScore(activitySubmission.getScore());
+            exerciseScore.setActivitySubmission(activitySubmission);
         } else {
-            exerciseScore.setActivity(exerciseResult.getActivity());
+            exerciseScore.setActivity(activitySubmission.getActivity());
             exerciseScore.setStudent(student);
-            exerciseScore.setPeriod(exerciseResult.getPeriod());
+            exerciseScore.setPeriod(activitySubmission.getPeriod());
             exerciseScore.setTries(exerciseScore.getTries() + 1);
 
-            if (exerciseResult.getScore() > exerciseScore.getScore()) {
-                exerciseScore.setScore(exerciseResult.getScore());
-                exerciseScore.setActivityResult(exerciseResult);
+            if (activitySubmission.getScore() > exerciseScore.getScore()) {
+                exerciseScore.setScore(activitySubmission.getScore());
+                exerciseScore.setActivitySubmission(activitySubmission);
             }
         }
 
         activityScoreRepository.create(exerciseScore);
         
         // Upload the file to S3
-        s3Service.uploadFile(exerciseResultsBucketName, resourcePath, exerciseResult.getWorksheetContent(), "text/html");
+        s3Service.uploadFile(exerciseResultsBucketName, resourcePath, activitySubmission.getWorksheetContent(), "text/html");
+
+        return activitySubmission;
     }
 
     @Override

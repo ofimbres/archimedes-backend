@@ -2,7 +2,7 @@ package com.binomiaux.archimedes.model;
 
 import java.time.Instant;
 
-public class ActivityResult {
+public class ActivitySubmission {
 
     private String activityResultId;
     private Activity activity;

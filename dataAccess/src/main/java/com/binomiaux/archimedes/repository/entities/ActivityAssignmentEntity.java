@@ -1,4 +1,6 @@
-package com.binomiaux.archimedes.model.dynamodb;
+package com.binomiaux.archimedes.repository.entities;
+
+import java.time.LocalDate;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -7,38 +9,20 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
-
 @DynamoDbBean
-public class ExerciseEntity {
-    public static final TableSchema<ExerciseEntity> TABLE_SCHEMA = TableSchema.fromBean(ExerciseEntity.class);
+public class ActivityAssignmentEntity {
+    public static final TableSchema<ActivityEntity> TABLE_SCHEMA = TableSchema.fromBean(ActivityEntity.class);
 
     private String pk;
     private String sk;
     private String code;
     private String name;
     private String classification;
-    private String path;
+    private LocalDate dueDate;
     private String gsi1pk;
     private String gsi1sk;
     private String gsi2pk;
     private String gsi2sk;
-
-    public ExerciseEntity() {
-    }
-
-    public ExerciseEntity(String pk, String sk, String code, String name, String classification, String path,
-            String gsi1pk, String gsi1sk, String gsi2pk, String gsi2sk) {
-        this.pk = pk;
-        this.sk = sk;
-        this.code = code;
-        this.name = name;
-        this.classification = classification;
-        this.path = path;
-        this.gsi1pk = gsi1pk;
-        this.gsi1sk = gsi1sk;
-        this.gsi2pk = gsi2pk;
-        this.gsi2sk = gsi2sk;
-    }
 
     @DynamoDbPartitionKey 
     public String getPk() {
@@ -82,12 +66,12 @@ public class ExerciseEntity {
         this.classification = classification;
     }
 
-    public String getPath() {
-        return path;
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1") 
@@ -124,5 +108,5 @@ public class ExerciseEntity {
 
     public void setGsisk2(String gsi2sk) {
         this.gsi2sk = gsi2sk;
-    }    
+    }
 }

@@ -15,16 +15,21 @@ public class PeriodServiceImpl implements PeriodService {
     private PeriodRepository periodRepository;
 
     @Override
-    public Period getPeriod(String code) {
+    public Period getPeriodById(String code) {
         return null;
     }
 
     @Override
-    public void create(Period period) {
+    public void createPeriod(Period period) {
         periodRepository.create(period);
     }
 
-    public List<Period> getPeriodsByTeacher(String teacherId) {
+    public List<Period> getPeriodsByTeacherId(String teacherId) {
         return periodRepository.getPeriodsByTeacher(teacherId);
+    }
+
+    @Override
+    public List<Period> getPeriodsByStudentId(String studentId) {
+        return periodRepository.getPeriodsByStudent(studentId);
     }
 }

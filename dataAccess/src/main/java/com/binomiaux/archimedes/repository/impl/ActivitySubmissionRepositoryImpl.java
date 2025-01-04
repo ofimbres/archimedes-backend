@@ -1,14 +1,14 @@
 package com.binomiaux.archimedes.repository.impl;
 
-import com.binomiaux.archimedes.repository.api.ActivityResultRepository;
-import com.binomiaux.archimedes.repository.entities.ActivityResultEntity;
-import com.binomiaux.archimedes.repository.mapper.ActivityResultMapper;
+import com.binomiaux.archimedes.repository.api.ActivitySubmissionRepository;
+import com.binomiaux.archimedes.repository.entities.ActivitySubmissionEntity;
+import com.binomiaux.archimedes.repository.mapper.ActivitySubmissionMapper;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 
-import com.binomiaux.archimedes.model.ActivityResult;
+import com.binomiaux.archimedes.model.ActivitySubmission;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,10 +17,9 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 @Repository
-public class ActivityResultRepositoryImpl implements ActivityResultRepository {
+public class ActivitySubmissionRepositoryImpl implements ActivitySubmissionRepository {
 
     @Autowired
     private DynamoDbEnhancedClient enhancedClient;
@@ -28,21 +27,21 @@ public class ActivityResultRepositoryImpl implements ActivityResultRepository {
     @Value("${dynamodb.table-name}")
     private String tableName;
 
-    private ActivityResultMapper mapper = ActivityResultMapper.INSTANCE;
+    private ActivitySubmissionMapper mapper = ActivitySubmissionMapper.INSTANCE;
 
     @Override
-    public ActivityResult find(String id) {
-        DynamoDbTable<ActivityResultEntity> exerciseResultTable = enhancedClient.table(tableName, ActivityResultEntity.TABLE_SCHEMA);
-        ActivityResultEntity entity = exerciseResultTable.getItem(r -> r.key(Key.builder().partitionValue("ACTIVITY_RESULT#" + id).sortValue("#METADATA").build()));
+    public ActivitySubmission find(String id) {
+        DynamoDbTable<ActivitySubmissionEntity> exerciseResultTable = enhancedClient.table(tableName, ActivitySubmissionEntity.TABLE_SCHEMA);
+        ActivitySubmissionEntity entity = exerciseResultTable.getItem(r -> r.key(Key.builder().partitionValue("ACTIVITY_RESULT#" + id).sortValue("#METADATA").build()));
 
         return mapper.entityToActivityResult(entity);
     }
 
     @Override
-    public void create(ActivityResult result) {
+    public void create(ActivitySubmission result) {
         // exercise score
-        DynamoDbTable<ActivityResultEntity> exerciseResultTable = enhancedClient.table(tableName, ActivityResultEntity.TABLE_SCHEMA);
-        ActivityResultEntity record = new ActivityResultEntity();
+        DynamoDbTable<ActivitySubmissionEntity> exerciseResultTable = enhancedClient.table(tableName, ActivitySubmissionEntity.TABLE_SCHEMA);
+        ActivitySubmissionEntity record = new ActivitySubmissionEntity();
         String exerciseResultId = result.getActivityResultId();
 
         record.setPk("ACTIVITY_RESULT#" + exerciseResultId);
