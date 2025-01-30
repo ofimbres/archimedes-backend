@@ -1,7 +1,6 @@
-FROM amazoncorretto:21-alpine3.17 AS builder
+FROM --platform=linux/amd64 amazoncorretto:21-alpine3.17 AS builder
 WORKDIR /app
 COPY . .
-RUN chmod +x gradlew
 RUN ./gradlew build --no-daemon
 
 FROM amazoncorretto:21-alpine3.17
