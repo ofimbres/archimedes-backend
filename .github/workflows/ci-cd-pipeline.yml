@@ -7,8 +7,7 @@ on:
 
 jobs:
   build:
-    env:
-      NODE_ENV: dev
+    environment: dev
     runs-on: ubuntu-latest
 
     steps:
@@ -41,9 +40,9 @@ jobs:
 
     - name: Deploy to ECS
       env:
-        AWS_REGION: ${{ env.AWS_REGION }}
-        CLUSTER_NAME: ${{ env.CLUSTER_NAME }}
-        SERVICE_NAME: ${{ env.SERVICE_NAME }}
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
+        SERVICE_NAME: ${{ vars.SERVICE_NAME }}
         IMAGE_URI: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       run: |
         aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $AWS_REGION
