@@ -1,0 +1,74 @@
+cloud:
+  aws:
+    credentials:
+      access-key: AKIA5QLPQK5EXN47XR5B
+      secret-key: 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
+    region:
+      static: us-west-2
+
+dynamodb:
+  table-name: dev-archimedes-table
+
+s3:
+  activity-bucket-name: dev-archimedes-exercises-bucket
+  activity-results-bucket-name: dev-archmimedes-exercise-results-bucket
+
+cognito:
+  user-pool-id: us-west-2_d4T7uOaLs
+  user-pool-client-id: 28945ljn7m4a4tn5k9ib0l22o1
+
+mini-quiz-base-url: https://dev-archimedes-exercises-bucket.s3-website-us-west-2.amazonaws.com/
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          cognito:
+            clientName: cognitouserpoolappclient9DF0BCB4-JLuC9He3pVtY
+            client-secret: 
+            redirect-uri: 'http://localhost:8080/login/oauth2/code/cognito'
+            client-id: 28945ljn7m4a4tn5k9ib0l22o1
+            scope: openid
+            authorization-grant-type: authorization_code
+        provider:
+          cognito:
+            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_d4T7uOaLs
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_d4T7uOaLs/.well-known/jwks.json
+
+web:
+  cors:
+    allowedOrigins: 
+      - "http://localhost:3000" # Replace with the origin of your client application
+    allowedMethods: 
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allowedHeaders: 
+      - "Content-Type"
+      - "Authorization"
+      - "Accept"
+      - "Access-Control-Allow-Origin"
+      - "Access-Control-Allow-Methods"
+      - "Access-Control-Allow-Headers"
+      - "Access-Control-Allow-Credentials"
+    exposedHeaders: 
+      - "Custom-Header-1" # Replace with any custom headers your application uses
+    maxAge: 3600 # The maximum age (in seconds) of preflight requests. This is 1 hour.
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
