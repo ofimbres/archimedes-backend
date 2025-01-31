@@ -16,8 +16,8 @@ EXPOSE 80
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 #     CMD curl -f http://localhost:80/actuator/health /proc/1/fd/1 2>&1 || exit 1
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:80/healthcheck/ || exit 1
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+#     CMD curl -f http://localhost:80/healthcheck/ || exit 1
 
 # ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app-1.0-SNAPSHOT.jar"]
 
