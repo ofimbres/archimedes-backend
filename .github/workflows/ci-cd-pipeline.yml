@@ -40,6 +40,19 @@ jobs:
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
 
+   - name: Register new task definition
+      env:
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
+        CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
+        IMAGE_URI: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      run: |
+        aws ecs register-task-definition \
+          --family $TASK_DEFINITION \
+          --network-mode awsvpc \
+          --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$IMAGE_URI\",\"cpu\":500,\"memory\":1024,\"essential\":true,\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/${TASK_DEFINITION}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"dev-archimedes-backend-service-task-definition\"}},\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:80/healthcheck/ || exit 1\"],\"interval\":30,\"timeout\":10,\"retries\":3,\"startPeriod\":30}}]" \
+          --region $AWS_REGION
+
     - name: Deploy to ECS
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
