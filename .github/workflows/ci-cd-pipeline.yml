@@ -48,12 +48,14 @@ jobs:
         TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
         CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
         LOGS_STREAM_PREFIX: ${{ vars.LOGS_STREAM_PREFIX }}
-        IMAGE_URI: ${{ steps.build.outputs.IMAGE_URI }}
+        ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         aws ecs register-task-definition \
           --family $TASK_DEFINITION \
           --network-mode awsvpc \
-          --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$IMAGE_URI\",\"cpu\":500,\"memory\":1024,\"essential\":true,\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/${TASK_DEFINITION}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"${LOGS_STREAM_PREFIX}\"}},\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:80/healthcheck/ || exit 1\"],\"interval\":30,\"timeout\":10,\"retries\":3,\"startPeriod\":30}}]" \
+          --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",\"cpu\":500,\"memory\":1024,\"essential\":true,\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/${TASK_DEFINITION}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"${LOGS_STREAM_PREFIX}\"}},\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:80/healthcheck/ || exit 1\"],\"interval\":30,\"timeout\":10,\"retries\":3,\"startPeriod\":30}}]" \
           --region $AWS_REGION
 
     - name: Deploy to ECS
