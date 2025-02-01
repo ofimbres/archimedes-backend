@@ -72,3 +72,8 @@ management:
     web:
       exposure:
         include: health,info
+
+server:
+  tomcat:
+    relaxed-path-chars: '[]|'
+    relaxed-query-chars: '[]|{}'
