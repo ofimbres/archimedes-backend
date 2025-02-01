@@ -43,7 +43,6 @@ jobs:
         echo "IMAGE_URI=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
 
     - name: Register new task definition
-      needs: build
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
         TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
