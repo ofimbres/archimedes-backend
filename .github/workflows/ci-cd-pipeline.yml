@@ -33,20 +33,23 @@ jobs:
         AWS_REGION: ${{ vars.AWS_REGION }}
 
     - name: Build and push Docker image
+      id: build
       env:
         ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
+        echo "::set-output name=image_uri::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
 
     - name: Register new task definition
+      needs: build
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
         TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
         CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
         LOGS_STREAM_PREFIX: ${{ vars.LOGS_STREAM_PREFIX }}
-        IMAGE_URI: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        IMAGE_URI: ${{ needs.build.outputs.image_uri }}
       run: |
         aws ecs register-task-definition \
           --family $TASK_DEFINITION \
