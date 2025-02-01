@@ -40,7 +40,7 @@ jobs:
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
 
-   - name: Register new task definition
+    - name: Register new task definition
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
         TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
