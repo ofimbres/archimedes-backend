@@ -33,16 +33,15 @@ jobs:
         AWS_REGION: ${{ vars.AWS_REGION }}
 
     - name: Build and push Docker image
-      id: build
       env:
         ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
-        echo "IMAGE_URI=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
 
     - name: Register new task definition
+      id: register-task-definition
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
         TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
@@ -52,11 +51,14 @@ jobs:
         ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        aws ecs register-task-definition \
+        TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
           --family $TASK_DEFINITION \
           --network-mode awsvpc \
           --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",\"cpu\":500,\"memory\":1024,\"essential\":true,\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/${TASK_DEFINITION}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"${LOGS_STREAM_PREFIX}\"}},\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:80/healthcheck/ || exit 1\"],\"interval\":30,\"timeout\":10,\"retries\":3,\"startPeriod\":30}}]" \
-          --region $AWS_REGION
+          --region $AWS_REGION \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+        echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_OUTPUT
 
     - name: Deploy to ECS
       env:
@@ -64,5 +66,6 @@ jobs:
         CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
         SERVICE_NAME: ${{ vars.SERVICE_NAME }}
         IMAGE_URI: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        TASK_DEFINITION_ARN: ${{ steps.register-task-definition.outputs.TASK_DEFINITION_ARN }}
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION_ARN --force-new-deployment --region $AWS_REGION
