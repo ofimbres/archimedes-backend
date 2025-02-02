@@ -40,6 +40,15 @@ jobs:
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
 
+    - name: Stop ECS service
+      env:
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
+        SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+      run: |
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --desired-count 0 --region $AWS_REGION
+        aws ecs wait services-stable --cluster $CLUSTER_NAME --services $SERVICE_NAME --region $AWS_REGION
+
     - name: Register new task definition
       id: register-task-definition
       env:
@@ -60,11 +69,12 @@ jobs:
           --output text)
         echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_OUTPUT
 
-    - name: Deploy to ECS
+    - name: Start ECS service
       env:
         AWS_REGION: ${{ vars.AWS_REGION }}
         CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
         SERVICE_NAME: ${{ vars.SERVICE_NAME }}
         TASK_DEFINITION_ARN: ${{ steps.register-task-definition.outputs.TASK_DEFINITION_ARN }}
       run: |
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION_ARN --force-new-deployment --region $AWS_REGION
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION_ARN --desired-count 1 --region $AWS_REGION
+        aws ecs wait services-stable --cluster $CLUSTER_NAME --services $SERVICE_NAME --region $AWS_REGION
