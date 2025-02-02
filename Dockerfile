@@ -1,7 +1,7 @@
-FROM amazoncorretto:21-alpine3.17 AS builder
+FROM gradle:8.12.1-jdk21-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN ./gradlew build --no-daemon
+RUN gradle build --no-daemon
 
 FROM amazoncorretto:21-alpine3.17
 WORKDIR /app
