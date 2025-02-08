@@ -9,7 +9,7 @@ jobs:
   build:
     environment: dev
     # runs-on: ubuntu-latest
-    runs-on: ubuntu-22.04-arm64
+    runs-on: ubuntu-24.04-arm
 
     steps:
     - name: Checkout code
