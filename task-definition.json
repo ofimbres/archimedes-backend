@@ -13,16 +13,6 @@
           "protocol": "tcp"
         }
       ],
-      "environment": [
-        {
-          "name": "ACCESS_KEY",
-          "value": "${ACCESS_KEY}"
-        },
-        {
-          "name": "SECRET_KEY",
-          "value": "${SECRET_KEY}"
-        }
-      ],
       "healthCheck": {
         "command": [
           "CMD-SHELL",
