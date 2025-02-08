@@ -27,55 +27,39 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ vars.AWS_REGION }}
 
-    - name: Log in to Amazon ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      env:
-        AWS_REGION: ${{ vars.AWS_REGION }}
 
-    - name: Build and push Docker image
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
       env:
-        ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker buildx build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --push .
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    - name: Stop ECS service
-      env:
-        AWS_REGION: ${{ vars.AWS_REGION }}
-        CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
-        SERVICE_NAME: ${{ vars.SERVICE_NAME }}
-      run: |
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --desired-count 0 --region $AWS_REGION
-        aws ecs wait services-stable --cluster $CLUSTER_NAME --services $SERVICE_NAME --region $AWS_REGION
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@1
+      with:
+        task-definition: task-definition.json
+        task-definition-family: ${{ vars.TASK_DEFINITION }}
+        container-name: ${{ vars.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+        log-configuration-log-driver: awslogs
+        log-configuration-options: |
+          awslogs-create-group=true
+          awslogs-group=${{ vars.LOG_GROUP }},
+          awslogs-region=${{ vars.AWS_REGION }}
+          awslogs-stream-prefix=${{ vars.LOGS_STREAM_PREFIX }}
 
-    - name: Register new task definition
-      id: register-task-definition
-      env:
-        AWS_REGION: ${{ vars.AWS_REGION }}
-        TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
-        CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
-        LOG_GROUP: ${{ vars.LOG_GROUP }}
-        LOGS_STREAM_PREFIX: ${{ vars.LOGS_STREAM_PREFIX }}
-        ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
-          --family $TASK_DEFINITION \
-          --network-mode awsvpc \
-          --container-definitions "[{\"name\":\"$CONTAINER_NAME\",\"image\":\"$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\",\"cpu\":500,\"memory\":1024,\"essential\":true,\"portMappings\":[{\"containerPort\":80,\"hostPort\":80,\"protocol\":\"tcp\"}],\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"${LOG_GROUP}\",\"awslogs-region\":\"${AWS_REGION}\",\"awslogs-stream-prefix\":\"${LOGS_STREAM_PREFIX}\"}},\"healthCheck\":{\"command\":[\"CMD-SHELL\",\"curl -f http://localhost:80/healthcheck/ || exit 1\"],\"interval\":30,\"timeout\":10,\"retries\":3,\"startPeriod\":30}}]" \
-          --region $AWS_REGION \
-          --query 'taskDefinition.taskDefinitionArn' \
-          --output text)
-        echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> $GITHUB_OUTPUT
-
-    - name: Start ECS service
-      env:
-        AWS_REGION: ${{ vars.AWS_REGION }}
-        CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
-        SERVICE_NAME: ${{ vars.SERVICE_NAME }}
-        TASK_DEFINITION_ARN: ${{ steps.register-task-definition.outputs.TASK_DEFINITION_ARN }}
-      run: |
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION_ARN --desired-count 1 --region $AWS_REGION
-        aws ecs wait services-stable --cluster $CLUSTER_NAME --services $SERVICE_NAME --region $AWS_REGION
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@2
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ vars.ECS_SERVICE }}
+        cluster: ${{ vars.ECS_CLUSTER }}
+        wait-for-service-stability: true
