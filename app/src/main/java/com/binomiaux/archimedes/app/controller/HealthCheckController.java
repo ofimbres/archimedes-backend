@@ -11,7 +11,7 @@ import static org.springframework.http.ResponseEntity.ok;
  * Health Check controller.
  */
 @RestController
-@RequestMapping("healthcheck")
+@RequestMapping
 public class HealthCheckController {
     public HealthCheckController() {
     }
