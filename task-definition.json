@@ -1,4 +1,5 @@
 {
+  "family": "backendstackec2taskdefinition2E9226A20",
   "containerDefinitions": [
     {
       "name": "dev-archimedes-backend-container",
