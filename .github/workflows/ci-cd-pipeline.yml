@@ -53,7 +53,7 @@ jobs:
         log-configuration-log-driver: awslogs
         log-configuration-options: |
           awslogs-create-group=true
-          awslogs-group=${{ vars.LOG_GROUP }},
+          awslogs-group=${{ vars.LOG_GROUP }}
           awslogs-region=${{ vars.AWS_REGION }}
           awslogs-stream-prefix=${{ vars.LOGS_STREAM_PREFIX }}
         secrets: |
