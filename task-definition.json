@@ -24,5 +24,8 @@
   "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "EC2"
+  ],
+  "compatibilities": [
+    "EC2"
   ]
 }
