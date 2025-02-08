@@ -67,5 +67,3 @@ jobs:
         service: ${{ vars.SERVICE_NAME }}
         cluster: ${{ vars.CLUSTER_NAME }}
         wait-for-service-stability: true
-        run-task: true
-        wait-for-task-stopped: true
