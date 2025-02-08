@@ -15,12 +15,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # - name: Set up Docker Buildx
-    #   uses: docker/setup-buildx-action@v1
-    
-    # - name: Set up QEMU
-    #   uses: docker/setup-qemu-action@v1
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -59,6 +53,9 @@ jobs:
         environment-variables: |
           ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}
           SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          COGNITO_USER_POOL_ID=${{ vars.COGNITO_USER_POOL_ID }}
+          COGNITO_USER_POOL_CLIENT_ID=${{ vars.COGNITO_USER_POOL_CLIENT_ID }}
+          COGNITO_USER_POOL_CLIENT_NAME=${{ vars.COGNITO_USER_POOL_CLIENT_NAME }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
