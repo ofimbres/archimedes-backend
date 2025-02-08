@@ -56,6 +56,9 @@ jobs:
           awslogs-group=${{ vars.LOG_GROUP }},
           awslogs-region=${{ vars.AWS_REGION }}
           awslogs-stream-prefix=${{ vars.LOGS_STREAM_PREFIX }}
+        secrets: |
+          ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
