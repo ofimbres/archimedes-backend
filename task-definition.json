@@ -1,6 +1,7 @@
 {
   "containerDefinitions": [
     {
+      "name": "dev-archimedes-backend-container",
       "cpu": 500,
       "memory": 1024,
       "essential": true,
