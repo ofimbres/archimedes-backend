@@ -1,4 +1,5 @@
-[
+{
+  "containerDefinitions": [
     {
       "cpu": 500,
       "memory": 1024,
@@ -12,9 +13,14 @@
       ],
       "healthCheck": {
         "command": [
-          "CMD-SHELL", "curl -f http://localhost:80/healthcheck/ || exit 1"
+          "CMD-SHELL",
+          "curl -f http://localhost:80/healthcheck/ || exit 1"
         ]
       }
     }
+  ],
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "EC2"
   ]
-  
+}
