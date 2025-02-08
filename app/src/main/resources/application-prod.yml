@@ -14,8 +14,8 @@ s3:
   activity-results-bucket-name: dev-archmimedes-exercise-results-bucket
 
 cognito:
-  user-pool-id: us-west-2_Oz7oJx4k0
-  user-pool-client-id: 6upikkaagvl3agkm05vusikd8b
+  user-pool-id: ${COGNITO_USER_POOL_ID}
+  user-pool-client-id: ${COGNITO_USER_POOL_CLIENT_ID}
 
 mini-quiz-base-url: https://dev-archimedes-exercises-bucket.s3-website-us-west-2.amazonaws.com/
 
@@ -25,18 +25,18 @@ spring:
       client:
         registration:
           cognito:
-            clientName: cognitouserpoolappclient9DF0BCB4-ZicVY58zRL4z
+            clientName: ${COGNITO_USER_POOL_CLIENT_NAME}
             client-secret: 
             redirect-uri: 'http://localhost:8080/login/oauth2/code/cognito'
-            client-id: 6upikkaagvl3agkm05vusikd8b
+            client-id: ${COGNITO_USER_POOL_CLIENT_ID}
             scope: openid
             authorization-grant-type: authorization_code
         provider:
           cognito:
-            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_Oz7oJx4k0
+            issuerUri: https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}
       resourceserver:
         jwt:
-          jwk-set-uri: https://cognito-idp.us-west-2.amazonaws.com/us-west-2_Oz7oJx4k0/.well-known/jwks.json
+          jwk-set-uri: https://cognito-idp.us-west-2.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json
 
 web:
   cors:
