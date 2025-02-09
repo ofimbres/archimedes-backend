@@ -1,8 +1,5 @@
 cloud:
   aws:
-    credentials:
-      access-key: ${ACCESS_KEY}
-      secret-key: ${SECRET_KEY}
     region:
       static: us-west-2
 
@@ -12,12 +9,11 @@ dynamodb:
 s3:
   activity-bucket-name: dev-archimedes-exercises-bucket
   activity-results-bucket-name: dev-archmimedes-exercise-results-bucket
+  mini-quiz-base-url: https://dev-archimedes-exercises-bucket.s3-website-us-west-2.amazonaws.com/
 
 cognito:
   user-pool-id: ${COGNITO_USER_POOL_ID}
   user-pool-client-id: ${COGNITO_USER_POOL_CLIENT_ID}
-
-mini-quiz-base-url: https://dev-archimedes-exercises-bucket.s3-website-us-west-2.amazonaws.com/
 
 spring:
   security:
