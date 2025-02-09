@@ -30,7 +30,7 @@ public class ActivityServiceImpl implements ActivityService {
     @Value("${s3.activity-results-bucket-name}")
     private String exerciseResultsBucketName;
 
-    @Value("${mini-quiz-base-url}")
+    @Value("${s3.mini-quiz-base-url}")
     private String miniQuizBaseUrl;
 
     @Override
