@@ -4,7 +4,7 @@
     {
       "name": "dev-archimedes-backend-container",
       "cpu": 500,
-      "memory": 192,
+      "memory": 256,
       "essential": true,
       "portMappings": [
         {
