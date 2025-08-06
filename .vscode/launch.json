@@ -6,16 +6,34 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Current File",
+            "name": "Spring Boot App (Local)",
             "request": "launch",
-            "mainClass": "${file}"
+            "mainClass": "com.binomiaux.archimedes.app.ArchimedesApplication",
+            "args": "--spring.profiles.active=local",
+            "console": "integratedTerminal",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "local"
+            }
         },
         {
             "type": "java",
-            "name": "ArchimedesApplication",
+            "name": "Spring Boot with DevTools (Local)",
             "request": "launch",
             "mainClass": "com.binomiaux.archimedes.app.ArchimedesApplication",
-            "projectName": "app"
+            "args": "--spring.profiles.active=local",
+            "vmArgs": "-Dspring.devtools.restart.enabled=true -Dspring.devtools.livereload.enabled=true",
+            "console": "integratedTerminal",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "local"
+            }
+        },
+        {
+            "name": "Spring Boot via Gradle (Local)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}",
+            "preLaunchTask": "gradle: bootRun (local)",
+            "console": "integratedTerminal"
         }
     ]
 }

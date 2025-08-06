@@ -27,6 +27,12 @@ hs_err_pid*
 .gradle/
 **/build/*
 
+# Additional build artifacts
+bin/
+logs/
+out/
+
+# Gradle wrapper JAR (optional - some prefer to commit this)
+!gradle/wrapper/gradle-wrapper.jar
+
 app/src/main/resources/application-*.yml
-app/bin/
-dataAccess/bin/

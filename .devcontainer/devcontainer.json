@@ -6,19 +6,16 @@
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "21",
-      "installGradle": "true"
+      "installGradle": true
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "aws-cli": "latest"
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "vscjava.vscode-spring-initializr",
-        "vscjava.vscode-gradle",
         "vscjava.vscode-java-pack",
-        "ms-azuretools.vscode-docker",
-        "github.copilot-chat"
+        "ms-azuretools.vscode-docker"
       ]
     }
   }
