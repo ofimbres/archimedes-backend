@@ -1,18 +1,4 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.dependency.packagePresentation": "hierarchical",
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable",
-    "files.watcherExclude": {
-        "**/target/**": true,
-        "**/.vscode-server/**": true,
-        "**/node_modules/**": true,
-        "**/.git/objects/**": true,
-        "**/.git/subtree-cache/**": true
-    },
-    "java.completion.enabled": true,
-    "java.debug.settings.enableRunDebugCodeLens": true,
-    "java.saveActions.organizeImports": true,
-    "maven.terminal.useJavaHome": true,
-    "maven.executable.path": "mvn"
+    "java.project.explorer.showNonJavaResources": false,
+    "java.dependency.packagePresentation": "hierarchical"
 }

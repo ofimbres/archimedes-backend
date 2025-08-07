@@ -17,6 +17,7 @@
         "vscjava.vscode-java-pack",
         "ms-azuretools.vscode-docker",
         "vscjava.vscode-maven",
+        "redhat.java",
         "ms-vscode.vscode-spring-boot-dashboard"
       ]
     }
