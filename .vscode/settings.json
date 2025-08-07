@@ -3,24 +3,16 @@
     "java.dependency.packagePresentation": "hierarchical",
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable",
-    "java.gradle.buildServer.enabled": "off",
-    "java.import.gradle.offline.enabled": false,
-    "java.import.gradle.wrapper.enabled": true,
-    "java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current",
-    "java.gradle.projectLoadTimeout": "30s",
-    "java.gradle.projectSyncTimeout": "60s",
     "files.watcherExclude": {
-        "**/.gradle/**": true,
-        "**/build/**": true,
+        "**/target/**": true,
         "**/.vscode-server/**": true,
         "**/node_modules/**": true,
         "**/.git/objects/**": true,
-        "**/.git/subtree-cache/**": true,
-        "**/target/**": true
+        "**/.git/subtree-cache/**": true
     },
     "java.completion.enabled": true,
     "java.debug.settings.enableRunDebugCodeLens": true,
     "java.saveActions.organizeImports": true,
-    "gradle.nestedProjects": true,
-    "gradle.focusTaskInExplorer": true
+    "maven.terminal.useJavaHome": true,
+    "maven.executable.path": "mvn"
 }

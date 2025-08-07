@@ -31,6 +31,7 @@ hs_err_pid*
 bin/
 logs/
 out/
+target/
 
 # Gradle wrapper JAR (optional - some prefer to commit this)
 !gradle/wrapper/gradle-wrapper.jar
