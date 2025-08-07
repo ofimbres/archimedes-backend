@@ -42,15 +42,15 @@ public class StudentRepository {
         // Set DynamoDB keys
         student.setPk(DynamoKeyBuilder.buildStudentKey(student.getStudentId()));
         student.setSk("STUDENT");
-        student.setType("STUDENT");
+        student.setEntityType("STUDENT");
         
         // Set GSI keys for querying
-        student.setGsi1pk(DynamoKeyBuilder.buildSchoolKey(student.getSchoolId()));
-        student.setGsi1sk("STUDENT#" + student.getStudentId());
+        student.setParentEntityKey(DynamoKeyBuilder.buildSchoolKey(student.getSchoolId()));
+        student.setChildEntityKey("STUDENT#" + student.getStudentId());
         
         if (student.getUsername() != null) {
-            student.setGsi2pk("USERNAME");
-            student.setGsi2sk(student.getUsername());
+            student.setSearchTypeKey("USERNAME");
+            student.setSearchValueKey(student.getUsername());
         }
         
         getTable().putItem(student);

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.binomiaux.archimedes.exception.business.ArchimedesServiceException;
+import com.binomiaux.archimedes.exception.business.UserNotConfirmedException;
+import com.binomiaux.archimedes.exception.business.UserNotFoundException;
 import com.binomiaux.archimedes.model.LoggedInUser;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
@@ -18,8 +20,6 @@ import com.binomiaux.archimedes.service.awsservices.CognitoService;
 
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotConfirmedException;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotFoundException;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.UsernameExistsException;
 
 @Service
@@ -47,16 +47,20 @@ public class UserService {
 
             String userId = null;
             if (userType.equals("teachers")) {
-                Teacher teacher = new Teacher(schoolCode, null, givenName, familyName, email, username);
+                Teacher teacher = new Teacher(generateTeacherId(schoolCode), schoolCode, givenName, familyName, email, username);
                 teacherService.createTeacher(teacher);
                 
                 for (int i = 1; i <= 6; i++) {
-                    periodService.createPeriod(new Period(schoolCode, teacher.getTeacherId(), String.valueOf(i), "Period " + i));
+                    String periodId = "PER_" + teacher.getTeacherId() + "_" + i;
+                    String periodName = "Period " + i;
+                    Period period = new Period(periodId, schoolCode, teacher.getTeacherId(), i, periodName,
+                                             teacher.getFirstName(), teacher.getLastName());
+                    periodService.createPeriod(period);
                 }
 
                 userId = teacher.getTeacherId();
             } else if (userType.equals("students")){
-                Student student = new Student(schoolCode, null, givenName, familyName, email, username);
+                Student student = new Student(generateStudentId(schoolCode), schoolCode, givenName, familyName, email, username);
                 studentService.createStudent(student);
                 userId = student.getStudentId();
             }
@@ -86,10 +90,10 @@ public class UserService {
 
             LoggedInUser loggedInUser = new LoggedInUser(username, accessToken);
             return loggedInUser;
-        } catch (UserNotConfirmedException e) {
-            throw new com.binomiaux.archimedes.service.exception.UserNotConfirmedException("User account is not confirmed.");
-        } catch (UserNotFoundException e) {
-            throw new com.binomiaux.archimedes.service.exception.UserNotFoundException("User not found.");
+        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotConfirmedException e) {
+            throw new UserNotConfirmedException("User account is not confirmed.");
+        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotFoundException e) {
+            throw new UserNotFoundException("User not found.");
         }
     }
 
@@ -133,5 +137,14 @@ public class UserService {
         } catch (Exception e) {
             throw new RuntimeException("Error initiating password reset for user: " + username, e);
         }
+    }
+
+    // Helper methods for generating unique IDs
+    private String generateTeacherId(String schoolCode) {
+        return "TCH_" + schoolCode + "_" + System.currentTimeMillis();
+    }
+
+    private String generateStudentId(String schoolCode) {
+        return "STU_" + schoolCode + "_" + System.currentTimeMillis();
     }
 }

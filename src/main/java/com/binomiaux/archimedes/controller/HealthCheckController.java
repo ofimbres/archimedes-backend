@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.app.controller;
+package com.binomiaux.archimedes.controller;
 
 import static org.springframework.http.ResponseEntity.ok;
 

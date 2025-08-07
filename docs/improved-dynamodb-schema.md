@@ -86,6 +86,75 @@ GSI2PK: PERIOD#P001
 GSI2SK: ENROLLMENT#S001
 ```
 
+### Topic
+```
+PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+SK: #METADATA
+TYPE: TOPIC
+TopicId: ALGEBRAIC_EXPRESSIONS
+Name: Algebraic Expressions
+ParentTopicId: null
+Path: Algebraic Expressions
+Level: 1
+GSI1PK: TOPIC
+GSI1SK: TOPIC#ALGEBRAIC_EXPRESSIONS
+GSI2PK: null
+GSI2SK: null
+```
+
+### Subtopic
+```
+PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+SK: SUBTOPIC#AX1
+TYPE: SUBTOPIC
+TopicId: ALGEBRAIC_EXPRESSIONS
+SubtopicId: AX1
+Name: Simplifying Expressions
+ParentTopicId: ALGEBRAIC_EXPRESSIONS
+Path: Algebraic Expressions > Simplifying Expressions
+Level: 2
+GSI1PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+GSI1SK: SUBTOPIC#AX1
+GSI2PK: null
+GSI2SK: null
+```
+
+### Exercise
+```
+PK: EXERCISE#WN16
+SK: #METADATA
+TYPE: EXERCISE
+ExerciseId: WN16
+TopicId: ALGEBRAIC_EXPRESSIONS
+Name: Multiplying Whole Numbers
+ExerciseType: Miniquiz
+Path: WN16.htm
+Difficulty: BEGINNER
+GSI1PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+GSI1SK: EXERCISE#WN16
+GSI2PK: EXERCISE_TYPE
+GSI2SK: Miniquiz#WN16
+```
+
+### Assignment (Exercise assigned to Period)
+```
+PK: PERIOD#P001
+SK: EXERCISE#WN16#DATE#2024-07-25
+TYPE: ASSIGNMENT
+PeriodId: P001
+ExerciseId: WN16
+AssignmentDate: 2024-07-25T12:53:14.924Z
+DueDate: 2024-07-30T23:59:59.000Z
+Name: Multiplying Whole Numbers
+ExerciseType: Miniquiz
+Path: WN16.htm
+Status: ACTIVE
+GSI1PK: PERIOD#P001
+GSI1SK: EXERCISE#WN16
+GSI2PK: EXERCISE#WN16
+GSI2SK: ASSIGNMENT#P001
+```
+
 ## Improved Naming Conventions
 
 ### 🔄 **Current → Improved Names**
@@ -116,7 +185,7 @@ GSI2SK: ENROLLMENT#S001
 
 ### 🎯 **Final Recommended Schema**
 
-#### Student
+#### Student (Final Design)
 ```
 PK: STUDENT#STU001
 SK: #METADATA
@@ -128,13 +197,32 @@ LastName: Hinojosa
 FullName: Diego Hinojosa               # Computed for easy sorting/display
 Email: diego.hinojosa@gmail.com
 Username: diego.hinojosa
-ParentEntityKey: SCHOOL#SCH001         # GSI1PK
-ChildEntityKey: STUDENT#STU001         # GSI1SK  
-SearchTypeKey: EMAIL                   # GSI2PK
-SearchValueKey: diego.hinojosa@gmail.com # GSI2SK
+GSI1PK: SCHOOL#SCH001                  # Query all students by school
+GSI1SK: STUDENT#STU001                 # Specific student within school
+GSI2PK: EMAIL                          # Query student by email (auth)
+GSI2SK: diego.hinojosa@gmail.com       # Email value for lookup
 ```
 
-#### Period  
+#### Teacher (Final Design)
+```
+PK: TEACHER#TCH001
+SK: #METADATA
+EntityType: TEACHER
+TeacherId: TCH001
+SchoolId: SCH001
+FirstName: Guadalupe
+LastName: Trevino
+FullName: Guadalupe Trevino            # Computed for easy sorting/display
+Email: guadalupe.trevino@gmail.com
+Username: guadalupe.trevino
+MaxPeriods: 6
+GSI1PK: SCHOOL#SCH001                  # Query all teachers by school
+GSI1SK: TEACHER#TCH001                 # Specific teacher within school
+GSI2PK: EMAIL                          # Query teacher by email (auth)
+GSI2SK: guadalupe.trevino@gmail.com    # Email value for lookup
+```
+
+#### Period (Final Design)
 ```
 PK: PERIOD#PER001
 SK: #METADATA
@@ -144,11 +232,11 @@ SchoolId: SCH001
 TeacherId: TCH001
 PeriodNumber: 6
 Name: Algebra I
-TeacherFullName: Ms. Guadalupe Trevino # Denormalized for display
-ParentEntityKey: TEACHER#TCH001        # GSI1PK
-ChildEntityKey: PERIOD#PER001          # GSI1SK
-SearchTypeKey: SCHOOL                  # GSI2PK  
-SearchValueKey: SCH001#PERIOD#PER001   # GSI2SK
+TeacherFullName: Guadalupe Trevino     # Denormalized for display
+GSI1PK: TEACHER#TCH001                 # Query all periods by teacher
+GSI1SK: PERIOD#PER001                  # Specific period within teacher
+GSI2PK: SCHOOL#SCH001                  # Query all periods by school
+GSI2SK: PERIOD#PER001                  # Specific period within school
 ```
 
 #### Enrollment (Final Version)
@@ -168,6 +256,75 @@ ParentEntityKey: STUDENT#STU001        # GSI1PK - "Get student's enrollments"
 ChildEntityKey: ENROLLMENT#PER001      # GSI1SK
 SearchTypeKey: PERIOD#PER001           # GSI2PK - "Get period's enrollments"  
 SearchValueKey: ENROLLMENT#STU001      # GSI2SK
+```
+
+#### Topic
+```
+PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+SK: #METADATA
+EntityType: TOPIC
+TopicId: ALGEBRAIC_EXPRESSIONS
+Name: Algebraic Expressions
+ParentTopicId: null                    # null for root topics
+Path: Algebraic Expressions
+Level: 1                               # Hierarchy level
+ParentEntityKey: TOPIC                 # GSI1PK - "Get all topics"
+ChildEntityKey: TOPIC#ALGEBRAIC_EXPRESSIONS # GSI1SK
+SearchTypeKey: null                    # GSI2PK
+SearchValueKey: null                   # GSI2SK
+```
+
+#### Subtopic
+```
+PK: TOPIC#ALGEBRAIC_EXPRESSIONS
+SK: SUBTOPIC#AX1
+EntityType: SUBTOPIC
+TopicId: ALGEBRAIC_EXPRESSIONS
+SubtopicId: AX1
+Name: Simplifying Expressions
+ParentTopicId: ALGEBRAIC_EXPRESSIONS
+Path: Algebraic Expressions > Simplifying Expressions
+Level: 2
+ParentEntityKey: TOPIC#ALGEBRAIC_EXPRESSIONS # GSI1PK - "Get subtopics"
+ChildEntityKey: SUBTOPIC#AX1                 # GSI1SK
+SearchTypeKey: null                          # GSI2PK
+SearchValueKey: null                         # GSI2SK
+```
+
+#### Exercise
+```
+PK: EXERCISE#WN16
+SK: #METADATA
+EntityType: EXERCISE
+ExerciseId: WN16
+TopicId: ALGEBRAIC_EXPRESSIONS
+Name: Multiplying Whole Numbers
+ExerciseType: Miniquiz                 # Miniquiz, Worksheet, Test, etc.
+Path: WN16.htm
+Difficulty: BEGINNER                   # BEGINNER, INTERMEDIATE, ADVANCED
+ParentEntityKey: TOPIC#ALGEBRAIC_EXPRESSIONS # GSI1PK - "Get topic exercises"
+ChildEntityKey: EXERCISE#WN16                # GSI1SK
+SearchTypeKey: EXERCISE_TYPE                 # GSI2PK - "Get exercises by type"
+SearchValueKey: Miniquiz#WN16                # GSI2SK
+```
+
+#### Assignment (Exercise assigned to Period)
+```
+PK: PERIOD#PER001
+SK: EXERCISE#WN16#DATE#2024-07-25
+EntityType: ASSIGNMENT
+PeriodId: PER001
+ExerciseId: WN16
+AssignmentDate: 2024-07-25T12:53:14.924Z
+DueDate: 2024-07-30T23:59:59.000Z
+Name: Multiplying Whole Numbers         # Denormalized from Exercise
+ExerciseType: Miniquiz                  # Denormalized from Exercise
+Path: WN16.htm                          # Denormalized from Exercise
+Status: ACTIVE                          # ACTIVE, COMPLETED, OVERDUE
+ParentEntityKey: PERIOD#PER001          # GSI1PK - "Get period assignments"
+ChildEntityKey: EXERCISE#WN16           # GSI1SK
+SearchTypeKey: EXERCISE#WN16            # GSI2PK - "Get exercise assignments"
+SearchValueKey: ASSIGNMENT#PER001       # GSI2SK
 ```
 
 ## Denormalization Strategy for Enrollments
@@ -260,24 +417,6 @@ Result: Student record directly
 → Student#STU001 data
 ```
 
-## Performance Comparison
-
-### ❌ **Without Denormalization:**
-```
-1. Query enrollments (1 RCU)
-2. Query each student (N RCUs) 
-3. Query each period (N RCUs)
-Total: 1 + 2N RCUs, 1 + 2N API calls
-```
-
-### ✅ **With Denormalization:**
-```
-1. Query enrollments with names (1 RCU)
-Total: 1 RCU, 1 API call
-```
-
-**Result:** **2N times faster and cheaper!**
-
 ## Access Patterns Enabled
 
 1. **Get all students in a period**: Query GSI2 where GSI2PK = PERIOD#P001
@@ -286,11 +425,9 @@ Total: 1 RCU, 1 API call
 4. **Get all periods for a teacher**: Query GSI1 where GSI1PK = TEACHER#T001
 5. **Find user by email**: Query GSI2 where GSI2PK = EMAIL and GSI2SK = email
 6. **Get all students in a school**: Query GSI1 where GSI1PK = SCHOOL#1234 and GSI1SK begins_with STUDENT#
-
-## Benefits of This Design
-
-✅ **Efficient Queries**: All common access patterns are single-query operations
-✅ **Scalable**: Each entity type has its own key space
-✅ **Flexible**: Easy to add new entity types
-✅ **Maintainable**: Clear naming conventions
-✅ **Cost-effective**: Minimal GSI usage
+7. **Get all topics**: Query GSI1 where GSI1PK = TOPIC
+8. **Get all subtopics for a topic**: Query GSI1 where GSI1PK = TOPIC#ALGEBRAIC_EXPRESSIONS and GSI1SK begins_with SUBTOPIC#
+9. **Get all exercises for a topic**: Query GSI1 where GSI1PK = TOPIC#ALGEBRAIC_EXPRESSIONS and GSI1SK begins_with EXERCISE#
+10. **Get exercises by type**: Query GSI2 where GSI2PK = EXERCISE_TYPE and GSI2SK begins_with [type]#
+11. **Get all assignments for a period**: Query main table where PK = PERIOD#P001 and SK begins_with EXERCISE#
+12. **Get all periods assigned an exercise**: Query GSI2 where GSI2PK = EXERCISE#WN16 and GSI2SK begins_with ASSIGNMENT#

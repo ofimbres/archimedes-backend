@@ -3,16 +3,16 @@ package com.binomiaux.archimedes.repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.config.aws.DynamoDbProperties;
 import com.binomiaux.archimedes.model.School;
+import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.repository.util.DynamoKeyBuilder;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.TransactPutItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 /*
  * Simplified TeacherRepository without interface abstraction.
@@ -57,7 +57,7 @@ public class TeacherRepository {
         Teacher teacherEntity = new Teacher();
         teacherEntity.setPk(DynamoKeyBuilder.buildTeacherKey(teacher.getTeacherId()));
         teacherEntity.setSk(DynamoKeyBuilder.METADATA_KEY);
-        teacherEntity.setType("TEACHER");
+        teacherEntity.setEntityType("TEACHER");
         teacherEntity.setSchoolId(teacher.getSchoolId());
         teacherEntity.setTeacherId(teacher.getTeacherId());
         teacherEntity.setFirstName(teacher.getFirstName());
@@ -65,10 +65,10 @@ public class TeacherRepository {
         teacherEntity.setEmail(teacher.getEmail());
         teacherEntity.setUsername(teacher.getUsername());
         teacherEntity.setMaxPeriods(dynamoDbProperties.getDefaultMaxPeriods());
-        teacherEntity.setGsi1pk(DynamoKeyBuilder.buildSchoolKey(teacher.getSchoolId()));
-        teacherEntity.setGsi1sk(DynamoKeyBuilder.buildTeacherKey(teacher.getTeacherId()));
-        teacherEntity.setGsi2pk(DynamoKeyBuilder.buildSchoolKey(teacher.getSchoolId()));
-        teacherEntity.setGsi2sk(DynamoKeyBuilder.buildNameKey(teacher.getFirstName(), teacher.getLastName()));
+        teacherEntity.setParentEntityKey(DynamoKeyBuilder.buildSchoolKey(teacher.getSchoolId()));
+        teacherEntity.setChildEntityKey(DynamoKeyBuilder.buildTeacherKey(teacher.getTeacherId()));
+        teacherEntity.setSearchTypeKey("EMAIL");
+        teacherEntity.setSearchValueKey(teacher.getEmail());
 
         DynamoDbTable<Teacher> teacherTable = enhancedClient.table(dynamoDbProperties.getTableName(), Teacher.TABLE_SCHEMA);
 

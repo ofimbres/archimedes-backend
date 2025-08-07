@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.app;
+package com.binomiaux.archimedes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

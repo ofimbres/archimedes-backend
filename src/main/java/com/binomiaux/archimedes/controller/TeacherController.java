@@ -1,4 +1,4 @@
-package com.binomiaux.archimedes.app.controller;
+package com.binomiaux.archimedes.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

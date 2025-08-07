@@ -7,20 +7,18 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.binomiaux.archimedes.config.aws.DynamoDbProperties;
+import com.binomiaux.archimedes.exception.common.ConflictOperationException;
 import com.binomiaux.archimedes.model.Enrollment;
 import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.config.aws.DynamoDbProperties;
-import com.binomiaux.archimedes.model.Enrollment;
-import com.binomiaux.archimedes.exception.common.ConflictOperationException;
-import com.binomiaux.archimedes.repository.util.DynamoKeyBuilder;
 
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 /**
  * Simplified EnrollmentRepository without interface abstraction.
@@ -34,70 +32,94 @@ public class EnrollmentRepository {
     @Autowired
     private DynamoDbProperties dynamoDbProperties;
 
-    public void create(Enrollment enrollment) {
-        Period period = enrollment.getPeriod();
-        Student student = enrollment.getStudent();
-
-        DynamoDbTable<Enrollment> studentEnrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
-        Enrollment studentEnrollment = studentEnrollmentTable.getItem(r -> r.key(k -> k.partitionValue(DynamoKeyBuilder.buildStudentKey(student.getStudentId())).sortValue(DynamoKeyBuilder.buildPeriodKey(period.getPeriodId()))));
-        if (studentEnrollment != null) {
+    public void create(Student student, Period period) {
+        DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
+        
+        // Check if enrollment already exists using new schema
+        String enrollmentPk = "ENROLLMENT#" + generateEnrollmentId(student.getStudentId(), period.getPeriodId());
+        Enrollment existingEnrollment = enrollmentTable.getItem(r -> r.key(k -> k.partitionValue(enrollmentPk).sortValue("#METADATA")));
+        if (existingEnrollment != null) {
             throw new ConflictOperationException("Student " + student.getStudentId() + " already enrolled in period " + period.getPeriodId(), null, "STUDENT_ALREADY_ENROLLED");
         }
 
-        studentEnrollment = new Enrollment();
-        studentEnrollment.setPk(DynamoKeyBuilder.buildStudentKey(student.getStudentId()));
-        studentEnrollment.setSk(DynamoKeyBuilder.buildPeriodKey(period.getPeriodId()));
-        studentEnrollment.setType("ENROLLMENT");
-        studentEnrollment.setStudentId(student.getStudentId());
-        studentEnrollment.setPeriodId(period.getPeriodId());
-        studentEnrollment.setStudentFirstName(student.getFirstName());
-        studentEnrollment.setStudentLastName(student.getLastName());
-        studentEnrollment.setPeriodName(period.getName());
-        studentEnrollment.setGsi1pk(DynamoKeyBuilder.buildPeriodKey(period.getPeriodId()));
-        studentEnrollment.setGsi1sk(DynamoKeyBuilder.buildStudentKey(student.getStudentId()));
+        // Create new enrollment with denormalized data
+        Enrollment enrollment = new Enrollment(student.getStudentId(), period.getPeriodId());
+        enrollment.setEnrollmentId(generateEnrollmentId(student.getStudentId(), period.getPeriodId()));
+        enrollment.setStudentFullName(student.getFullName());
+        enrollment.setStudentFirstName(student.getFirstName());
+        enrollment.setStudentLastName(student.getLastName());
+        enrollment.setPeriodDisplayName(period.getName() + " (Period " + period.getPeriodNumber() + ")");
+        enrollment.setPeriodName(period.getName());
+        enrollment.setPeriodNumber(String.valueOf(period.getPeriodNumber()));
+        enrollment.setTeacherLastName(period.getTeacherLastName());
+        enrollment.setEnrollmentDate(java.time.LocalDate.now().toString());
+        enrollment.generateKeys();
 
-        studentEnrollmentTable.putItem(studentEnrollment);
+        enrollmentTable.putItem(enrollment);
+    }
+
+    // Overloaded method for backward compatibility with Enrollment object
+    public void create(Enrollment enrollment) {
+        // This method assumes the enrollment already has all required fields set
+        DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
+        
+        // Generate keys if not already set
+        if (enrollment.getPk() == null) {
+            enrollment.generateKeys();
+        }
+        
+        enrollmentTable.putItem(enrollment);
     }
 
     public void delete(String studentId, String periodId) {
-        DynamoDbTable<Enrollment> studentEnrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
+        DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
         
-        // Create the key to identify the item to be deleted
+        // Create the key using new schema (ENROLLMENT#ID)
+        String enrollmentId = generateEnrollmentId(studentId, periodId);
         Key key = Key.builder()
-            .partitionValue(DynamoKeyBuilder.buildStudentKey(studentId))
-            .sortValue(DynamoKeyBuilder.buildPeriodKey(periodId)) 
+            .partitionValue("ENROLLMENT#" + enrollmentId)
+            .sortValue("#METADATA") 
             .build();
             
         // Perform the delete operation
-        studentEnrollmentTable.deleteItem(key);
+        enrollmentTable.deleteItem(key);
     }
 
     public List<Enrollment> getEnrollmentsByPeriod(String periodId) {
-        DynamoDbTable<Enrollment> studentEnrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
+        DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
 
-        // from gs1 
+        // Query GSI2 to get all enrollments for a period using new schema
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId));
 
-        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k.partitionValue(DynamoKeyBuilder.buildPeriodKey(periodId)).sortValue("STUDENT#"));
-
-        SdkIterable<Page<Enrollment>> results = studentEnrollmentTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
+        SdkIterable<Page<Enrollment>> results = enrollmentTable.index("gsi2").query(r -> r.queryConditional(queryConditional));
 
         List<Enrollment> enrollments = results.stream()
             .map(x -> x.items())
             .flatMap(Collection::stream)
-            .map(e -> {
-                Enrollment enrollment = new Enrollment();
-                // Extract schoolId from studentId (assuming format: schoolId-S123)
-                String schoolId = e.getStudentId().split("-")[0];
-                // Extract teacherId from periodId (assuming format: teacherId-periodName)
-                String teacherId = e.getPeriodId().split("-")[0];
-                
-                enrollment.setPeriod(new Period(schoolId, teacherId, e.getPeriodId(), e.getPeriodName()));
-                enrollment.setStudent(new Student(schoolId, e.getStudentId(), e.getStudentFirstName(), e.getStudentLastName(), null, null));
-                return enrollment;
-            })
             .collect(Collectors.toList());
 
         return enrollments;
+    }
+
+    public List<Enrollment> getEnrollmentsByStudent(String studentId) {
+        DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
+
+        // Query GSI1 to get all enrollments for a student using new schema
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId));
+
+        SdkIterable<Page<Enrollment>> results = enrollmentTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
+
+        List<Enrollment> enrollments = results.stream()
+            .map(x -> x.items())
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
+        return enrollments;
+    }
+
+    // Helper method to generate consistent enrollment IDs
+    private String generateEnrollmentId(String studentId, String periodId) {
+        return "ENR_" + studentId + "_" + periodId;
     }
 
 }

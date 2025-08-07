@@ -59,7 +59,11 @@ public class Enrollment {
         this.periodName = period.getName();
         this.periodNumber = String.valueOf(period.getPeriodNumber());
         this.periodDisplayName = period.getName() + " (Period " + period.getPeriodNumber() + ")";
+        this.teacherLastName = period.getTeacherLastName();
         this.status = "ACTIVE";
+        this.entityType = "ENROLLMENT";
+        
+        generateKeys();
     }
 
     // DynamoDB getters/setters
@@ -220,6 +224,31 @@ public class Enrollment {
 
     public void setTeacherLastName(String teacherLastName) {
         this.teacherLastName = teacherLastName;
+    }
+
+    // Helper methods for key generation
+    public void generateKeys() {
+        if (this.enrollmentId != null) {
+            this.pk = "ENROLLMENT#" + this.enrollmentId;
+            this.sk = "#METADATA";
+        }
+        if (this.studentId != null) {
+            this.parentEntityKey = "STUDENT#" + this.studentId;
+            this.searchValueKey = "ENROLLMENT#" + this.studentId;
+        }
+        if (this.periodId != null) {
+            this.childEntityKey = "ENROLLMENT#" + this.periodId;
+            this.searchTypeKey = "PERIOD#" + this.periodId;
+        }
+        this.entityType = "ENROLLMENT";
+    }
+
+    // Helper method to get display text
+    public String getDisplayText() {
+        if (studentFullName != null && periodDisplayName != null) {
+            return studentFullName + " enrolled in " + periodDisplayName;
+        }
+        return "Enrollment " + enrollmentId;
     }
 
     public static final TableSchema<Enrollment> TABLE_SCHEMA = TableSchema.fromBean(Enrollment.class);
