@@ -13,8 +13,11 @@ public class PeriodService {
     @Autowired
     private PeriodRepository periodRepository;
 
-    public Period getPeriodById(String code) {
-        return null;
+    /**
+     * Get period by ID - used by other services
+     */
+    public Period getPeriod(String periodId) {
+        return periodRepository.find(periodId);
     }
 
     public void createPeriod(Period period) {

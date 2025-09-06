@@ -14,6 +14,7 @@ This project uses **Java (no Lombok)** with **Spring Boot** and **DynamoDB** for
 - Prefer **records** for simple DTOs (Java 16+)
 - Use **interfaces** for service contracts when needed, but don’t over-engineer
 - Handle **null safety** with `Optional` where appropriate
+- **Avoid Jakarta for validations**
 
 ---
 
@@ -39,8 +40,9 @@ This project uses **Java (no Lombok)** with **Spring Boot** and **DynamoDB** for
 - Keep table structure **flat and denormalized**
 - Prefer **@DynamoDBBean** with **manual getter/setter** over Lombok
 - Define indexes (GSI, LSI) based on read/query patterns
-- Use **AWS SDK v2 or v3**, or **Spring Data DynamoDB** if acceptable
+- Use **AWS SDK v2**, or **Spring Data DynamoDB** if acceptable
 - Avoid tight coupling to table structure — use helper classes or mapping layers
+- **Never use `Scan` operations** — they are inefficient, expensive, and don't scale
 
 ---
 

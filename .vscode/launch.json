@@ -4,16 +4,29 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    {
-        "type": "java",
-        "name": "Spring Boot: Launch Archimedes Backend",
-        "request": "launch",
-        "mainClass": "com.binomiaux.archimedes.ArchimedesApplication",
-        "projectName": "archimedes-backend",
-        "args": "",
-        "cwd": "${workspaceFolder}",
-        "console": "integratedTerminal",
-        "preLaunchTask": "maven: build"
-    }
+        {
+            "type": "java",
+            "name": "Maven: Build",
+            "request": "launch",
+            "mainClass": "com.binomiaux.archimedes.ArchimedesApplication",
+            "projectName": "archimedes-backend",
+            "args": "",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "maven: build"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot: Launch Archimedes Backend (Local)",
+            "request": "launch",
+            "mainClass": "com.binomiaux.archimedes.ArchimedesApplication",
+            "projectName": "archimedes-backend",
+            "args": "",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "local"
+            }
+        }
     ]
 }

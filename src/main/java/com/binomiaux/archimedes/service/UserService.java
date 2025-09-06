@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.binomiaux.archimedes.exception.business.ArchimedesServiceException;
@@ -26,57 +25,95 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.UsernameExi
 public class UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private static final String TEACHER_USER_TYPE = "teachers";
+    private static final String STUDENT_USER_TYPE = "students";
+    private static final int DEFAULT_PERIODS_PER_TEACHER = 6;
 
-    @Autowired
-    private CognitoService cognitoService;
+    private final CognitoService cognitoService;
+    private final TeacherService teacherService;
+    private final StudentService studentService;
+    private final PeriodService periodService;
 
-    @Autowired
-    private TeacherService teacherService;
+    public UserService(CognitoService cognitoService, 
+                      TeacherService teacherService,
+                      StudentService studentService, 
+                      PeriodService periodService) {
+        this.cognitoService = cognitoService;
+        this.teacherService = teacherService;
+        this.studentService = studentService;
+        this.periodService = periodService;
+    }
 
-    @Autowired
-    private StudentService studentService;
-
-    @Autowired
-    private PeriodService periodService;
-
-    public UserRegistration registerUser(String username, String password, String email, String givenName, String familyName, String schoolCode, String userType) {
+    public UserRegistration registerUser(String username, String password, String email, 
+                                        String givenName, String familyName, String schoolCode, String userType) {
         try {
+            // Validate email is not already registered
             if (cognitoService.isEmailRegistered(email)) {
                 throw new ArchimedesServiceException("Email already registered: " + email, null);
             }
 
-            String userId = null;
-            if (userType.equals("teachers")) {
-                Teacher teacher = new Teacher(generateTeacherId(schoolCode), schoolCode, givenName, familyName, email, username);
-                teacherService.createTeacher(teacher);
-                
-                for (int i = 1; i <= 6; i++) {
-                    String periodId = "PER_" + teacher.getTeacherId() + "_" + i;
-                    String periodName = "Period " + i;
-                    Period period = new Period(periodId, schoolCode, teacher.getTeacherId(), i, periodName,
-                                             teacher.getFirstName(), teacher.getLastName());
-                    periodService.createPeriod(period);
-                }
+            // Create the appropriate user type and get their ID
+            String userId = createUserByType(userType, schoolCode, givenName, familyName, email, username);
 
-                userId = teacher.getTeacherId();
-            } else if (userType.equals("students")){
-                Student student = new Student(generateStudentId(schoolCode), schoolCode, givenName, familyName, email, username);
-                studentService.createStudent(student);
-                userId = student.getStudentId();
-            }
-
+            // Register user in Cognito
             cognitoService.signUpUser(username, password, email, givenName, familyName);
             cognitoService.addUserToGroup(userType, username);
             cognitoService.addUserAttribute(username, "custom:userId", userId);
-            UserRegistration userRegistration = new UserRegistration(userId, username, userType, false);
-            return userRegistration;
+            
+            return new UserRegistration(userId, username, userType, false);
+            
         } catch (UsernameExistsException e) {
             throw new ArchimedesServiceException("Username already exists: " + username, e);
         } catch (IllegalArgumentException e) {
+            // Cleanup on failure
             cognitoService.deleteUser(username);
-            throw new RuntimeException(e.getMessage(), e);
+            throw new ArchimedesServiceException("Invalid user data: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            // Cleanup on failure
+            cognitoService.deleteUser(username);
+            throw new ArchimedesServiceException("Failed to register user: " + e.getMessage(), e);
+        }
+    }
+
+    private String createUserByType(String userType, String schoolCode, String givenName, 
+                                   String familyName, String email, String username) {
+        switch (userType) {
+            case TEACHER_USER_TYPE:
+                return createTeacherUser(schoolCode, givenName, familyName, email, username);
+            case STUDENT_USER_TYPE:
+                return createStudentUser(schoolCode, givenName, familyName, email, username);
+            default:
+                throw new IllegalArgumentException("Invalid user type: " + userType);
+        }
+    }
+
+    private String createTeacherUser(String schoolCode, String givenName, String familyName, 
+                                   String email, String username) {
+        Teacher teacher = new Teacher(generateTeacherId(schoolCode), schoolCode, givenName, 
+                                    familyName, email, username);
+        teacherService.createTeacher(teacher);
+        
+        // Create default periods for the teacher
+        createDefaultPeriodsForTeacher(teacher);
+        
+        return teacher.getTeacherId();
+    }
+
+    private String createStudentUser(String schoolCode, String givenName, String familyName, 
+                                   String email, String username) {
+        Student student = new Student(generateStudentId(schoolCode), schoolCode, givenName, 
+                                    familyName, email, username);
+        studentService.createStudent(student);
+        return student.getStudentId();
+    }
+
+    private void createDefaultPeriodsForTeacher(Teacher teacher) {
+        for (int i = 1; i <= DEFAULT_PERIODS_PER_TEACHER; i++) {
+            String periodId = "PER_" + teacher.getTeacherId() + "_" + i;
+            String periodName = "Period " + i;
+            Period period = new Period(periodId, teacher.getSchoolId(), teacher.getTeacherId(), i, periodName,
+                                     teacher.getFirstName(), teacher.getLastName());
+            periodService.createPeriod(period);
         }
     }
 
@@ -106,7 +143,8 @@ public class UserService {
         try {
             cognitoService.sendCode(username);
         } catch (Exception e) {
-            throw new RuntimeException("Error verifying code for user: " + username,  e);
+            log.error("Error sending verification code for user: {}", username, e);
+            throw new ArchimedesServiceException("Failed to send verification code", e);
         }
     }
 
@@ -115,8 +153,7 @@ public class UserService {
             cognitoService.verifyCode(username, confirmationCode);
             return true;
         } catch (Exception e) {
-            // Log the exception
-            System.out.println("Error verifying code: " + e.getMessage());
+            log.error("Error verifying code for user: {}", username, e);
             return false;
         }
     }
@@ -125,9 +162,8 @@ public class UserService {
         try {
             cognitoService.forgotPassword(username);
         } catch (Exception e) {
-            // Log the exception
-            System.out.println("Error initiating password reset: " + e.getMessage());
-            throw new RuntimeException("Error initiating password reset for user: " + username, e);
+            log.error("Error initiating password reset for user: {}", username, e);
+            throw new ArchimedesServiceException("Failed to initiate password reset", e);
         }
     }
 
@@ -135,7 +171,8 @@ public class UserService {
         try {
             cognitoService.confirmForgotPassword(username, newPassword, confirmationCode);
         } catch (Exception e) {
-            throw new RuntimeException("Error initiating password reset for user: " + username, e);
+            log.error("Error confirming password reset for user: {}", username, e);
+            throw new ArchimedesServiceException("Failed to confirm password reset", e);
         }
     }
 

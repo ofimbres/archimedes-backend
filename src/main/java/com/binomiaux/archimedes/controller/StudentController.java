@@ -2,7 +2,6 @@ package com.binomiaux.archimedes.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +17,11 @@ import com.binomiaux.archimedes.service.StudentService;
 @RequestMapping("/api/v1/students")
 public class StudentController {
 
-    @Autowired
-    private StudentService studentService;
+    private final StudentService studentService;
+    
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
 
     @GetMapping("/{studentId}")
     public Student get(@PathVariable String studentId) {
