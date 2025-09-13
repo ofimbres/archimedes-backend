@@ -5,14 +5,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.binomiaux.archimedes.dto.mapper.TeacherMapper;
+import com.binomiaux.archimedes.dto.response.TeacherResponse;
 import com.binomiaux.archimedes.model.Teacher;
 import com.binomiaux.archimedes.service.TeacherService;
 
 /**
- * Teacher controller.
+ * Teacher controller with simplified API structure.  
+ * Uses clean IDs: T001, T002, etc. (scoped per school).
  */
 @RestController
-@RequestMapping("/api/v1/teachers")
+@RequestMapping("/api/v1/schools/{schoolId}/teachers")
 public class TeacherController {
     
     private final TeacherService teacherService;
@@ -22,7 +25,15 @@ public class TeacherController {
     }
 
     @GetMapping("/{teacherId}")
-    public Teacher get(@PathVariable String teacherId) {
-        return teacherService.getTeacher(teacherId);
+    public TeacherResponse get(@PathVariable String schoolId, @PathVariable String teacherId) {
+        Teacher teacher = teacherService.getTeacher(schoolId, teacherId);
+        return TeacherMapper.toResponse(teacher);
+    }
+
+    @GetMapping("/{teacherId}/periods")
+    public TeacherResponse getTeacherPeriods(@PathVariable String schoolId, @PathVariable String teacherId) {
+        // This would return periods for a specific teacher
+        Teacher teacher = teacherService.getTeacher(schoolId, teacherId);
+        return TeacherMapper.toResponse(teacher);
     }
 }

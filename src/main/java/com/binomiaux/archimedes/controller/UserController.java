@@ -19,6 +19,7 @@ import com.binomiaux.archimedes.dto.request.UserRegistrationRequest;
 import com.binomiaux.archimedes.dto.request.VerifyCodeRequest;
 import com.binomiaux.archimedes.model.LoggedInUser;
 import com.binomiaux.archimedes.model.UserRegistration;
+import com.binomiaux.archimedes.service.RegistrationService;
 import com.binomiaux.archimedes.service.UserService;
 
 import jakarta.validation.Valid;
@@ -33,18 +34,20 @@ import jakarta.validation.Valid;
  * - User attribute retrieval
  */
 @RestController
-@RequestMapping("/api/v1/auth")
-public class AuthController {
+@RequestMapping("/api/v1/user")
+public class UserController {
     
     private final UserService userService;
+    private final RegistrationService registrationService;
     
-    public AuthController(UserService userService) {
+    public UserController(UserService userService, RegistrationService registrationService) {
         this.userService = userService;
+        this.registrationService = registrationService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserRegistration> registerUser(@Valid @RequestBody UserRegistrationRequest userRequest) {
-        UserRegistration userRegistration = userService.registerUser(
+        UserRegistration userRegistration = registrationService.registerUser(
             userRequest.getUsername(), 
             userRequest.getPassword(), 
             userRequest.getEmail(), 
@@ -68,25 +71,25 @@ public class AuthController {
         return ResponseEntity.ok(userAttributes);
     }
 
-    @PostMapping("/send-code")
+    @PostMapping("/sendCode")
     public ResponseEntity<Void> sendCode(@Valid @RequestBody SendCodeRequest request) {
         userService.sendCode(request.getUsername());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/verify-code")
+    @PostMapping("/verifyCode")
     public ResponseEntity<Void> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
         userService.verifyCode(request.getUsername(), request.getConfirmationCode());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/forgot-password")
+    @PostMapping("/forgotPassword")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.forgotPassword(request.username());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/confirm-forgot-password")
+    @PostMapping("/confirmForgotPassword")
     public ResponseEntity<Void> confirmForgotPassword(@Valid @RequestBody ConfirmForgotPasswordRequest request) {
         userService.confirmForgotPassword(request.getUsername(), request.getNewPassword(), request.getConfirmationCode());
         return ResponseEntity.ok().build();

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Repository;
 
 import com.binomiaux.archimedes.config.aws.DynamoDbProperties;
 import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.repository.util.DynamoKeyBuilder;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -29,45 +28,31 @@ public class StudentRepository {
         return enhancedClient.table(dynamoDbProperties.getTableName(), Student.TABLE_SCHEMA);
     }
 
-    public Student find(String studentId) {
+    public Student find(String schoolId, String studentId) {
         Key key = Key.builder()
-                .partitionValue(DynamoKeyBuilder.buildStudentKey(studentId))
-                .sortValue("STUDENT")
+                .partitionValue(Student.buildPartitionKey(schoolId, studentId))
+                .sortValue(Student.buildSortKey())
                 .build();
                 
         return getTable().getItem(key);
     }
 
     public void create(Student student) {
-        // Set DynamoDB keys
-        student.setPk(DynamoKeyBuilder.buildStudentKey(student.getStudentId()));
-        student.setSk("STUDENT");
-        student.setEntityType("STUDENT");
-        
-        // Set GSI keys for querying
-        student.setParentEntityKey(DynamoKeyBuilder.buildSchoolKey(student.getSchoolId()));
-        student.setChildEntityKey("STUDENT#" + student.getStudentId());
-        
-        if (student.getUsername() != null) {
-            student.setSearchTypeKey("USERNAME");
-            student.setSearchValueKey(student.getUsername());
-        }
-        
+        // Use the Student's built-in key generation for consistency
+        student.generateKeys();
         getTable().putItem(student);
     }
 
     public void update(Student student) {
-        // Ensure keys are set
-        student.setPk(DynamoKeyBuilder.buildStudentKey(student.getStudentId()));
-        student.setSk("STUDENT");
-        
+        // Use the Student's built-in key generation for consistency
+        student.generateKeys();
         getTable().updateItem(student);
     }
 
-    public void delete(String studentId) {
+    public void delete(String schoolId, String studentId) {
         Key key = Key.builder()
-                .partitionValue(DynamoKeyBuilder.buildStudentKey(studentId))
-                .sortValue("STUDENT")
+                .partitionValue(Student.buildPartitionKey(schoolId, studentId))
+                .sortValue(Student.buildSortKey())
                 .build();
                 
         getTable().deleteItem(key);

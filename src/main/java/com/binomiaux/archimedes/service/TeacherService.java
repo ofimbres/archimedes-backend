@@ -1,21 +1,18 @@
 package com.binomiaux.archimedes.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.binomiaux.archimedes.model.School;
-import com.binomiaux.archimedes.model.Teacher;
-import com.binomiaux.archimedes.model.Period;
-import com.binomiaux.archimedes.repository.TeacherRepository;
-import com.binomiaux.archimedes.dto.request.CreateTeacherRequest;
-import com.binomiaux.archimedes.dto.request.UpdateTeacherRequest;
-import com.binomiaux.archimedes.exception.common.EntityNotFoundException;
-import com.binomiaux.archimedes.exception.business.DuplicateEmailException;
-import com.binomiaux.archimedes.exception.business.MaxPeriodsExceededException;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.binomiaux.archimedes.dto.request.CreateTeacherRequest;
+import com.binomiaux.archimedes.dto.request.UpdateTeacherRequest;
+import com.binomiaux.archimedes.exception.business.MaxPeriodsExceededException;
+import com.binomiaux.archimedes.exception.common.EntityNotFoundException;
+import com.binomiaux.archimedes.model.Period;
+import com.binomiaux.archimedes.model.School;
+import com.binomiaux.archimedes.model.Teacher;
+import com.binomiaux.archimedes.repository.TeacherRepository;
 
 /**
  * Enhanced TeacherService with full CRUD operations and business logic.
@@ -24,17 +21,22 @@ import java.util.Optional;
 @Service
 public class TeacherService {
 
-    @Autowired
-    private TeacherRepository teacherRepository;
-    
-    @Autowired
-    private SchoolService schoolService;
-    
-    @Autowired
-    private IdGeneratorService idGeneratorService;
-    
-    @Autowired
-    private PeriodService periodService;
+    private static final int DEFAULT_PERIODS_PER_TEACHER = 6;
+
+    private final TeacherRepository teacherRepository;
+    private final SchoolService schoolService;
+    private final IdGeneratorService idGeneratorService;
+    private final PeriodService periodService;
+
+    public TeacherService(TeacherRepository teacherRepository, 
+                         SchoolService schoolService,
+                         IdGeneratorService idGeneratorService,
+                         PeriodService periodService) {
+        this.teacherRepository = teacherRepository;
+        this.schoolService = schoolService;
+        this.idGeneratorService = idGeneratorService;
+        this.periodService = periodService;
+    }
 
     /**
      * Creates a new teacher using the improved schema design.
@@ -91,13 +93,34 @@ public class TeacherService {
         }
         
         teacherRepository.create(teacher);
+        
+        // Create default periods for the teacher
+        createDefaultPeriodsForTeacher(teacher);
+    }
+
+    /**
+     * Creates default periods for a new teacher with simplified school-scoped IDs.
+     */
+    private void createDefaultPeriodsForTeacher(Teacher teacher) {
+        for (int i = 1; i <= DEFAULT_PERIODS_PER_TEACHER; i++) {
+            // Generate unique period ID using counter: P001, P002, etc.
+            String periodId = idGeneratorService.generatePeriodId(teacher.getSchoolId());
+            String periodName = "Period " + i;
+            
+            // Create period with simplified structure - teacher relationship maintained via teacherId field
+            Period period = new Period(periodId, teacher.getSchoolId(), teacher.getTeacherId(), i, periodName,
+                                     teacher.getFirstName(), teacher.getLastName());
+            
+            // Repository will generate keys as: PERIOD#SCH001#P001 with teacherId as reference field
+            periodService.createPeriod(period);
+        }
     }
 
     /**
      * Enhanced getTeacher with better error handling.
      */
-    public Teacher getTeacher(String teacherId) {
-        Teacher teacher = teacherRepository.find(teacherId);
+    public Teacher getTeacher(String schoolId, String teacherId) {
+        Teacher teacher = teacherRepository.find(schoolId, teacherId);
         if (teacher == null) {
             throw new EntityNotFoundException("Teacher " + teacherId + " not found", null);
         }
@@ -126,8 +149,8 @@ public class TeacherService {
      * Update teacher information.
      * Note: DynamoDB operations are atomic at item level
      */
-    public Teacher updateTeacher(String teacherId, UpdateTeacherRequest request) {
-        Teacher existingTeacher = getTeacher(teacherId);
+    public Teacher updateTeacher(String schoolId, String teacherId, UpdateTeacherRequest request) {
+        Teacher existingTeacher = getTeacher(schoolId, teacherId);
 
         // Check email uniqueness if email is being changed - TODO: Implement findByEmail
         if (request.getEmail() != null && !request.getEmail().equals(existingTeacher.getEmail())) {
@@ -150,7 +173,7 @@ public class TeacherService {
         }
         
         if (request.getMaxPeriods() != null) {
-            validateMaxPeriodsUpdate(teacherId, request.getMaxPeriods());
+            validateMaxPeriodsUpdate(schoolId, teacherId, request.getMaxPeriods());
             existingTeacher.setMaxPeriods(request.getMaxPeriods());
         }
 
@@ -165,8 +188,8 @@ public class TeacherService {
      * Delete teacher with proper cleanup.
      * Note: Check dependencies before deletion
      */
-    public void deleteTeacher(String teacherId) {
-        Teacher teacher = getTeacher(teacherId);
+    public void deleteTeacher(String schoolId, String teacherId) {
+        Teacher teacher = getTeacher(schoolId, teacherId);
         
         // Check if teacher has active periods
         List<Period> activePeriods = periodService.getPeriodsByTeacherId(teacherId);
@@ -191,8 +214,8 @@ public class TeacherService {
     /**
      * Check if teacher can take more periods.
      */
-    public boolean canTeachMorePeriods(String teacherId) {
-        Teacher teacher = getTeacher(teacherId);
+    public boolean canTeachMorePeriods(String schoolId, String teacherId) {
+        Teacher teacher = getTeacher(schoolId, teacherId);
         List<Period> currentPeriods = getTeacherPeriods(teacherId);
         return currentPeriods.size() < teacher.getMaxPeriods();
     }
@@ -200,8 +223,8 @@ public class TeacherService {
     /**
      * Get available capacity for a teacher.
      */
-    public int getAvailableCapacity(String teacherId) {
-        Teacher teacher = getTeacher(teacherId);
+    public int getAvailableCapacity(String schoolId, String teacherId) {
+        Teacher teacher = getTeacher(schoolId, teacherId);
         List<Period> currentPeriods = getTeacherPeriods(teacherId);
         return Math.max(0, teacher.getMaxPeriods() - currentPeriods.size());
     }
@@ -209,9 +232,9 @@ public class TeacherService {
     /**
      * Validate teacher capacity before assigning new period.
      */
-    public void validateTeacherCapacity(String teacherId) {
-        if (!canTeachMorePeriods(teacherId)) {
-            Teacher teacher = getTeacher(teacherId);
+    public void validateTeacherCapacity(String schoolId, String teacherId) {
+        if (!canTeachMorePeriods(schoolId, teacherId)) {
+            Teacher teacher = getTeacher(schoolId, teacherId);
             throw new MaxPeriodsExceededException(
                 "Teacher " + teacher.getFullName() + " has reached maximum periods (" + 
                 teacher.getMaxPeriods() + ")"
@@ -230,7 +253,7 @@ public class TeacherService {
         teacher.setUsername(generateUsername(teacher.getFirstName(), teacher.getLastName()));
     }
 
-    private void validateMaxPeriodsUpdate(String teacherId, Integer newMaxPeriods) {
+    private void validateMaxPeriodsUpdate(String schoolId, String teacherId, Integer newMaxPeriods) {
         List<Period> currentPeriods = getTeacherPeriods(teacherId);
         if (currentPeriods.size() > newMaxPeriods) {
             throw new MaxPeriodsExceededException(

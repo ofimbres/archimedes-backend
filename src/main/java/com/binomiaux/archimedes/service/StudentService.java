@@ -3,20 +3,18 @@ package com.binomiaux.archimedes.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 
-import com.binomiaux.archimedes.exception.common.EntityNotFoundException;
-import com.binomiaux.archimedes.exception.business.DuplicateEmailException;
-import com.binomiaux.archimedes.model.Enrollment;
-import com.binomiaux.archimedes.model.School;
-import com.binomiaux.archimedes.model.Student;
-import com.binomiaux.archimedes.model.Period;
-import com.binomiaux.archimedes.repository.EnrollmentRepository;
-import com.binomiaux.archimedes.repository.StudentRepository;
 import com.binomiaux.archimedes.dto.request.CreateStudentRequest;
 import com.binomiaux.archimedes.dto.request.JoinPeriodRequest;
+import com.binomiaux.archimedes.exception.common.EntityNotFoundException;
+import com.binomiaux.archimedes.model.Enrollment;
+import com.binomiaux.archimedes.model.Period;
+import com.binomiaux.archimedes.model.School;
+import com.binomiaux.archimedes.model.Student;
+import com.binomiaux.archimedes.repository.EnrollmentRepository;
+import com.binomiaux.archimedes.repository.StudentRepository;
 import com.binomiaux.archimedes.service.PeriodRegistrationService.EnrollmentResult;
 
 /**
@@ -110,8 +108,8 @@ public class StudentService {
     /**
      * Get student by ID with proper error handling.
      */
-    public Student getStudentById(String studentId) {
-        Student student = studentRepository.find(studentId);
+    public Student getStudentById(String schoolId, String studentId) {
+        Student student = studentRepository.find(schoolId, studentId);
         if (student == null) {
             throw new EntityNotFoundException("Student " + studentId + " not found", null);
         }
@@ -140,9 +138,9 @@ public class StudentService {
      * Student joins a period using a registration code.
      * Note: DynamoDB operations are atomic at item level
      */
-    public EnrollmentResult joinPeriod(String studentId, JoinPeriodRequest request) {
+    public EnrollmentResult joinPeriod(String schoolId, String studentId, JoinPeriodRequest request) {
         // Validate student exists
-        Student student = getStudentById(studentId);
+        Student student = getStudentById(schoolId, studentId);
         
         // Use the registration service to join the period
         return periodRegistrationService.useRegistrationCode(request.getRegistrationCode(), studentId);
@@ -151,15 +149,15 @@ public class StudentService {
     /**
      * Get all enrollments for a student.
      */
-    public List<Enrollment> getStudentEnrollments(String studentId) {
-        return enrollmentRepository.getEnrollmentsByStudent(studentId);
+    public List<Enrollment> getStudentEnrollments(String schoolId, String studentId) {
+        return enrollmentRepository.getEnrollmentsByStudent(schoolId, studentId);
     }
 
     /**
      * Get all periods a student is enrolled in.
      */
-    public List<Period> getStudentPeriods(String studentId) {
-        List<Enrollment> enrollments = getStudentEnrollments(studentId);
+    public List<Period> getStudentPeriods(String schoolId, String studentId) {
+        List<Enrollment> enrollments = getStudentEnrollments(schoolId, studentId);
         return enrollments.stream()
                 .map(enrollment -> periodService.getPeriod(enrollment.getPeriodId()))
                 .filter(period -> period != null)
@@ -167,14 +165,20 @@ public class StudentService {
     }
 
     /**
-     * Legacy method: Get students by period (from enrollments).
+     * Get students by period using school-scoped lookup.
      */
-    public List<Student> getStudentsByPeriod(String periodId) {
-        List<Enrollment> enrollments = enrollmentRepository.getEnrollmentsByPeriod(periodId);
+    public List<Student> getStudentsByPeriod(String schoolId, String periodId) {
+        // Find the period within the school scope using simple period ID
+        Period period = periodService.findPeriodInSchool(schoolId, periodId);
+        if (period == null) {
+            throw new EntityNotFoundException("Period " + periodId + " not found in school " + schoolId, null);
+        }
+        
+        List<Enrollment> enrollments = enrollmentRepository.getEnrollmentsByPeriod(schoolId, periodId);
         return enrollments.stream()
                   .map(enrollment -> {
                       try {
-                          return getStudentById(enrollment.getStudentId());
+                          return getStudentById(period.getSchoolId(), enrollment.getStudentId());
                       } catch (EntityNotFoundException e) {
                           // If student not found, create from enrollment data (fallback)
                           Student student = new Student();
@@ -192,8 +196,8 @@ public class StudentService {
      * Update student information.
      * Note: DynamoDB operations are atomic at item level
      */
-    public Student updateStudent(String studentId, UpdateStudentRequest request) {
-        Student existingStudent = getStudentById(studentId);
+    public Student updateStudent(String schoolId, String studentId, UpdateStudentRequest request) {
+        Student existingStudent = getStudentById(schoolId, studentId);
 
         // Check email uniqueness if email is being changed - TODO: Implement findByEmail
         if (request.getEmail() != null && !request.getEmail().equals(existingStudent.getEmail())) {
@@ -225,11 +229,11 @@ public class StudentService {
      * Delete student with proper cleanup.
      * Note: Check dependencies before deletion
      */
-    public void deleteStudent(String studentId) {
-        Student student = getStudentById(studentId);
+    public void deleteStudent(String schoolId, String studentId) {
+        Student student = getStudentById(schoolId, studentId);
         
         // Check if student has active enrollments
-        List<Enrollment> activeEnrollments = getStudentEnrollments(studentId);
+        List<Enrollment> activeEnrollments = getStudentEnrollments(schoolId, studentId);
         if (!activeEnrollments.isEmpty()) {
             throw new IllegalStateException(
                 "Cannot delete student with active enrollments. Please unenroll from " + 
@@ -237,14 +241,14 @@ public class StudentService {
             );
         }
 
-        studentRepository.delete(student.getStudentId());
+        studentRepository.delete(schoolId, studentId);
     }
 
     /**
      * Check if student is enrolled in a specific period.
      */
-    public boolean isEnrolledInPeriod(String studentId, String periodId) {
-        List<Enrollment> enrollments = getStudentEnrollments(studentId);
+    public boolean isEnrolledInPeriod(String schoolId, String studentId, String periodId) {
+        List<Enrollment> enrollments = getStudentEnrollments(schoolId, studentId);
         return enrollments.stream()
                 .anyMatch(enrollment -> enrollment.getPeriodId().equals(periodId));
     }
@@ -253,8 +257,15 @@ public class StudentService {
      * Unenroll student from a period.
      * Note: Single operation call to enrollment service
      */
-    public void unenrollFromPeriod(String studentId, String periodId) {
-        enrollmentService.unrollStudentInPeriod(studentId, periodId);
+    public void unenrollFromPeriod(String schoolId, String studentId, String periodId) {
+        // Find the period within the school scope using simple period ID
+        Period period = periodService.findPeriodInSchool(schoolId, periodId);
+        if (period == null) {
+            throw new EntityNotFoundException("Period " + periodId + " not found in school " + schoolId, null);
+        }
+        // Create simplified period ID format: T001-P001
+        String simplifiedPeriodId = period.getTeacherId() + "-" + periodId;
+        enrollmentService.unenrollStudent(schoolId, studentId, simplifiedPeriodId);
     }
 
     // Helper methods

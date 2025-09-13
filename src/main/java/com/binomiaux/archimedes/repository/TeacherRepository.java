@@ -1,82 +1,60 @@
 package com.binomiaux.archimedes.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.binomiaux.archimedes.config.aws.DynamoDbProperties;
-import com.binomiaux.archimedes.model.School;
 import com.binomiaux.archimedes.model.Teacher;
-import com.binomiaux.archimedes.repository.util.DynamoKeyBuilder;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.TransactPutItemEnhancedRequest;
 
-/*
- * Simplified TeacherRepository without interface abstraction.
- * Direct implementation reduces complexity for single-implementation repositories.
+/**
+ * Simple TeacherRepository using merged Teacher model.
+ * Direct approach without over-engineering - Teacher handles both business and persistence.
  */
 @Repository
 public class TeacherRepository {
 
-    @Autowired
-    private DynamoDbEnhancedClient enhancedClient;
+    private final DynamoDbEnhancedClient enhancedClient;
+    private final DynamoDbProperties dynamoDbProperties;
 
-    @Autowired
-    private DynamoDbProperties dynamoDbProperties;
+    public TeacherRepository(DynamoDbEnhancedClient enhancedClient, DynamoDbProperties dynamoDbProperties) {
+        this.enhancedClient = enhancedClient;
+        this.dynamoDbProperties = dynamoDbProperties;
+    }
 
+    private DynamoDbTable<Teacher> getTable() {
+        return enhancedClient.table(dynamoDbProperties.getTableName(), Teacher.TABLE_SCHEMA);
+    }
 
-    public Teacher find(String teacherId) {
-        DynamoDbTable<Teacher> teacherTable = enhancedClient.table(dynamoDbProperties.getTableName(), Teacher.TABLE_SCHEMA);
+    public Teacher find(String schoolId, String teacherId) {
         Key key = Key.builder()
-            .partitionValue(DynamoKeyBuilder.buildTeacherKey(teacherId))
-            .sortValue(DynamoKeyBuilder.METADATA_KEY)
-            .build();
-        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-        Teacher record = teacherTable.getItem(request);
-
-        return record;
+                .partitionValue(Teacher.buildPartitionKey(schoolId, teacherId))
+                .sortValue(Teacher.buildSortKey())
+                .build();
+                
+        return getTable().getItem(key);
     }
 
     public void create(Teacher teacher) {
-        // Get school entity to update counter
-        DynamoDbTable<School> schoolTable = enhancedClient.table(dynamoDbProperties.getTableName(), School.TABLE_SCHEMA);
-        School schoolEntity = schoolTable.getItem(r -> r.key(k -> k
-            .partitionValue(DynamoKeyBuilder.buildSchoolKey(teacher.getSchoolId()))
-            .sortValue(DynamoKeyBuilder.METADATA_KEY)
-        ));
-        
-        // Generate teacher ID
-        int nextTeacherCode = schoolEntity.getTeacherCount() + 1;
-        schoolEntity.setTeacherCount(nextTeacherCode);
-        teacher.setTeacherId(teacher.getSchoolId() + "-T" + String.valueOf(nextTeacherCode));
+        // Use the Teacher's built-in key generation for consistency
+        teacher.generateKeys();
+        getTable().putItem(teacher);
+    }
 
-        // Create teacher entity with simplified key generation
-        Teacher teacherEntity = new Teacher();
-        teacherEntity.setPk(DynamoKeyBuilder.buildTeacherKey(teacher.getTeacherId()));
-        teacherEntity.setSk(DynamoKeyBuilder.METADATA_KEY);
-        teacherEntity.setEntityType("TEACHER");
-        teacherEntity.setSchoolId(teacher.getSchoolId());
-        teacherEntity.setTeacherId(teacher.getTeacherId());
-        teacherEntity.setFirstName(teacher.getFirstName());
-        teacherEntity.setLastName(teacher.getLastName());
-        teacherEntity.setEmail(teacher.getEmail());
-        teacherEntity.setUsername(teacher.getUsername());
-        teacherEntity.setMaxPeriods(dynamoDbProperties.getDefaultMaxPeriods());
-        teacherEntity.setParentEntityKey(DynamoKeyBuilder.buildSchoolKey(teacher.getSchoolId()));
-        teacherEntity.setChildEntityKey(DynamoKeyBuilder.buildTeacherKey(teacher.getTeacherId()));
-        teacherEntity.setSearchTypeKey("EMAIL");
-        teacherEntity.setSearchValueKey(teacher.getEmail());
+    public void update(Teacher teacher) {
+        // Use the Teacher's built-in key generation for consistency
+        teacher.generateKeys();
+        getTable().updateItem(teacher);
+    }
 
-        DynamoDbTable<Teacher> teacherTable = enhancedClient.table(dynamoDbProperties.getTableName(), Teacher.TABLE_SCHEMA);
-
-        enhancedClient.transactWriteItems(b -> b
-            .addPutItem(teacherTable, TransactPutItemEnhancedRequest.builder(Teacher.class)
-                .item(teacherEntity)
-                .build())
-            .addUpdateItem(schoolTable, schoolEntity)
-        );
+    public void delete(String schoolId, String teacherId) {
+        Key key = Key.builder()
+                .partitionValue(Teacher.buildPartitionKey(schoolId, teacherId))
+                .sortValue(Teacher.buildSortKey())
+                .build();
+                
+        getTable().deleteItem(key);
     }
 }

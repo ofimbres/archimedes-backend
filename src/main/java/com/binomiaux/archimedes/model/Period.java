@@ -1,6 +1,7 @@
 package com.binomiaux.archimedes.model;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -8,24 +9,20 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 /**
- * Period entity with improved DynamoDB design and denormalized teacher data.
+ * Period entity with simplified school-scoped design while maintaining teacher relationship.
  */
 @DynamoDbBean
 public class Period {
     
-    // DynamoDB keys
-    private String pk;                       // PERIOD#PER001
+    // DynamoDB keys - simplified school-scoped design
+    private String pk;                       // PERIOD#SCH001#P001
     private String sk;                       // #METADATA
     private String entityType;              // PERIOD
-    private String parentEntityKey;         // TEACHER#TCH001 (GSI1PK)
-    private String childEntityKey;          // PERIOD#PER001 (GSI1SK)
-    private String searchTypeKey;           // SCHOOL (GSI2PK)
-    private String searchValueKey;          // SCH001#PERIOD#PER001 (GSI2SK)
     
     // Core period fields
-    private String periodId;                // PER001
+    private String periodId;                // P001
     private String schoolId;                // SCH001
-    private String teacherId;               // TCH001
+    private String teacherId;               // T001 (reference field, not in key)
     private Integer periodNumber;           // 6
     private String name;                    // "Algebra I"
     
@@ -48,18 +45,15 @@ public class Period {
         this.teacherLastName = teacherLastName;
         this.entityType = "PERIOD";
         
-        // Set computed fields
+        // Set computed fields - simplified keys
         this.teacherFullName = "Ms. " + teacherFirstName + " " + teacherLastName;
-        this.pk = "PERIOD#" + periodId;
+        this.pk = "PERIOD#" + schoolId + "#" + periodId;
         this.sk = "#METADATA";
-        this.parentEntityKey = "TEACHER#" + teacherId;
-        this.childEntityKey = "PERIOD#" + periodId;
-        this.searchTypeKey = "SCHOOL";
-        this.searchValueKey = schoolId + "#PERIOD#" + periodId;
     }
 
     // DynamoDB Primary Key
     @DynamoDbPartitionKey
+    @DynamoDbAttribute("pk")
     public String getPk() {
         return pk;
     }
@@ -69,6 +63,7 @@ public class Period {
     }
 
     @DynamoDbSortKey
+    @DynamoDbAttribute("sk")
     public String getSk() {
         return sk;
     }
@@ -77,45 +72,35 @@ public class Period {
         this.sk = sk;
     }
 
-    // GSI1 - For querying periods by teacher
+    // GSI1 for teacher-period queries - maintains relationship efficiently
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1")
-    public String getParentEntityKey() {
-        return parentEntityKey;
+    @DynamoDbAttribute("gsi1pk")
+    public String getTeacherPeriodKey() {
+        if (schoolId != null && teacherId != null) {
+            return "TEACHER#" + schoolId + "#" + teacherId;
+        }
+        return null;
     }
 
-    public void setParentEntityKey(String parentEntityKey) {
-        this.parentEntityKey = parentEntityKey;
+    public void setTeacherPeriodKey(String teacherPeriodKey) {
+        // Computed field - no setter logic needed
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi1")
-    public String getChildEntityKey() {
-        return childEntityKey;
+    @DynamoDbAttribute("gsi1sk")
+    public String getPeriodSortKey() {
+        if (periodId != null) {
+            return "PERIOD#" + periodId;
+        }
+        return null;
     }
 
-    public void setChildEntityKey(String childEntityKey) {
-        this.childEntityKey = childEntityKey;
-    }
-
-    // GSI2 - For querying periods by school
-    @DynamoDbSecondaryPartitionKey(indexNames = "gsi2")
-    public String getSearchTypeKey() {
-        return searchTypeKey;
-    }
-
-    public void setSearchTypeKey(String searchTypeKey) {
-        this.searchTypeKey = searchTypeKey;
-    }
-
-    @DynamoDbSecondarySortKey(indexNames = "gsi2")
-    public String getSearchValueKey() {
-        return searchValueKey;
-    }
-
-    public void setSearchValueKey(String searchValueKey) {
-        this.searchValueKey = searchValueKey;
+    public void setPeriodSortKey(String periodSortKey) {
+        // Computed field - no setter logic needed
     }
 
     // Entity fields
+    @DynamoDbAttribute("entityType")
     public String getEntityType() {
         return entityType;
     }
@@ -198,22 +183,47 @@ public class Period {
 
     // Helper methods for key generation
     public void generateKeys() {
-        if (this.periodId != null) {
-            this.pk = "PERIOD#" + this.periodId;
-            this.sk = "#METADATA";
-            this.childEntityKey = "PERIOD#" + this.periodId;
-        }
-        if (this.teacherId != null) {
-            this.parentEntityKey = "TEACHER#" + this.teacherId;
-        }
         if (this.schoolId != null && this.periodId != null) {
-            this.searchTypeKey = "SCHOOL";
-            this.searchValueKey = this.schoolId + "#PERIOD#" + this.periodId;
+            this.pk = "PERIOD#" + this.schoolId + "#" + this.periodId;
+            this.sk = "#METADATA";
         }
         if (this.teacherFirstName != null && this.teacherLastName != null) {
-            this.teacherFullName = "Ms. " + this.teacherFirstName + " " + this.teacherLastName;
+            this.teacherFullName = this.teacherFirstName + " " + this.teacherLastName;
         }
         this.entityType = "PERIOD";
+    }
+
+    /**
+     * Helper method to build partition key for repository operations.
+     */
+    public static String buildPartitionKey(String schoolId, String periodId) {
+        return "PERIOD#" + schoolId + "#" + periodId;
+    }
+
+    /**
+     * Helper method to build sort key for repository operations.
+     */
+    public static String buildSortKey() {
+        return "#METADATA";
+    }
+
+    /**
+     * Get the simple period ID for API responses.
+     * Format: P001
+     */
+    public String getSimplePeriodId() {
+        return periodId;
+    }
+
+    /**
+     * Get the school-scoped period ID for internal references.
+     * Format: SCH001#P001
+     */
+    public String getSchoolScopedPeriodId() {
+        if (schoolId != null && periodId != null) {
+            return schoolId + "#" + periodId;
+        }
+        return null;
     }
 
     public static final TableSchema<Period> TABLE_SCHEMA = TableSchema.fromBean(Period.class);

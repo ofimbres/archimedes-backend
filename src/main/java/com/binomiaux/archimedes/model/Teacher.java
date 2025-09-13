@@ -1,6 +1,7 @@
 package com.binomiaux.archimedes.model;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -14,16 +15,16 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 public class Teacher {
     
     // DynamoDB keys
-    private String pk;                       // TEACHER#TCH001
+    private String pk;                       // TEACHER#SCH001#guadalupe.trevino
     private String sk;                       // #METADATA
     private String entityType;              // TEACHER
     private String parentEntityKey;         // SCHOOL#SCH001 (GSI1PK)
-    private String childEntityKey;          // TEACHER#TCH001 (GSI1SK)
+    private String childEntityKey;          // TEACHER#SCH001#guadalupe.trevino (GSI1SK)
     private String searchTypeKey;           // EMAIL (GSI2PK)
     private String searchValueKey;          // guadalupe.trevino@gmail.com (GSI2SK)
     
     // Core teacher fields
-    private String teacherId;               // TCH001
+    private String teacherId;               // guadalupe.trevino (or TCH001, etc.)
     private String schoolId;                // SCH001
     private String firstName;               // "Guadalupe"
     private String lastName;                // "Trevino"
@@ -43,21 +44,15 @@ public class Teacher {
         this.lastName = lastName;
         this.email = email;
         this.username = username;
-        this.entityType = "TEACHER";
         this.maxPeriods = 6; // Default value
         
-        // Set computed fields
-        this.fullName = firstName + " " + lastName;
-        this.pk = "TEACHER#" + teacherId;
-        this.sk = "#METADATA";
-        this.parentEntityKey = "SCHOOL#" + schoolId;
-        this.childEntityKey = "TEACHER#" + teacherId;
-        this.searchTypeKey = "EMAIL";
-        this.searchValueKey = email;
+        // Generate all computed fields and keys
+        generateKeys();
     }
 
     // DynamoDB Primary Key
     @DynamoDbPartitionKey
+    @DynamoDbAttribute("pk")
     public String getPk() {
         return pk;
     }
@@ -67,6 +62,7 @@ public class Teacher {
     }
 
     @DynamoDbSortKey
+    @DynamoDbAttribute("sk")
     public String getSk() {
         return sk;
     }
@@ -77,6 +73,7 @@ public class Teacher {
 
     // GSI1 - For querying teachers by school
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1pk")
     public String getParentEntityKey() {
         return parentEntityKey;
     }
@@ -86,6 +83,7 @@ public class Teacher {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1sk")
     public String getChildEntityKey() {
         return childEntityKey;
     }
@@ -96,6 +94,7 @@ public class Teacher {
 
     // GSI2 - For querying teachers by email
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2pk")
     public String getSearchTypeKey() {
         return searchTypeKey;
     }
@@ -105,6 +104,7 @@ public class Teacher {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2sk")
     public String getSearchValueKey() {
         return searchValueKey;
     }
@@ -114,6 +114,7 @@ public class Teacher {
     }
 
     // Entity fields
+    @DynamoDbAttribute("entityType")
     public String getEntityType() {
         return entityType;
     }
@@ -217,22 +218,23 @@ public class Teacher {
 
     // Helper methods for key generation
     public void generateKeys() {
-        if (this.teacherId != null) {
-            this.pk = "TEACHER#" + this.teacherId;
-            this.sk = "#METADATA";
-            this.childEntityKey = "TEACHER#" + this.teacherId;
-        }
-        if (this.schoolId != null) {
-            this.parentEntityKey = "SCHOOL#" + this.schoolId;
-        }
-        if (this.email != null) {
-            this.searchTypeKey = "EMAIL";
-            this.searchValueKey = this.email;
-        }
-        if (this.firstName != null && this.lastName != null) {
-            this.fullName = this.firstName + " " + this.lastName;
-        }
+        this.pk = "TEACHER#" + this.schoolId + "#" + this.teacherId;  // TEACHER#SCH001#guadalupe.trevino
+        this.sk = "#METADATA";
+        this.childEntityKey = "TEACHER#" + this.schoolId + "#" + this.teacherId;  // TEACHER#SCH001#guadalupe.trevino
+        this.parentEntityKey = "SCHOOL#" + this.schoolId;
+        this.searchTypeKey = "EMAIL";
+        this.searchValueKey = this.email;
+        this.fullName = this.firstName + " " + this.lastName;
         this.entityType = "TEACHER";
+    }
+
+    // Static helper for repository queries
+    public static String buildPartitionKey(String schoolId, String teacherId) {
+        return "TEACHER#" + schoolId + "#" + teacherId;
+    }
+
+    public static String buildSortKey() {
+        return "#METADATA";
     }
 
     public static final TableSchema<Teacher> TABLE_SCHEMA = TableSchema.fromBean(Teacher.class);

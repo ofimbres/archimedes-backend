@@ -12,22 +12,35 @@ import com.binomiaux.archimedes.model.Period;
 import com.binomiaux.archimedes.service.PeriodService;
 
 /**
- * Period controller.
+ * Period controller with consistent school-scoped design.
  */
 @RestController
-@RequestMapping("/api/v1/periods")
+@RequestMapping("/api/v1/schools/{schoolId}/periods")
 public class PeriodController {
     
     @Autowired
     private PeriodService periodService;
 
-    @GetMapping("student/{studentId}")
-    public List<Period> getPeriodsByStudent(@PathVariable("studentId") String studentId) {
-        return periodService.getPeriodsByStudentId(studentId);
+    @GetMapping
+    public List<Period> getAllPeriodsInSchool(@PathVariable("schoolId") String schoolId) {
+        return periodService.getPeriodsBySchool(schoolId);
     }
 
-    @GetMapping("teachers/{teacherId}")
-    public List<Period> getPeriodsByTeacher(@PathVariable("teacherId") String teacherId) {
-        return periodService.getPeriodsByTeacherId(teacherId);
+    @GetMapping("/{periodId}")
+    public Period getPeriod(@PathVariable("schoolId") String schoolId,
+                           @PathVariable("periodId") String periodId) {
+        return periodService.findPeriodInSchool(schoolId, periodId);
+    }
+
+    @GetMapping("/teacher/{teacherId}")
+    public List<Period> getPeriodsByTeacher(@PathVariable("schoolId") String schoolId,
+                                           @PathVariable("teacherId") String teacherId) {
+        return periodService.getPeriodsByTeacherInSchool(schoolId, teacherId);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public List<Period> getPeriodsByStudent(@PathVariable("schoolId") String schoolId,
+                                           @PathVariable("studentId") String studentId) {
+        return periodService.getPeriodsByStudentInSchool(schoolId, studentId);
     }
 }

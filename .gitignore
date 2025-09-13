@@ -36,4 +36,7 @@ target/
 # Gradle wrapper JAR (optional - some prefer to commit this)
 !gradle/wrapper/gradle-wrapper.jar
 
+# Application configuration files (local development)
+src/main/resources/application-local.yml
+src/main/resources/application-dev.yml
 app/src/main/resources/application-*.yml

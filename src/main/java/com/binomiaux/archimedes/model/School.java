@@ -1,6 +1,7 @@
 package com.binomiaux.archimedes.model;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -60,6 +61,7 @@ public class School {
 
     // DynamoDB annotations
     @DynamoDbPartitionKey
+    @DynamoDbAttribute("pk")
     public String getPk() {
         return pk;
     }
@@ -69,6 +71,7 @@ public class School {
     }
 
     @DynamoDbSortKey
+    @DynamoDbAttribute("sk")
     public String getSk() {
         return sk;
     }
@@ -77,8 +80,9 @@ public class School {
         this.sk = sk;
     }
 
-    // GSI1 - For querying all schools
+        // GSI1 - For querying all schools
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1pk")
     public String getParentEntityKey() {
         return parentEntityKey;
     }
@@ -88,6 +92,7 @@ public class School {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1sk")
     public String getChildEntityKey() {
         return childEntityKey;
     }
@@ -98,6 +103,7 @@ public class School {
 
     // GSI2 - For querying schools by school code
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2pk")
     public String getSearchTypeKey() {
         return searchTypeKey;
     }
@@ -107,6 +113,7 @@ public class School {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2sk")
     public String getSearchValueKey() {
         return searchValueKey;
     }

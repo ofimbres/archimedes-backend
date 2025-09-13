@@ -85,13 +85,16 @@ public class EnrollmentRepository {
         enrollmentTable.deleteItem(key);
     }
 
-    public List<Enrollment> getEnrollmentsByPeriod(String periodId) {
+    public List<Enrollment> getEnrollmentsByPeriod(String schoolId, String periodId) {
         DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
 
-        // Query GSI2 to get all enrollments for a period using new schema
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("PERIOD#" + periodId));
+        // Query GSI1 to get all students in a period
+        // GSI1PK: PERIOD#SCH001#P001, GSI1SK begins with: STUDENT#
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k
+            .partitionValue("PERIOD#" + schoolId + "#" + periodId)
+            .sortValue("STUDENT#"));
 
-        SdkIterable<Page<Enrollment>> results = enrollmentTable.index("gsi2").query(r -> r.queryConditional(queryConditional));
+        SdkIterable<Page<Enrollment>> results = enrollmentTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
 
         List<Enrollment> enrollments = results.stream()
             .map(x -> x.items())
@@ -101,13 +104,16 @@ public class EnrollmentRepository {
         return enrollments;
     }
 
-    public List<Enrollment> getEnrollmentsByStudent(String studentId) {
+    public List<Enrollment> getEnrollmentsByStudent(String schoolId, String studentId) {
         DynamoDbTable<Enrollment> enrollmentTable = enhancedClient.table(dynamoDbProperties.getTableName(), Enrollment.TABLE_SCHEMA);
 
-        // Query GSI1 to get all enrollments for a student using new schema
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue("STUDENT#" + studentId));
+        // Query main table to get all periods for a student
+        // PK: STUDENT#SCH001#S001, SK begins with: PERIOD#
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(k -> k
+            .partitionValue("STUDENT#" + schoolId + "#" + studentId)
+            .sortValue("PERIOD#"));
 
-        SdkIterable<Page<Enrollment>> results = enrollmentTable.index("gsi1").query(r -> r.queryConditional(queryConditional));
+        SdkIterable<Page<Enrollment>> results = enrollmentTable.query(r -> r.queryConditional(queryConditional));
 
         List<Enrollment> enrollments = results.stream()
             .map(x -> x.items())

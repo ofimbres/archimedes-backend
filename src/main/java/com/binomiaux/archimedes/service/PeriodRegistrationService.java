@@ -30,22 +30,22 @@ public class PeriodRegistrationService {
      * Example: 1234P001456
      * 
      * @param schoolId School ID (4 digits)
-     * @param periodId Period ID (4 chars, e.g., P001)
+     * @param compositePeriodId Composite Period ID (e.g., SCH001#TCH001#PER001)
      * @return Registration code
      */
-    public String generateRegistrationCode(String schoolId, String periodId) {
+    public String generateRegistrationCode(String schoolId, String compositePeriodId) {
         // Validate inputs
-        if (schoolId == null || periodId == null) {
+        if (schoolId == null || compositePeriodId == null) {
             throw new IllegalArgumentException("School ID and Period ID are required");
         }
         
         // Ensure period exists
-        Period period = periodService.getPeriod(periodId);
+        Period period = periodService.getPeriod(compositePeriodId);
         if (period == null || !period.getSchoolId().equals(schoolId)) {
-            throw new IllegalArgumentException("Period " + periodId + " not found in school " + schoolId);
+            throw new IllegalArgumentException("Period " + compositePeriodId + " not found in school " + schoolId);
         }
 
-        String base = schoolId + periodId;
+        String base = schoolId + compositePeriodId;
         String checksum = generateChecksum(base);
         return base + checksum;
     }
@@ -65,7 +65,7 @@ public class PeriodRegistrationService {
         }
 
         // Verify period still exists and is active
-        Period period = periodService.getPeriod(periodInfo.getPeriodId());
+        Period period = periodService.findPeriodInSchool(periodInfo.getSchoolId(), periodInfo.getPeriodId());
         if (period == null) {
             return EnrollmentResult.error("Period no longer exists");
         }
@@ -75,13 +75,15 @@ public class PeriodRegistrationService {
         }
 
         // Check if student is already enrolled
-        if (enrollmentService.isStudentEnrolled(studentId, periodInfo.getPeriodId())) {
+        String simplifiedPeriodId = period.getTeacherId() + "-" + periodInfo.getPeriodId();
+        if (enrollmentService.isStudentEnrolled(periodInfo.getSchoolId(), studentId, simplifiedPeriodId)) {
             return EnrollmentResult.error("Student is already enrolled in this period");
         }
 
-        // Enroll student
+        // Enroll student  
         try {
-            Enrollment enrollment = enrollmentService.enrollStudent(studentId, periodInfo.getPeriodId());
+            // Use the same simplified period ID format: T001-P001
+            Enrollment enrollment = enrollmentService.enrollStudent(periodInfo.getSchoolId(), studentId, simplifiedPeriodId);
             return EnrollmentResult.success(enrollment);
         } catch (Exception e) {
             return EnrollmentResult.error("Failed to enroll student: " + e.getMessage());

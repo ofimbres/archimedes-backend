@@ -1,6 +1,7 @@
 package com.binomiaux.archimedes.model;
 
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -27,6 +28,7 @@ public class Enrollment {
     private String enrollmentId;            // ENR001
     private String studentId;               // STU001
     private String periodId;                // PER001
+    private String schoolId;                // SCH001 (needed for proper key generation)
     private String enrollmentDate;          // 2024-07-25
     private String status;                  // ACTIVE, DROPPED, COMPLETED
     
@@ -68,6 +70,7 @@ public class Enrollment {
 
     // DynamoDB getters/setters
     @DynamoDbPartitionKey
+    @DynamoDbAttribute("pk")
     public String getPk() {
         return pk;
     }
@@ -77,6 +80,7 @@ public class Enrollment {
     }
 
     @DynamoDbSortKey
+    @DynamoDbAttribute("sk")
     public String getSk() {
         return sk;
     }
@@ -85,6 +89,7 @@ public class Enrollment {
         this.sk = sk;
     }
 
+    @DynamoDbAttribute("entityType")
     public String getEntityType() {
         return entityType;
     }
@@ -94,6 +99,7 @@ public class Enrollment {
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1pk")
     public String getParentEntityKey() {
         return parentEntityKey;
     }
@@ -103,6 +109,7 @@ public class Enrollment {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi1")
+    @DynamoDbAttribute("gsi1sk")
     public String getChildEntityKey() {
         return childEntityKey;
     }
@@ -112,6 +119,7 @@ public class Enrollment {
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2pk")
     public String getSearchTypeKey() {
         return searchTypeKey;
     }
@@ -121,6 +129,7 @@ public class Enrollment {
     }
 
     @DynamoDbSecondarySortKey(indexNames = "gsi2")
+    @DynamoDbAttribute("gsi2sk")
     public String getSearchValueKey() {
         return searchValueKey;
     }
@@ -152,6 +161,14 @@ public class Enrollment {
 
     public void setPeriodId(String periodId) {
         this.periodId = periodId;
+    }
+
+    public String getSchoolId() {
+        return schoolId;
+    }
+
+    public void setSchoolId(String schoolId) {
+        this.schoolId = schoolId;
     }
 
     public String getEnrollmentDate() {
@@ -228,18 +245,24 @@ public class Enrollment {
 
     // Helper methods for key generation
     public void generateKeys() {
-        if (this.enrollmentId != null) {
-            this.pk = "ENROLLMENT#" + this.enrollmentId;
-            this.sk = "#METADATA";
+        // Schema pattern: PK=STUDENT#SCH001#S001, SK=PERIOD#P001
+        if (this.studentId != null && this.periodId != null && this.schoolId != null) {
+            this.pk = "STUDENT#" + this.schoolId + "#" + this.studentId;
+            this.sk = "PERIOD#" + this.periodId;
         }
-        if (this.studentId != null) {
-            this.parentEntityKey = "STUDENT#" + this.studentId;
-            this.searchValueKey = "ENROLLMENT#" + this.studentId;
+        
+        // GSI1: Query students in a period (GSI1PK=PERIOD#SCH001#P001, GSI1SK=STUDENT#S001)
+        if (this.periodId != null && this.studentId != null && this.schoolId != null) {
+            this.parentEntityKey = "PERIOD#" + this.schoolId + "#" + this.periodId;
+            this.childEntityKey = "STUDENT#" + this.studentId;
         }
-        if (this.periodId != null) {
-            this.childEntityKey = "ENROLLMENT#" + this.periodId;
-            this.searchTypeKey = "PERIOD#" + this.periodId;
+        
+        // GSI2: Query all enrollments in school (GSI2PK=SCHOOL#SCH001, GSI2SK=ENROLLMENT#S001#P001)
+        if (this.studentId != null && this.periodId != null && this.schoolId != null) {
+            this.searchTypeKey = "SCHOOL#" + this.schoolId;
+            this.searchValueKey = "ENROLLMENT#" + this.studentId + "#" + this.periodId;
         }
+        
         this.entityType = "ENROLLMENT";
     }
 
