@@ -72,7 +72,7 @@ public class TopicService {
         TopicTree tree = new TopicTree(topic);
         
         // Fetch children for this specific topic
-        List<Topic> children = topicRepository.findByTopicId(topic.getId());
+        List<Topic> children = topicRepository.findByTopicId(topic.getTopicId());
         
         if (!children.isEmpty()) {
             List<TopicTree> childTrees = children.stream()

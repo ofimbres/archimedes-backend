@@ -6,7 +6,7 @@ public class UserRegistrationRequest {
     private String email;
     private String givenName;
     private String familyName;
-    private String schoolCode;
+    private String schoolId;
     private String userType;
 
 
@@ -30,8 +30,8 @@ public class UserRegistrationRequest {
         return familyName;
     }
 
-    public String getSchoolCode() {
-        return schoolCode;
+    public String getSchoolId() {
+        return schoolId;
     }
 
     public String getUserType() {

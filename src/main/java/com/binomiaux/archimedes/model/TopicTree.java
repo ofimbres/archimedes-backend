@@ -27,7 +27,7 @@ public class TopicTree {
      * Creates a TopicTree from a Topic model.
      */
     public TopicTree(@NotNull Topic topic) {
-        this.id = topic.getId();
+        this.id = topic.getTopicId();
         this.name = topic.getName();
         this.children = new ArrayList<>();
     }

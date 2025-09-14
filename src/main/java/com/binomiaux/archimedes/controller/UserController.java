@@ -19,8 +19,8 @@ import com.binomiaux.archimedes.dto.request.UserRegistrationRequest;
 import com.binomiaux.archimedes.dto.request.VerifyCodeRequest;
 import com.binomiaux.archimedes.model.LoggedInUser;
 import com.binomiaux.archimedes.model.UserRegistration;
-import com.binomiaux.archimedes.service.RegistrationService;
 import com.binomiaux.archimedes.service.UserService;
+import com.binomiaux.archimedes.service.jpa.RegistrationJpaService;
 
 import jakarta.validation.Valid;
 
@@ -38,22 +38,22 @@ import jakarta.validation.Valid;
 public class UserController {
     
     private final UserService userService;
-    private final RegistrationService registrationService;
+    private final RegistrationJpaService registrationJpaService;
     
-    public UserController(UserService userService, RegistrationService registrationService) {
+    public UserController(UserService userService, RegistrationJpaService registrationJpaService) {
         this.userService = userService;
-        this.registrationService = registrationService;
+        this.registrationJpaService = registrationJpaService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserRegistration> registerUser(@Valid @RequestBody UserRegistrationRequest userRequest) {
-        UserRegistration userRegistration = registrationService.registerUser(
+        UserRegistration userRegistration = registrationJpaService.registerUser(
             userRequest.getUsername(), 
             userRequest.getPassword(), 
             userRequest.getEmail(), 
             userRequest.getGivenName(), 
             userRequest.getFamilyName(), 
-            userRequest.getSchoolCode(), 
+            userRequest.getSchoolId(), 
             userRequest.getUserType()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(userRegistration);

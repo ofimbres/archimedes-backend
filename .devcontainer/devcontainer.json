@@ -1,8 +1,8 @@
 {
-  "name": "Java 21",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "name": "Java 21 with PostgreSQL",
+  "dockerComposeFile": "docker-compose.dev.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
   "mounts": [
     "type=bind,source=${localEnv:HOME}/.aws,target=/home/vscode/.aws"
       //"type=bind,source=${localEnv:HOME}/.ssh,target=/home/node/.ssh"
@@ -24,12 +24,17 @@
         "vscjava.vscode-java-dependency",
         "vscjava.vscode-maven",
         "ms-azuretools.vscode-docker",
-        "humao.rest-client"
+        "humao.rest-client",
+        "ms-ossdata.vscode-pgsql"
       ],
       "settings": {
         "java.gradle.enabled": false,
         "java.compile.nullAnalysis.mode": "automatic"
       }
     }
+  },
+  
+  // Environment variables for local development
+  "remoteEnv": {
   }
 }

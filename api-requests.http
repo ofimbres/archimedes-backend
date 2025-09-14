@@ -1,0 +1,277 @@
+### Archimedes Backend API Requests
+### Base URL: http://localhost:8080
+
+### 1. Health Check
+GET http://localhost:8080/healthcheck/
+
+###
+
+### 2. Register a New School
+POST http://localhost:8080/api/v1/schools
+Content-Type: application/json
+
+{
+  "id": "240901042",
+  "schoolCode": "ABRAHAM_LINCOLN",
+  "name": "Abraham Lincoln Elementary School",
+  "address": "123 Lincoln Ave, Springfield, IL",
+  "principalName": "Dr. Jane Smith",
+  "contactEmail": "principal@lincoln-elementary.edu",
+  "phoneNumber": "+1-555-0123"
+}
+
+###
+
+### 3. Register a New User (Student) STU001
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres2",
+  "email": "oscar.fimbres2@gmail.com",
+  "password": "TempPassword123!",
+  "givenName": "Oscar",
+  "familyName": "Fimbres",
+  "schoolId": "240901042",
+  "userType": "students"
+}
+
+###
+
+### 4. Register a New User (Teacher)
+POST http://localhost:8080/api/v1/user/register
+Content-Type: application/json
+
+{
+  "username": "guadalupe.trevino",
+  "email": "guadalupe.trevino@gmail.com",
+  "password": "TempPassword123!",
+  "givenName": "Guadalupe",
+  "familyName": "Trevino",
+  "schoolCode": "240901042",
+  "userType": "teachers"
+}
+
+###
+
+### 5. Send Verification Code
+POST http://localhost:8080/api/v1/user/sendCode
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres"
+}
+
+###
+
+### 5. Verify User Account
+POST http://localhost:8080/api/v1/user/verifyCode
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "confirmationCode": "177760"
+}
+
+###
+
+### 6. User Login
+POST http://localhost:8080/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "password": "TempPassword123!"
+}
+
+###
+
+### 7. Get User Attributes
+GET http://localhost:8080/api/v1/user/oscar.fimbres/attributes
+
+###
+
+### 8. Get Student Information
+GET http://localhost:8080/api/v1/schools/240901042/students/S001
+
+###
+
+### 9. Enroll Student in Period (Simplified API)
+### Student S001 in period P001 for school 240901042
+POST http://localhost:8080/api/v1/schools/240901042/enrollments
+Content-Type: application/json
+
+{
+  "studentId": "S001",
+  "periodId": "P001"
+}
+
+###
+
+### 11. Get Teacher Information (Simplified)  
+GET http://localhost:8080/api/v1/schools/240901042/teachers/T003
+
+###
+
+### 12. Get Students in a Period (Simplified)
+GET http://localhost:8080/api/v1/schools/240901042/students/periods/P001
+
+###
+
+### 13. Unenroll Student from Period (Simplified)
+DELETE http://localhost:8080/api/v1/schools/SCH001/enrollments/S001/P001
+
+###
+
+### 13. Get All Topics
+GET http://localhost:8080/api/v1/topic/
+
+###
+
+### 14. Get Exercises for Topic
+GET http://localhost:8080/api/v1/topic/ALGEBRAIC_EXPRESSIONS/exercises
+
+###
+
+### 15. Get Exercises for Topic + Subtopic
+GET http://localhost:8080/api/v1/topic/ALGEBRAIC_EXPRESSIONS/subtopic/AX1/exercises
+
+###
+
+### 16. Forgot Password
+POST http://localhost:8080/api/v1/user/forgotPassword
+Content-Type: application/json
+
+{
+  "username": "diego.hinojosa"
+}
+
+###
+
+### 17. Confirm Forgot Password
+POST http://localhost:8080/api/v1/user/confirmForgotPassword
+Content-Type: application/json
+
+{
+  "username": "diego.hinojosa",
+  "newPassword": "NewPassword123!",
+  "confirmationCode": "123456"
+}
+
+###
+
+### 18. Create a New School
+POST http://localhost:8080/api/v1/school
+Content-Type: application/json
+
+{
+  "schoolCode": "LAMAR_MIDDLE",
+  "name": "LAMAR MIDDLE",
+  "address": "1818 N ARKANSAS AVE, LAREDO, TX, 78043-3097",
+  "principalName": "MR EDUARDO LOPEZ",
+  "contactEmail": "elopez2@Laredoisd.org",
+  "phoneNumber": "(956) 273-6200"
+}
+
+###
+
+### 19. Get School Information
+GET http://localhost:8080/api/v1/school/SCH001
+
+###
+
+### 20. Create a New Teacher
+POST http://localhost:8080/api/v1/teacher
+Content-Type: application/json
+
+{
+  "schoolId": "SCH001",
+  "firstName": "Guadalupe",
+  "lastName": "Trevino",
+  "email": "guadalupe.trevino@gmail.com",
+  "username": "guadalupe.trevino",
+  "maxPeriods": 6
+}
+
+###
+
+### 21. Create a New Student
+POST http://localhost:8080/api/v1/student
+Content-Type: application/json
+
+{
+  "schoolId": "SCH001",
+  "firstName": "Diego",
+  "lastName": "Hinojosa",
+  "email": "diego.hinojosa@gmail.com",
+  "username": "diego.hinojosa"
+}
+
+###
+
+### Authentication Examples with Token (if using JWT)
+### After login, you'll get a token. Use it like this:
+
+### 22. Authenticated Request Example
+GET http://localhost:8080/api/v1/student/STU001
+Authorization: Bearer your-jwt-token-here
+
+###
+
+### 23. Test Authenticated Endpoint
+GET http://localhost:8080/api/v1/test/hello
+Authorization: Bearer your-jwt-token-here
+
+###
+
+### ===== JPA ENDPOINTS =====
+
+### 24. Get All Schools (JPA)
+GET http://localhost:8080/api/v1/schools
+
+###
+
+### 25. Get School by Code (JPA)
+GET http://localhost:8080/api/v1/schools/by-code/240901042
+
+###
+
+### 26. Create Student (JPA)
+POST http://localhost:8080/api/v1/students
+Content-Type: application/json
+
+{
+  "firstName": "Maria",
+  "lastName": "Garcia",
+  "email": "maria.garcia@example.com",
+  "username": "maria.garcia",
+  "schoolCode": "240901042",
+  "gradeLevel": 5
+}
+
+###
+
+### 27. Create Teacher (JPA)
+POST http://localhost:8080/api/v1/teachers
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Wilson",
+  "email": "john.wilson@example.com",
+  "username": "john.wilson",
+  "schoolCode": "240901042",
+  "department": "Mathematics"
+}
+
+###
+
+### 28. Get Students by School (JPA)
+GET http://localhost:8080/api/v1/students/by-school/240901042
+
+###
+
+### 29. Get Teachers by School (JPA)  
+GET http://localhost:8080/api/v1/teachers/by-school/240901042
+
+###

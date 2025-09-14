@@ -106,28 +106,4 @@ public class SchoolResponse {
     public void setPeriodCount(int periodCount) {
         this.periodCount = periodCount;
     }
-
-    /**
-     * Converts a School entity to a SchoolResponse DTO.
-     * 
-     * @param school the School entity
-     * @return the SchoolResponse DTO
-     */
-    public static SchoolResponse fromSchool(com.binomiaux.archimedes.model.School school) {
-        if (school == null) return null;
-        
-        SchoolResponse response = new SchoolResponse();
-        response.setId(school.getId());
-        response.setSchoolCode(school.getSchoolCode());
-        response.setName(school.getName());
-        response.setAddress(school.getAddress());
-        response.setPrincipalName(school.getPrincipalName());
-        response.setContactEmail(school.getContactEmail());
-        response.setPhoneNumber(school.getPhoneNumber());
-        response.setStudentCount(school.getStudentCount());
-        response.setTeacherCount(school.getTeacherCount());
-        response.setPeriodCount(school.getPeriodCount());
-        
-        return response;
-    }
 }

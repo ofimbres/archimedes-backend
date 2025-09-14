@@ -179,13 +179,10 @@ public class Topic {
         this.level = level;
     }
 
-    // Legacy support
-    @Deprecated
     public String getId() {
         return topicId;
     }
 
-    @Deprecated
     public void setId(String id) {
         this.topicId = id;
     }
