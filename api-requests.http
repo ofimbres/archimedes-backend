@@ -11,13 +11,12 @@ POST http://localhost:8080/api/v1/schools
 Content-Type: application/json
 
 {
-  "id": "240901042",
-  "schoolCode": "ABRAHAM_LINCOLN",
-  "name": "Abraham Lincoln Elementary School",
-  "address": "123 Lincoln Ave, Springfield, IL",
-  "principalName": "Dr. Jane Smith",
-  "contactEmail": "principal@lincoln-elementary.edu",
-  "phoneNumber": "+1-555-0123"
+  "schoolCode": "240901042",
+  "name": "LAMAR MIDDLE",
+  "address": "1818 N ARKANSAS AVE, LAREDO, TX, 78043-3097",
+  "principal": "MR EDUARDO LOPEZ",
+  "email": "elopez2@Laredoisd.org",
+  "phoneNumber": "(956) 273-6200"
 }
 
 ###
@@ -27,12 +26,12 @@ POST http://localhost:8080/api/v1/user/register
 Content-Type: application/json
 
 {
-  "username": "oscar.fimbres2",
-  "email": "oscar.fimbres2@gmail.com",
+  "username": "oscar.fimbres",
+  "email": "oscar.fimbres@gmail.com",
   "password": "TempPassword123!",
   "givenName": "Oscar",
   "familyName": "Fimbres",
-  "schoolId": "240901042",
+  "schoolId": "1",
   "userType": "students"
 }
 
@@ -48,7 +47,7 @@ Content-Type: application/json
   "password": "TempPassword123!",
   "givenName": "Guadalupe",
   "familyName": "Trevino",
-  "schoolCode": "240901042",
+  "schoolId": "1",
   "userType": "teachers"
 }
 
@@ -92,13 +91,13 @@ GET http://localhost:8080/api/v1/user/oscar.fimbres/attributes
 ###
 
 ### 8. Get Student Information
-GET http://localhost:8080/api/v1/schools/240901042/students/S001
+GET http://localhost:8080/api/v1/schools/1/students/S001
 
 ###
 
 ### 9. Enroll Student in Period (Simplified API)
-### Student S001 in period P001 for school 240901042
-POST http://localhost:8080/api/v1/schools/240901042/enrollments
+### Student S001 in period P001 for school 1
+POST http://localhost:8080/api/v1/schools/1/enrollments
 Content-Type: application/json
 
 {
@@ -109,12 +108,12 @@ Content-Type: application/json
 ###
 
 ### 11. Get Teacher Information (Simplified)  
-GET http://localhost:8080/api/v1/schools/240901042/teachers/T003
+GET http://localhost:8080/api/v1/schools/1/teachers/T003
 
 ###
 
 ### 12. Get Students in a Period (Simplified)
-GET http://localhost:8080/api/v1/schools/240901042/students/periods/P001
+GET http://localhost:8080/api/v1/schools/1/students/periods/P001
 
 ###
 

@@ -32,7 +32,7 @@ public class StudentJpaService {
     private EnrollmentRepository enrollmentRepository;
     
     // Simple CRUD operations
-    public Student createStudent(String studentId, String schoolId, String firstName, String lastName, String email) {
+    public Student createStudent(String studentId, Long schoolId, String firstName, String lastName, String email) {
         School school = schoolRepository.findById(schoolId)
             .orElseThrow(() -> new RuntimeException("School not found: " + schoolId));
         
@@ -46,16 +46,16 @@ public class StudentJpaService {
         return studentRepository.findByStudentId(studentId);
     }
     
-    public List<Student> getStudentsBySchool(String schoolCode) {
-        School school = schoolRepository.findBySchoolCode(schoolCode)
-            .orElseThrow(() -> new RuntimeException("School not found: " + schoolCode));
+    public List<Student> getStudentsBySchool(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new RuntimeException("School not found: " + schoolId));
         
         return studentRepository.findActiveStudentsBySchoolOrderedByName(school);
     }
     
-    public List<Student> searchStudents(String schoolCode, String searchTerm) {
-        School school = schoolRepository.findBySchoolCode(schoolCode)
-            .orElseThrow(() -> new RuntimeException("School not found: " + schoolCode));
+    public List<Student> searchStudents(Long schoolId, String searchTerm) {
+        School school = schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new RuntimeException("School not found: " + schoolId));
         
         return studentRepository.searchStudentsByName(school, searchTerm);
     }

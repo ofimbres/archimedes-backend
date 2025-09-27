@@ -9,10 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.binomiaux.archimedes.entity.Enrollment;
 import com.binomiaux.archimedes.entity.Period;
+import com.binomiaux.archimedes.entity.School;
 import com.binomiaux.archimedes.entity.Student;
 import com.binomiaux.archimedes.exception.common.EntityNotFoundException;
 import com.binomiaux.archimedes.repository.jpa.EnrollmentRepository;
 import com.binomiaux.archimedes.repository.jpa.PeriodRepository;
+import com.binomiaux.archimedes.repository.jpa.SchoolRepository;
 import com.binomiaux.archimedes.repository.jpa.StudentRepository;
 
 /**
@@ -26,13 +28,16 @@ public class EnrollmentJpaService {
     private final EnrollmentRepository enrollmentRepository;
     private final StudentRepository studentRepository;
     private final PeriodRepository periodRepository;
+    private final SchoolRepository schoolRepository;
 
     public EnrollmentJpaService(EnrollmentRepository enrollmentRepository, 
                                StudentRepository studentRepository, 
-                               PeriodRepository periodRepository) {
+                               PeriodRepository periodRepository,
+                               SchoolRepository schoolRepository) {
         this.enrollmentRepository = enrollmentRepository;
         this.studentRepository = studentRepository;
         this.periodRepository = periodRepository;
+        this.schoolRepository = schoolRepository;
     }
 
     /**
@@ -225,11 +230,10 @@ public class EnrollmentJpaService {
     /**
      * Get enrollment statistics by subject for a school
      */
-    public List<Object[]> getEnrollmentStatsBySubject(String schoolCode) {
-        // For now, we'll use a simplified approach
-        // In a real implementation, you'd want to get the school ID first
-        String schoolId = "1"; // This should be dynamically determined
-        return enrollmentRepository.countEnrollmentsBySubjectForSchool(schoolId);
+    public List<Object[]> getEnrollmentStatsBySubject(Long schoolId) {
+        School school = schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new RuntimeException("School not found with id: " + schoolId));
+        return enrollmentRepository.countEnrollmentsBySubjectForSchool(school.getId());
     }
 
     /**

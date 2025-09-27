@@ -9,6 +9,7 @@ import com.binomiaux.archimedes.entity.Student;
 import com.binomiaux.archimedes.entity.Teacher;
 import com.binomiaux.archimedes.exception.business.ConflictException;
 import com.binomiaux.archimedes.model.UserRegistration;
+import com.binomiaux.archimedes.repository.jpa.SchoolRepository;
 import com.binomiaux.archimedes.service.UserService;
 
 /**
@@ -35,13 +36,19 @@ public class RegistrationJpaService {
     private final UserService userService;
     private final TeacherJpaService teacherJpaService;
     private final StudentJpaService studentJpaService;
+    private final SchoolRepository schoolRepository;
+    private final SequentialIdGeneratorService idGeneratorService;
 
     public RegistrationJpaService(UserService userService,
                                  TeacherJpaService teacherJpaService,
-                                 StudentJpaService studentJpaService) {
+                                 StudentJpaService studentJpaService,
+                                 SchoolRepository schoolRepository,
+                                 SequentialIdGeneratorService idGeneratorService) {
         this.userService = userService;
         this.teacherJpaService = teacherJpaService;
         this.studentJpaService = studentJpaService;
+        this.schoolRepository = schoolRepository;
+        this.idGeneratorService = idGeneratorService;
     }
 
     /**
@@ -49,7 +56,7 @@ public class RegistrationJpaService {
      */
     @Transactional
     public UserRegistration registerUser(String username, String password, String email, 
-                                        String givenName, String familyName, String schoolCode, String userType) {
+                                        String givenName, String familyName, Long schoolId, String userType) {
         
         // Step 1: Validate email availability (authentication layer)
         if (userService.isEmailRegistered(email)) {
@@ -57,7 +64,7 @@ public class RegistrationJpaService {
         }
 
         // Step 2: Create domain entity first (get the domain ID)
-        String domainEntityId = createDomainEntity(userType, schoolCode, givenName, familyName, email, username);
+        String domainEntityId = createDomainEntity(userType, schoolId, givenName, familyName, email, username);
 
         // Step 3: Create authentication user (with reference to domain entity)
         userService.createAuthenticationUser(username, password, email, givenName, familyName, userType, domainEntityId);
@@ -71,8 +78,8 @@ public class RegistrationJpaService {
      */
     @Transactional
     public UserRegistration registerTeacher(String username, String password, String email,
-                                           String firstName, String lastName, String schoolCode) {
-        return registerUser(username, password, email, firstName, lastName, schoolCode, TEACHER_USER_TYPE);
+                                           String firstName, String lastName, Long schoolId) {
+        return registerUser(username, password, email, firstName, lastName, schoolId, TEACHER_USER_TYPE);
     }
 
     /**
@@ -80,8 +87,8 @@ public class RegistrationJpaService {
      */
     @Transactional
     public UserRegistration registerStudent(String username, String password, String email,
-                                           String firstName, String lastName, String schoolCode) {
-        return registerUser(username, password, email, firstName, lastName, schoolCode, STUDENT_USER_TYPE);
+                                           String firstName, String lastName, Long schoolId) {
+        return registerUser(username, password, email, firstName, lastName, schoolId, STUDENT_USER_TYPE);
     }
 
     /**
@@ -89,7 +96,7 @@ public class RegistrationJpaService {
      */
     @Transactional
     public UserRegistration registerTeacherWithDetails(String username, String password, String email,
-                                                      String firstName, String lastName, String schoolCode, 
+                                                      String firstName, String lastName, Long schoolId, 
                                                       String department) {
         // Step 1: Validate email availability
         if (userService.isEmailRegistered(email)) {
@@ -97,7 +104,7 @@ public class RegistrationJpaService {
         }
 
         // Step 2: Create teacher with department
-        Teacher teacher = teacherJpaService.createTeacher(schoolCode, firstName, lastName, email, department);
+        Teacher teacher = teacherJpaService.createTeacher(schoolId, firstName, lastName, email, department);
 
         // Step 3: Create authentication user
         userService.createAuthenticationUser(username, password, email, firstName, lastName, TEACHER_USER_TYPE, teacher.getTeacherId());
@@ -109,42 +116,43 @@ public class RegistrationJpaService {
     /**
      * Creates the appropriate domain entity based on user type.
      */
-    private String createDomainEntity(String userType, String schoolCode, String givenName, 
+    private String createDomainEntity(String userType, Long schoolId, String givenName, 
                                      String familyName, String email, String username) {
         switch (userType) {
             case TEACHER_USER_TYPE:
-                return createTeacherEntity(schoolCode, givenName, familyName, email, username);
+                return createTeacherEntity(schoolId, givenName, familyName, email, username);
             case STUDENT_USER_TYPE:
-                return createStudentEntity(schoolCode, givenName, familyName, email, username);
+                return createStudentEntity(schoolId, givenName, familyName, email, username);
             default:
                 throw new IllegalArgumentException("Invalid user type: " + userType);
         }
     }
 
-    private String createTeacherEntity(String schoolCode, String givenName, String familyName, 
+    private String createTeacherEntity(Long schoolId, String givenName, String familyName, 
                                       String email, String username) {
-        log.info("Creating teacher entity for school: {} with email: {}", schoolCode, email);
+        log.info("Creating teacher entity for school: {} with email: {}", schoolId, email);
         
         try {
             // Create teacher using JPA service
-            Teacher teacher = teacherJpaService.createTeacher(schoolCode, givenName, familyName, email, null);
+            Teacher teacher = teacherJpaService.createTeacher(schoolId, givenName, familyName, email, null);
             
-            log.info("Created teacher with ID: {} for school: {}", teacher.getTeacherId(), schoolCode);
+            log.info("Created teacher with ID: {} for school: {}", teacher.getTeacherId(), schoolId);
             return teacher.getTeacherId();
             
         } catch (Exception e) {
-            log.error("Failed to create teacher entity for school: {} with email: {}", schoolCode, email, e);
+            log.error("Failed to create teacher entity for school: {} with email: {}", schoolId, email, e);
             throw new RuntimeException("Failed to create teacher entity: " + e.getMessage(), e);
         }
     }
 
-    private String createStudentEntity(String schoolId, String givenName, String familyName, 
+    private String createStudentEntity(Long schoolId, String givenName, String familyName, 
                                       String email, String username) {
         log.info("Creating student entity for school: {} with email: {}", schoolId, email);
         
         try {
-            // Generate student ID and create student using JPA service
-            // We'll use a simple approach for student ID generation
+            schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new RuntimeException("School not found with id: " + schoolId));
+            
             String studentId = generateStudentId(schoolId);
             Student student = studentJpaService.createStudent(studentId, schoolId, givenName, familyName, email);
             
@@ -165,27 +173,26 @@ public class RegistrationJpaService {
     }
 
     /**
-     * Generate a student ID for registration
+     * Generate a student ID for registration using sequential IDs per school
      */
-    private String generateStudentId(String schoolId) {
-        // Simple student ID generation - could be enhanced
-        return "STU-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private String generateStudentId(Long schoolId) {
+        return idGeneratorService.generateStudentId(schoolId);
     }
 
     /**
      * Get registration statistics
      */
-    public RegistrationStats getRegistrationStats(String schoolCode) {
+    public RegistrationStats getRegistrationStats(Long schoolId) {
         try {
-            long teacherCount = teacherJpaService.getTeacherCountBySchoolCode(schoolCode);
+            long teacherCount = teacherJpaService.getTeacherCountBySchoolId(schoolId);
             // For student count, we'll get all students from school and count them
-            long studentCount = studentJpaService.getStudentsBySchool(schoolCode).size();
+            long studentCount = studentJpaService.getStudentsBySchool(schoolId).size();
             
-            return new RegistrationStats(schoolCode, teacherCount, studentCount);
+            return new RegistrationStats(schoolId, teacherCount, studentCount);
             
         } catch (Exception e) {
-            log.warn("Could not get registration stats for school: {}", schoolCode, e);
-            return new RegistrationStats(schoolCode, 0, 0);
+            log.warn("Could not get registration stats for school: {}", schoolId, e);
+            return new RegistrationStats(schoolId, 0, 0);
         }
     }
 
@@ -193,17 +200,17 @@ public class RegistrationJpaService {
      * Registration statistics holder
      */
     public static class RegistrationStats {
-        private final String schoolCode;
+        private final Long schoolId;
         private final long teacherCount;
         private final long studentCount;
 
-        public RegistrationStats(String schoolCode, long teacherCount, long studentCount) {
-            this.schoolCode = schoolCode;
+        public RegistrationStats(Long schoolId, long teacherCount, long studentCount) {
+            this.schoolId = schoolId;
             this.teacherCount = teacherCount;
             this.studentCount = studentCount;
         }
 
-        public String getSchoolCode() { return schoolCode; }
+        public Long getSchoolId() { return schoolId; }
         public long getTeacherCount() { return teacherCount; }
         public long getStudentCount() { return studentCount; }
         public long getTotalCount() { return teacherCount + studentCount; }

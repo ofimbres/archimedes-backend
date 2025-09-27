@@ -8,6 +8,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -17,8 +19,9 @@ import jakarta.persistence.Table;
 public class School {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private String id;
+    private Long id;
     
     @Column(name = "school_code", unique = true, nullable = false)
     private String schoolCode;
@@ -66,8 +69,8 @@ public class School {
     }
     
     // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
     public String getSchoolCode() { return schoolCode; }
     public void setSchoolCode(String schoolCode) { this.schoolCode = schoolCode; }

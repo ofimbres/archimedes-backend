@@ -27,12 +27,12 @@ public class StudentJpaController {
     @PostMapping
     public Student createStudent(
             @RequestParam String studentId,
-            @RequestParam String schoolCode,
+            @RequestParam Long schoolId,
             @RequestParam String firstName, 
             @RequestParam String lastName,
             @RequestParam String email) {
         
-        return studentJpaService.createStudent(studentId, schoolCode, firstName, lastName, email);
+        return studentJpaService.createStudent(studentId, schoolId, firstName, lastName, email);
     }
     
     @GetMapping("/{studentId}")
@@ -41,16 +41,16 @@ public class StudentJpaController {
                 .orElseThrow(() -> new RuntimeException("Student not found"));
     }
     
-    @GetMapping("/school/{schoolCode}")
-    public List<Student> getStudentsBySchool(@PathVariable String schoolCode) {
-        return studentJpaService.getStudentsBySchool(schoolCode);
+    @GetMapping("/school/{schoolId}")
+    public List<Student> getStudentsBySchool(@PathVariable Long schoolId) {
+        return studentJpaService.getStudentsBySchool(schoolId);
     }
     
     @GetMapping("/search")
     public List<Student> searchStudents(
-            @RequestParam String schoolCode,
+            @RequestParam Long schoolId,
             @RequestParam String searchTerm) {
         
-        return studentJpaService.searchStudents(schoolCode, searchTerm);
+        return studentJpaService.searchStudents(schoolId, searchTerm);
     }
 }

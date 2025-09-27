@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.binomiaux.archimedes.entity.School;
 
 @Repository
-public interface SchoolRepository extends JpaRepository<School, String> {
+public interface SchoolRepository extends JpaRepository<School, Long> {
     
     // Find by school code (unique identifier)
     Optional<School> findBySchoolCode(String schoolCode);
@@ -26,8 +26,8 @@ public interface SchoolRepository extends JpaRepository<School, String> {
     List<School> findAllActiveSchools();
     
     @Query("SELECT COUNT(st) FROM Student st WHERE st.school.id = ?1 AND st.status = 'ACTIVE'")
-    long countActiveStudentsBySchool(String schoolId);
+    long countActiveStudentsBySchool(Long schoolId);
     
     @Query("SELECT COUNT(t) FROM Teacher t WHERE t.school.id = ?1 AND t.status = 'ACTIVE'")
-    long countActiveTeachersBySchool(String schoolId);
+    long countActiveTeachersBySchool(Long schoolId);
 }

@@ -33,7 +33,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     
     // Custom queries - much simpler than DynamoDB!
     @Query("SELECT e FROM Enrollment e WHERE e.student.school.id = ?1 AND e.status = 'ACTIVE'")
-    List<Enrollment> findActiveEnrollmentsBySchool(String schoolId);
+    List<Enrollment> findActiveEnrollmentsBySchool(Long schoolId);
     
     @Query("SELECT e FROM Enrollment e WHERE e.period.id = ?1 AND e.status = 'ACTIVE' ORDER BY e.student.lastName, e.student.firstName")
     List<Enrollment> findActiveEnrollmentsByPeriodOrderedByStudent(Long periodId);
@@ -43,8 +43,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     
     // Analytics queries
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.period.school.id = ?1 AND e.status = 'ACTIVE'")
-    long countActiveEnrollmentsBySchool(String schoolId);
+    long countActiveEnrollmentsBySchool(Long schoolId);
     
     @Query("SELECT e.period.subject, COUNT(e) FROM Enrollment e WHERE e.student.school.id = ?1 AND e.status = 'ACTIVE' GROUP BY e.period.subject")
-    List<Object[]> countEnrollmentsBySubjectForSchool(String schoolId);
+    List<Object[]> countEnrollmentsBySubjectForSchool(Long schoolId);
 }

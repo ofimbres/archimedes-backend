@@ -70,12 +70,11 @@ public class SchoolJpaController {
     @PostMapping
     public ResponseEntity<SchoolResponse> createSchool(@Valid @RequestBody CreateSchoolRequest request) {
         School school = schoolJpaService.createSchool(
-            request.getId(),
             request.getSchoolCode(), 
             request.getName(),
             request.getAddress(),
-            request.getPrincipalName(),
-            request.getContactEmail(),
+            request.getPrincipal(),
+            request.getEmail(),
             request.getPhoneNumber()
         );
         
@@ -97,8 +96,8 @@ public class SchoolJpaController {
      * Get active student count for a school
      */
     @GetMapping("/{schoolCode}/student-count")
-    public ResponseEntity<Long> getStudentCount(@PathVariable String schoolCode) {
-        long count = schoolJpaService.getStudentCount(schoolCode);
+    public ResponseEntity<Long> getStudentCount(@PathVariable Long schoolId) {
+        long count = schoolJpaService.getStudentCount(schoolId);
         return ResponseEntity.ok(count);
     }
 }

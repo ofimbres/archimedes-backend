@@ -2,7 +2,6 @@ package com.binomiaux.archimedes.service.jpa;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +22,14 @@ public class TeacherJpaService {
 
     private final TeacherRepository teacherRepository;
     private final SchoolRepository schoolRepository;
+    private final SequentialIdGeneratorService idGeneratorService;
 
-    public TeacherJpaService(TeacherRepository teacherRepository, SchoolRepository schoolRepository) {
+    public TeacherJpaService(TeacherRepository teacherRepository, 
+                            SchoolRepository schoolRepository,
+                            SequentialIdGeneratorService idGeneratorService) {
         this.teacherRepository = teacherRepository;
         this.schoolRepository = schoolRepository;
+        this.idGeneratorService = idGeneratorService;
     }
 
     /**
@@ -55,40 +58,39 @@ public class TeacherJpaService {
     /**
      * Get teachers by school code
      */
-    public List<Teacher> getTeachersBySchoolCode(String schoolCode) {
-        School school = getSchoolByCode(schoolCode);
-        return teacherRepository.findBySchool(school);
+    public List<Teacher> getTeachersBySchool(Long schoolId) {
+        return teacherRepository.findBySchoolId(schoolId);
     }
 
     /**
      * Get active teachers by school code ordered by name
      */
-    public List<Teacher> getActiveTeachersBySchoolCode(String schoolCode) {
-        School school = getSchoolByCode(schoolCode);
+    public List<Teacher> getActiveTeachersBySchoolId(Long schoolId) {
+        School school = getSchoolById(schoolId);
         return teacherRepository.findActiveTeachersBySchoolOrderedByName(school);
     }
 
     /**
      * Get teachers by school and department
      */
-    public List<Teacher> getTeachersBySchoolAndDepartment(String schoolCode, String department) {
-        School school = getSchoolByCode(schoolCode);
+    public List<Teacher> getTeachersBySchoolAndDepartment(Long schoolId, String department) {
+        School school = getSchoolById(schoolId);
         return teacherRepository.findBySchoolAndDepartment(school, department);
     }
 
     /**
      * Search teachers by name within a school
      */
-    public List<Teacher> searchTeachersByName(String schoolCode, String searchTerm) {
-        School school = getSchoolByCode(schoolCode);
+    public List<Teacher> searchTeachersByName(Long schoolId, String searchTerm) {
+        School school = getSchoolById(schoolId);
         return teacherRepository.searchTeachersByName(school, searchTerm);
     }
 
     /**
      * Create a new teacher
      */
-    public Teacher createTeacher(String schoolCode, String firstName, String lastName, String email, String department) {
-        School school = getSchoolByCode(schoolCode);
+    public Teacher createTeacher(Long schoolId, String firstName, String lastName, String email, String department) {
+        School school = getSchoolById(schoolId);
         
         // Check if email already exists
         if (email != null && teacherRepository.findByEmail(email).isPresent()) {
@@ -96,7 +98,7 @@ public class TeacherJpaService {
         }
 
         Teacher teacher = new Teacher();
-        teacher.setTeacherId(generateTeacherId());
+        teacher.setTeacherId(idGeneratorService.generateTeacherId(schoolId));
         teacher.setSchool(school);
         teacher.setFirstName(firstName);
         teacher.setLastName(lastName);
@@ -182,18 +184,16 @@ public class TeacherJpaService {
     /**
      * Get teacher count by school
      */
-    public long getTeacherCountBySchoolCode(String schoolCode) {
-        School school = getSchoolByCode(schoolCode);
+    public long getTeacherCountBySchoolId(Long schoolId) {
+        School school = getSchoolById(schoolId);
         return teacherRepository.findBySchoolAndStatus(school, "ACTIVE").size();
     }
 
     // Private helper methods
-    private School getSchoolByCode(String schoolCode) {
-        return schoolRepository.findBySchoolCode(schoolCode)
-            .orElseThrow(() -> new EntityNotFoundException("School not found: " + schoolCode, null));
+    private School getSchoolById(Long schoolId) {
+        return schoolRepository.findById(schoolId)
+            .orElseThrow(() -> new EntityNotFoundException("School not found: " + schoolId, null));
     }
 
-    private String generateTeacherId() {
-        return "TCH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
+
 }

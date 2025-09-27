@@ -19,7 +19,7 @@ public interface PeriodRepository extends JpaRepository<Period, Long> {
     
     // Find by school
     List<Period> findBySchool(School school);
-    List<Period> findBySchoolId(String schoolId);
+    List<Period> findBySchoolId(Long schoolId);
     List<Period> findBySchoolAndStatus(School school, String status);
     
     // Find by teacher

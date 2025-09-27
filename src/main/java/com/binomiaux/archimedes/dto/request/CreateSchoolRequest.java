@@ -5,32 +5,22 @@ package com.binomiaux.archimedes.dto.request;
  */
 public class CreateSchoolRequest {
 
-    private String id;
     private String schoolCode;
     private String name;
     private String address;
-    private String principalName;
-    private String contactEmail;
+    private String principal;
+    private String email;
     private String phoneNumber;
 
     // Constructors
     public CreateSchoolRequest() {}
 
-    public CreateSchoolRequest(String id, String schoolCode, String name) {
-        this.id = id;
+    public CreateSchoolRequest(String schoolCode, String name) {
         this.schoolCode = schoolCode;
         this.name = name;
     }
 
     // Getters and setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getSchoolCode() {
         return schoolCode;
     }
@@ -55,20 +45,20 @@ public class CreateSchoolRequest {
         this.address = address;
     }
 
-    public String getPrincipalName() {
-        return principalName;
+    public String getPrincipal() {
+        return principal;
     }
 
-    public void setPrincipalName(String principalName) {
-        this.principalName = principalName;
+    public void setPrincipal(String principal) {
+        this.principal = principal;
     }
 
-    public String getContactEmail() {
-        return contactEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhoneNumber() {

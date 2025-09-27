@@ -21,7 +21,7 @@ public class SchoolJpaService {
             .orElseThrow(() -> new RuntimeException("School not found: " + schoolCode));
     }
 
-    public School getSchoolById(String id) {
+    public School getSchoolById(Long id) {
         return schoolRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("School not found with ID: " + id));
     }
@@ -34,22 +34,17 @@ public class SchoolJpaService {
         return schoolRepository.findAllActiveSchools();
     }
 
-    public School createSchool(String id, String schoolCode, String name) {
-        return createSchool(id, schoolCode, name, null, null, null, null);
+    public School createSchool(String schoolCode, String name) {
+        return createSchool(schoolCode, name, null, null, null, null);
     }
 
-    public School createSchool(String id, String schoolCode, String name, String address, 
+    public School createSchool(String schoolCode, String name, String address, 
                               String principalName, String contactEmail, String phoneNumber) {
-        if (schoolRepository.findById(id).isPresent()) {
-            throw new IllegalArgumentException("School ID already exists: " + id);
-        }
-        
         if (schoolRepository.findBySchoolCode(schoolCode).isPresent()) {
             throw new IllegalArgumentException("School code already exists: " + schoolCode);
         }
 
         School school = new School();
-        school.setId(id);
         school.setSchoolCode(schoolCode);
         school.setName(name);
         school.setAddress(address);
@@ -65,7 +60,7 @@ public class SchoolJpaService {
         return schoolRepository.findByNameContainingIgnoreCase(name);
     }
 
-    public long getStudentCount(String schoolId) {
+    public long getStudentCount(Long schoolId) {
         return schoolRepository.countActiveStudentsBySchool(schoolId);
     }
 }

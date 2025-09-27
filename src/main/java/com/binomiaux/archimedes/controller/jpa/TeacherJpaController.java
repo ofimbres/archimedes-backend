@@ -57,8 +57,8 @@ public class TeacherJpaController {
      * Get teachers by school code
      */
     @GetMapping("/school/{schoolCode}")
-    public ResponseEntity<List<TeacherResponse>> getTeachersBySchool(@PathVariable String schoolCode) {
-        List<Teacher> teachers = teacherJpaService.getTeachersBySchoolCode(schoolCode);
+    public ResponseEntity<List<TeacherResponse>> getTeachersBySchool(@PathVariable Long schoolId) {
+        List<Teacher> teachers = teacherJpaService.getTeachersBySchool(schoolId);
         List<TeacherResponse> response = TeacherMapperJpa.toResponseList(teachers);
         return ResponseEntity.ok(response);
     }
@@ -67,8 +67,8 @@ public class TeacherJpaController {
      * Get active teachers by school code
      */
     @GetMapping("/school/{schoolCode}/active")
-    public ResponseEntity<List<TeacherResponse>> getActiveTeachersBySchool(@PathVariable String schoolCode) {
-        List<Teacher> teachers = teacherJpaService.getActiveTeachersBySchoolCode(schoolCode);
+    public ResponseEntity<List<TeacherResponse>> getActiveTeachersBySchool(@PathVariable Long schoolId) {
+        List<Teacher> teachers = teacherJpaService.getActiveTeachersBySchoolId(schoolId);
         List<TeacherResponse> response = TeacherMapperJpa.toResponseList(teachers);
         return ResponseEntity.ok(response);
     }
@@ -78,9 +78,9 @@ public class TeacherJpaController {
      */
     @GetMapping("/school/{schoolCode}/department/{department}")
     public ResponseEntity<List<TeacherResponse>> getTeachersBySchoolAndDepartment(
-            @PathVariable String schoolCode,
+            @PathVariable Long schoolId,
             @PathVariable String department) {
-        List<Teacher> teachers = teacherJpaService.getTeachersBySchoolAndDepartment(schoolCode, department);
+        List<Teacher> teachers = teacherJpaService.getTeachersBySchoolAndDepartment(schoolId, department);
         List<TeacherResponse> response = TeacherMapperJpa.toResponseList(teachers);
         return ResponseEntity.ok(response);
     }
@@ -90,9 +90,9 @@ public class TeacherJpaController {
      */
     @GetMapping("/search")
     public ResponseEntity<List<TeacherResponse>> searchTeachers(
-            @RequestParam String schoolCode,
+            @RequestParam Long schoolId,
             @RequestParam String searchTerm) {
-        List<Teacher> teachers = teacherJpaService.searchTeachersByName(schoolCode, searchTerm);
+        List<Teacher> teachers = teacherJpaService.searchTeachersByName(schoolId, searchTerm);
         List<TeacherResponse> response = TeacherMapperJpa.toResponseList(teachers);
         return ResponseEntity.ok(response);
     }
@@ -102,12 +102,12 @@ public class TeacherJpaController {
      */
     @PostMapping
     public ResponseEntity<TeacherResponse> createTeacher(
-            @RequestParam String schoolCode,
+            @RequestParam Long schoolId,
             @RequestParam String firstName,
             @RequestParam String lastName,
             @RequestParam String email,
             @RequestParam(required = false) String department) {
-        Teacher teacher = teacherJpaService.createTeacher(schoolCode, firstName, lastName, email, department);
+        Teacher teacher = teacherJpaService.createTeacher(schoolId, firstName, lastName, email, department);
         TeacherResponse response = TeacherMapperJpa.toResponse(teacher);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -171,8 +171,8 @@ public class TeacherJpaController {
      * Get teacher count by school
      */
     @GetMapping("/school/{schoolCode}/count")
-    public ResponseEntity<Long> getTeacherCount(@PathVariable String schoolCode) {
-        long count = teacherJpaService.getTeacherCountBySchoolCode(schoolCode);
+    public ResponseEntity<Long> getTeacherCount(@PathVariable Long schoolId) {
+        long count = teacherJpaService.getTeacherCountBySchoolId(schoolId);
         return ResponseEntity.ok(count);
     }
 

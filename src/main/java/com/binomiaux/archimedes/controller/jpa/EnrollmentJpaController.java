@@ -226,8 +226,8 @@ public class EnrollmentJpaController {
      * Get enrollment statistics by subject for a school
      */
     @GetMapping("/school/{schoolCode}/stats/subject")
-    public ResponseEntity<List<Object[]>> getEnrollmentStatsBySubject(@PathVariable String schoolCode) {
-        List<Object[]> stats = enrollmentJpaService.getEnrollmentStatsBySubject(schoolCode);
+    public ResponseEntity<List<Object[]>> getEnrollmentStatsBySubject(@PathVariable Long schoolId) {
+        List<Object[]> stats = enrollmentJpaService.getEnrollmentStatsBySubject(schoolId);
         return ResponseEntity.ok(stats);
     }
 }
