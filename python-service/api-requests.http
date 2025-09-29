@@ -1,0 +1,51 @@
+### Python Service API Requests
+### So much cleaner than Java Spring Boot!
+### Base URL: http://localhost:8001
+
+### 1. Health Check
+GET http://localhost:8001/health/
+
+###
+
+### 2. Root endpoint
+GET http://localhost:8001/
+
+###
+
+### 3. Generate Student ID
+POST http://localhost:8001/generate/student-id
+Content-Type: application/json
+
+{
+  "school_id": 1
+}
+
+###
+
+### 4. Generate Teacher ID  
+POST http://localhost:8001/generate/teacher-id
+Content-Type: application/json
+
+{
+  "school_id": 1
+}
+
+###
+
+### 5. Get Next Sequences for School
+GET http://localhost:8001/generate/next-sequences/1
+
+###
+
+### 6. API Documentation (automatic!)
+GET http://localhost:8001/docs
+
+###
+
+### 7. Alternative docs
+GET http://localhost:8001/redoc
+
+###
+
+### 8. School Analytics (placeholder)
+GET http://localhost:8001/analytics/school/1

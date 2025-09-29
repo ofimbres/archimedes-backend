@@ -6,7 +6,7 @@ CREATE TABLE user_id_counters (
     user_type VARCHAR(20) NOT NULL,
     next_sequence INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (school_id, user_type),
-    FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+    FOREIGN KEY (school_id)  REFERENCES schools(id) ON DELETE CASCADE
 );
 
 -- Create indexes for better performance
