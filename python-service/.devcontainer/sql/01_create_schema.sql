@@ -8,18 +8,25 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. SCHOOLS TABLE
 -- =============================================================================
 
-CREATE TABLE schools (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                                  school_code VARCHAR(50) UNIQUE NOT NULL,
-                                                                                 name VARCHAR(255) NOT NULL,
-                                                                                                   address TEXT, principal_name VARCHAR(255),
-                                                                                                                                contact_email VARCHAR(255),
-                                                                                                                                              phone_number VARCHAR(20),
-                                                                                                                                                           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                                                                                                                                                                                       updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW());
+CREATE TABLE schools (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    address VARCHAR(500),
+    city VARCHAR(100),
+    state VARCHAR(50),
+    zip_code VARCHAR(20),
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    website VARCHAR(200),
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
 -- Indexes for schools
 
-CREATE UNIQUE INDEX idx_schools_code ON schools(school_code);
+CREATE UNIQUE INDEX idx_schools_code ON schools(code);
 
 
 CREATE INDEX idx_schools_name ON schools(name);

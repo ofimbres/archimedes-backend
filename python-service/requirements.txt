@@ -13,6 +13,7 @@ alembic==1.16.5          # Database migrations
 # Data Validation & Serialization
 pydantic==2.11.9
 pydantic-settings==2.6.1
+email-validator==2.1.1    # For EmailStr validation
 
 # System monitoring
 psutil==5.9.6            # System and process utilities
@@ -26,6 +27,9 @@ httpx==0.25.2            # For testing FastAPI
 python-dotenv==1.0.0     # Environment variables
 loguru==0.7.2            # Better logging than Java's mess
 tenacity==8.2.3          # Retry logic
+
+# AWS Integration
+boto3==1.35.68           # AWS SDK for Cognito integration
 
 # Code Quality
 black==23.11.0           # Code formatting

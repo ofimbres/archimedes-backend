@@ -1,51 +1,148 @@
-### Python Service API Requests
-### So much cleaner than Java Spring Boot!
+### Archimedes Python Service API Requests
 ### Base URL: http://localhost:8001
 
-### 1. Health Check
-GET http://localhost:8001/health/
+###############################################################################
+### HEALTH & DOCUMENTATION
+###############################################################################
 
-###
+### 1. Basic Health Check
+GET http://localhost:8001/api/v1/health/
 
-### 2. Root endpoint
-GET http://localhost:8001/
+### 2. Detailed Health Status
+GET http://localhost:8001/api/v1/health/status
 
-###
+###############################################################################
+### AUTHENTICATION & USER REGISTRATION
+###############################################################################
 
-### 3. Generate Student ID
-POST http://localhost:8001/generate/student-id
+### 6. Create a School First (Required for Student Registration)
+POST http://localhost:8001/api/v1/schools/
 Content-Type: application/json
 
 {
-  "school_id": 1
+  "name": "Lincoln High School",
+  "code": "LHS",
+  "address": "123 Education Street",
+  "city": "Springfield",
+  "state": "IL",
+  "zip_code": "62701",
+  "phone": "+1-555-0123",
+  "email": "admin@lincolnhs.edu",
+  "website": "https://www.lincolnhs.edu"
 }
 
-###
-
-### 4. Generate Teacher ID  
-POST http://localhost:8001/generate/teacher-id
+### 7. Register a New Student User (Use school ID from step 6)
+POST http://localhost:8001/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "school_id": 1
+  "username": "oscar.fimbres",
+  "email": "oscar.fimbres@gmail.com",
+  "password": "TempPassword123!",
+  "givenName": "Oscar",
+  "familyName": "Fimbres",
+  "schoolId": "123e4567-e89b-12d3-a456-426614174000",
+  "userType": "students"
 }
 
-###
+### 8. Register a New Teacher User
+POST http://localhost:8001/api/v1/auth/register
+Content-Type: application/json
 
-### 5. Get Next Sequences for School
-GET http://localhost:8001/generate/next-sequences/1
+{
+  "username": "jane.smith",
+  "email": "jane.smith@school.edu",
+  "password": "SecurePass456!",
+  "givenName": "Jane",
+  "familyName": "Smith",
+  "schoolId": "123e4567-e89b-12d3-a456-426614174000",
+  "userType": "teachers"
+}
 
-###
+###############################################################################
+### STUDENT MANAGEMENT
+###############################################################################
 
-### 6. API Documentation (automatic!)
-GET http://localhost:8001/docs
+### 8. Create a Student (Direct Database Creation)
+POST http://localhost:8001/api/v1/students/
+Content-Type: application/json
 
-###
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@student.edu",
+  "schoolId": "550e8400-e29b-41d4-a716-446655440001",
+  "gradeLevel": "10",
+  "isActive": true
+}
 
-### 7. Alternative docs
-GET http://localhost:8001/redoc
+### 9. Get Student by ID
+GET http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
 
-###
+### 10. Get All Students for a School (with pagination)
+GET http://localhost:8001/api/v1/students/school/550e8400-e29b-41d4-a716-446655440001?page=1&size=10
 
-### 8. School Analytics (placeholder)
-GET http://localhost:8001/analytics/school/1
+### 11. Update Student Information
+PUT http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@student.edu",
+  "gradeLevel": "11",
+  "isActive": true
+}
+
+### 12. Soft Delete Student (mark as inactive)
+DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
+
+### 13. Permanently Delete Student (hard delete)
+DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002/permanent
+
+###############################################################################
+### SCHOOL MANAGEMENT
+###############################################################################
+
+### 14. Create School
+POST http://localhost:8001/api/v1/schools/
+Content-Type: application/json
+
+{
+  "name": "Lincoln High School",
+  "code": "LHS",
+  "address": "123 Education Street",
+  "city": "Springfield",
+  "state": "IL",
+  "zip_code": "62701",
+  "phone": "+1-555-0123",
+  "email": "admin@lincolnhs.edu",
+  "website": "https://www.lincolnhs.edu"
+}
+
+### 15. Get School by ID
+GET http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
+
+### 16. List All Schools (with pagination)
+GET http://localhost:8001/api/v1/schools/?page=1&size=10
+
+### 17. Update School
+PUT http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+
+{
+  "name": "Lincoln High School - Updated",
+  "phone": "+1-555-0124",
+  "website": "https://www.lincolnhs.edu/new"
+}
+
+### 18. Delete School (soft delete)
+DELETE http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
+
+###############################################################################
+### TESTING VARIABLES (Update these UUIDs based on your actual data)
+###############################################################################
+
+# School ID: 550e8400-e29b-41d4-a716-446655440001
+# Student ID: 550e8400-e29b-41d4-a716-446655440002
+# Teacher ID: 550e8400-e29b-41d4-a716-446655440003

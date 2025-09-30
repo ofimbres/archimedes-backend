@@ -1,5 +1,6 @@
-"""
-Model exports - clean and simple
-"""
+"""Models package for Archimedes Education Platform."""
 
-__all__ = []
+from .school import School
+from .student import Student
+
+__all__ = ["School", "Student"]

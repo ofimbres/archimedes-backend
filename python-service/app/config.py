@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     """Application settings with automatic environment variable loading"""
 
     # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/archimedes"
+    database_url: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/archimedes"
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -34,9 +36,17 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
+    # AWS Cognito
+    aws_region: str = "us-west-2"
+    cognito_user_pool_id: str = ""
+    cognito_client_id: str = ""
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields from .env file
 
 
 # Global settings instance
