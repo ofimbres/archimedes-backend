@@ -1,0 +1,37 @@
+# Python Dependencies for Archimedes Microservice
+# Modern, minimal stack for clean development
+
+# Web Framework - FastAPI (modern, fast, automatic docs)
+fastapi==0.117.1
+uvicorn[standard]==0.37.0
+
+# Database
+sqlalchemy==2.0.43
+asyncpg==0.30.0          # Async PostgreSQL driver
+alembic==1.16.5          # Database migrations
+
+# Data Validation & Serialization
+pydantic==2.11.9
+pydantic-settings==2.6.1
+email-validator==2.1.1    # For EmailStr validation
+
+# System monitoring
+psutil==5.9.6            # System and process utilities
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2            # For testing FastAPI
+
+# Utilities
+python-dotenv==1.0.0     # Environment variables
+loguru==0.7.2            # Better logging than Java's mess
+tenacity==8.2.3          # Retry logic
+
+# AWS Integration
+boto3==1.35.68           # AWS SDK for Cognito integration
+
+# Code Quality
+black==23.11.0           # Code formatting
+ruff==0.1.6              # Super fast linting
+mypy==1.7.1              # Type checking

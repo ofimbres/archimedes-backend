@@ -1,0 +1,87 @@
+### Archimedes Python Service API Collection
+### Clean, modern Python microservice - Complete API testing suite
+### Base URL: http://localhost:8001
+
+###############################################################################
+### 🚀 QUICK START WORKFLOW
+###############################################################################
+
+# Follow this recommended order for testing:
+
+# 1️⃣ HEALTH CHECK (health.http)
+#    └── Verify service is running
+
+# 2️⃣ SCHOOLS (schools.http)
+#    └── Create a school first (needed for users)
+#    └── Copy the school ID from response
+
+# 3️⃣ AUTHENTICATION (auth.http)
+#    └── Register users (use school ID from step 2)
+#    └── Login to get access tokens
+#    └── Use tokens for protected endpoints
+
+# 4️⃣ TEACHERS (teachers.http)
+#    └── Manage teacher records (auto-creates default courses)
+#    └── Use school ID from step 2
+
+# 5️⃣ COURSES (courses.http)
+#    └── View and manage teacher courses
+#    └── Get join codes for student enrollment
+
+# 6️⃣ STUDENTS (students.http)
+#    └── Manage student records
+#    └── Use school ID and access tokens from previous steps
+
+# 7️⃣ ENROLLMENTS (enrollments.http)
+#    └── Student course enrollment
+#    └── Join courses with codes or direct enrollment
+
+###############################################################################
+### 📁 FILE ORGANIZATION
+###############################################################################
+
+# health.http      - System health and documentation endpoints
+# schools.http     - School management (create, read, update, delete)
+# auth.http        - Authentication (register, login, logout, refresh)
+# teachers.http    - Teacher management (CRUD + auto course creation)
+# courses.http     - Course management and join code access
+# students.http    - Student management (CRUD operations)
+# enrollments.http - Course enrollment management
+
+###############################################################################
+### 🔧 DEVELOPMENT TOOLS
+###############################################################################
+
+# Cleanup Script (when needed):
+# python scripts/dev_cleanup.py --force
+
+# Start Server:
+# python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+###############################################################################
+### 📚 DOCUMENTATION
+###############################################################################
+
+# Interactive API Docs: http://localhost:8001/docs
+# Alternative Docs:     http://localhost:8001/redoc
+# Health Check:         http://localhost:8001/api/v1/health/
+
+###############################################################################
+### 🔒 AUTHENTICATION WORKFLOW
+###############################################################################
+
+# 1. Create a school (schools.http)
+# 2. Register a user with the school ID (auth.http)
+# 3. Login to get access_token and refresh_token (auth.http)
+# 4. Use access_token in Authorization header for protected endpoints
+# 5. Refresh token when needed (auth.http)
+# 6. Logout when done (auth.http)
+
+###############################################################################
+### 🧪 TESTING NOTES
+###############################################################################
+
+# - Replace placeholder UUIDs with actual values from responses
+# - Update access_token and refresh_token as needed
+# - Use the cleanup script to reset data between test runs
+# - Check the FastAPI docs at /docs for schema details

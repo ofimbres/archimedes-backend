@@ -1,0 +1,118 @@
+### Courses API - Archimedes Python Service
+### Teacher course management endpoints
+### Base URL: http://localhost:8001
+
+@baseUrl = http://localhost:8001
+@apiVersion = /api/v1
+
+###############################################################################
+### 📚 COURSE MANAGEMENT
+###############################################################################
+
+### Variables (Replace with actual values from responses)
+@teacherId = 660e8400-e29b-41d4-a716-446655440001
+@schoolId = 550e8400-e29b-41d4-a716-446655440000
+@courseId = 770e8400-e29b-41d4-a716-446655440002
+@joinCode = ALG7M
+
+### 1. Create Additional Course (Manual)
+POST {{baseUrl}}{{apiVersion}}/courses
+Content-Type: application/json
+
+{
+  "school_id": "{{schoolId}}",
+  "teacher_id": "{{teacherId}}",
+  "class_name": "Advanced Mathematics",
+  "subject": "Mathematics",
+  "academic_year": "2024-25",
+  "semester": "Fall"
+}
+
+### 2. Get Course by ID
+GET {{baseUrl}}{{apiVersion}}/courses/{{courseId}}
+
+### 3. Get Course by Join Code
+GET {{baseUrl}}{{apiVersion}}/courses/join-code/{{joinCode}}
+
+### 4. Get Teacher's Courses (shows auto-created + manual courses)
+GET {{baseUrl}}{{apiVersion}}/courses/teacher/{{teacherId}}
+    ?is_active=true
+    &page=1
+    &size=10
+
+### 5. Update Course Details
+PUT {{baseUrl}}{{apiVersion}}/courses/{{courseId}}
+Content-Type: application/json
+
+{
+  "class_name": "Advanced Calculus",
+  "subject": "Mathematics",
+  "academic_year": "2024-25",
+  "semester": "Spring"
+}
+
+### 6. Deactivate Course
+PUT {{baseUrl}}{{apiVersion}}/courses/{{courseId}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### 7. Delete Course
+DELETE {{baseUrl}}{{apiVersion}}/courses/{{courseId}}
+
+###############################################################################
+### 🔍 COURSE DISCOVERY
+###############################################################################
+
+### Get All Active Courses for Teacher
+GET {{baseUrl}}{{apiVersion}}/courses/teacher/{{teacherId}}
+    ?is_active=true
+    &page=1
+    &size=20
+
+### Get All Courses (Active + Inactive)
+GET {{baseUrl}}{{apiVersion}}/courses/teacher/{{teacherId}}
+    ?page=1
+    &size=20
+
+### Get Inactive Courses Only
+GET {{baseUrl}}{{apiVersion}}/courses/teacher/{{teacherId}}
+    ?is_active=false
+    &page=1
+    &size=10
+
+###############################################################################
+### 📝 NOTES
+###############################################################################
+
+# Course Management Features:
+# ✅ Auto-created default courses when teacher is created
+# ✅ Manual course creation for additional courses
+# ✅ Unique join codes for student enrollment
+# ✅ Get course by ID or join code
+# ✅ Get teacher's courses with pagination/filtering
+# ✅ Update course details and status
+# ✅ Delete courses
+# ✅ Proper error handling and validation
+
+# Default Course Creation:
+# When a teacher is created, the system automatically creates
+# default courses based on their max_classes setting (default: 6)
+# - Course names: "Course 1", "Course 2", etc.
+# - Subject: "General" (can be updated later)
+# - Each gets a unique 5-character join code
+# - All courses are initially active
+
+# Join Codes:
+# - 5-character alphanumeric codes (e.g., "ALG7M", "SCI4K")
+# - Unique across the entire system
+# - Used by students to enroll in courses
+# - Generated automatically for each course
+
+# Remember to:
+# 1. Create a teacher first (which auto-creates default courses)
+# 2. Use actual teacher ID and school ID from responses
+# 3. Join codes are returned in course creation/retrieval responses
+# 4. Students use join codes in enrollment endpoints

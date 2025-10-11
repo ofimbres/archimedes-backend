@@ -1,0 +1,268 @@
+### Enrollments API - Archimedes Python Service
+### Student course enrollment management endpoints
+### Base URL: http://localhost:8001
+
+@baseUrl = http://localhost:8001
+@apiVersion = /api/v1
+
+###############################################################################
+### 📚 ENROLLMENT MANAGEMENT
+###############################################################################
+
+### Variables (Replace with actual values from responses)
+@studentId = 440e8400-e29b-41d4-a716-446655440000
+@courseId = 550e8400-e29b-41d4-a716-446655440001
+@enrollmentId = 660e8400-e29b-41d4-a716-446655440002
+@joinCode = ALG7M
+@accessToken = your_access_token_here
+
+### 1. Enroll with Join Code (Student Use)
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "join_code": "{{joinCode}}"
+}
+
+### 2. Direct Enrollment (Admin Use)
+POST {{baseUrl}}{{apiVersion}}/enrollments/direct
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "course_id": "{{courseId}}",
+  "enrollment_status": "active"
+}
+
+### 3. Get Enrollment by ID
+GET {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+
+### 4. Get Student's Enrollments
+GET {{baseUrl}}{{apiVersion}}/enrollments/student/{{studentId}}
+    ?is_active=true
+    &page=1
+    &size=10
+
+### 5. Get Course Enrollments (Teacher/Admin View)
+GET {{baseUrl}}{{apiVersion}}/enrollments/course/{{courseId}}
+    ?is_active=true
+    &page=1
+    &size=20
+
+### 6. Update Enrollment Status
+PUT {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+Content-Type: application/json
+
+{
+  "enrollment_status": "completed",
+  "is_active": true
+}
+
+### 7. Drop Enrollment (Student/Admin Action)
+POST {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}/drop
+
+### 8. Permanently Delete Enrollment (Admin Only)
+DELETE {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+
+###############################################################################
+### 🔍 FILTERING AND SEARCH EXAMPLES
+###############################################################################
+
+### Get Active Student Enrollments
+GET {{baseUrl}}{{apiVersion}}/enrollments/student/{{studentId}}
+    ?is_active=true
+    &page=1
+    &size=5
+
+### Get Dropped Student Enrollments
+GET {{baseUrl}}{{apiVersion}}/enrollments/student/{{studentId}}
+    ?is_active=false
+    &page=1
+    &size=10
+
+### Get All Course Enrollments (No Filter)
+GET {{baseUrl}}{{apiVersion}}/enrollments/course/{{courseId}}
+    ?page=1
+    &size=50
+
+### Get Only Active Course Enrollments
+GET {{baseUrl}}{{apiVersion}}/enrollments/course/{{courseId}}
+    ?is_active=true
+    &page=1
+    &size=30
+
+###############################################################################
+### 📊 BULK ENROLLMENT EXAMPLES
+###############################################################################
+
+### Enroll Multiple Students with Join Code
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "440e8400-e29b-41d4-a716-446655440001",
+  "join_code": "{{joinCode}}"
+}
+
+###
+
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "440e8400-e29b-41d4-a716-446655440002",
+  "join_code": "{{joinCode}}"
+}
+
+###
+
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "440e8400-e29b-41d4-a716-446655440003",
+  "join_code": "{{joinCode}}"
+}
+
+### Direct Enrollment for Multiple Students (Admin)
+POST {{baseUrl}}{{apiVersion}}/enrollments/direct
+Content-Type: application/json
+
+{
+  "student_id": "440e8400-e29b-41d4-a716-446655440004",
+  "course_id": "{{courseId}}",
+  "enrollment_status": "active"
+}
+
+###
+
+POST {{baseUrl}}{{apiVersion}}/enrollments/direct
+Content-Type: application/json
+
+{
+  "student_id": "440e8400-e29b-41d4-a716-446655440005",
+  "course_id": "{{courseId}}",
+  "enrollment_status": "active"
+}
+
+###############################################################################
+### 🧪 TESTING SCENARIOS
+###############################################################################
+
+### Test Error Cases
+
+# Invalid Join Code
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "join_code": "INVALID"
+}
+
+###
+
+# Duplicate Enrollment
+POST {{baseUrl}}{{apiVersion}}/enrollments/join
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "join_code": "{{joinCode}}"
+}
+
+###
+
+# Invalid Student ID
+POST {{baseUrl}}{{apiVersion}}/enrollments/direct
+Content-Type: application/json
+
+{
+  "student_id": "00000000-0000-0000-0000-000000000000",
+  "course_id": "{{courseId}}",
+  "enrollment_status": "active"
+}
+
+###
+
+# Invalid Course ID
+POST {{baseUrl}}{{apiVersion}}/enrollments/direct
+Content-Type: application/json
+
+{
+  "student_id": "{{studentId}}",
+  "course_id": "00000000-0000-0000-0000-000000000000",
+  "enrollment_status": "active"
+}
+
+###
+
+# Invalid Enrollment ID
+GET {{baseUrl}}{{apiVersion}}/enrollments/00000000-0000-0000-0000-000000000000
+
+###
+
+# Invalid Pagination
+GET {{baseUrl}}{{apiVersion}}/enrollments/student/{{studentId}}
+    ?page=0
+    &size=200
+
+###############################################################################
+### 📈 ENROLLMENT STATUS MANAGEMENT
+###############################################################################
+
+### Change Status to Completed
+PUT {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+Content-Type: application/json
+
+{
+  "enrollment_status": "completed"
+}
+
+### Change Status to Dropped
+PUT {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+Content-Type: application/json
+
+{
+  "enrollment_status": "dropped",
+  "is_active": false
+}
+
+### Reactivate Dropped Enrollment
+PUT {{baseUrl}}{{apiVersion}}/enrollments/{{enrollmentId}}
+Content-Type: application/json
+
+{
+  "enrollment_status": "active",
+  "is_active": true
+}
+
+###############################################################################
+### 📝 NOTES
+###############################################################################
+
+# Enrollment Management Features:
+# ✅ Enroll with join code (student self-enrollment)
+# ✅ Direct enrollment (admin/teacher enrollment)
+# ✅ Get enrollment by ID with student/course details
+# ✅ Get student's enrollments with pagination/filtering
+# ✅ Get course enrollments (teacher roster view)
+# ✅ Update enrollment status and active flag
+# ✅ Drop enrollment (soft delete - sets to inactive)
+# ✅ Delete enrollment (hard delete - permanent removal)
+# ✅ Proper error handling and validation
+# ✅ Duplicate enrollment prevention
+# ✅ Join code validation
+
+# Enrollment Status Values:
+# - "active": Student is currently enrolled
+# - "dropped": Student dropped the course
+# - "completed": Student completed the course
+
+# Remember to:
+# 1. Create courses first (use courses.http when available)
+# 2. Get actual join codes from course creation
+# 3. Replace {{studentId}} and {{courseId}} with real UUIDs
+# 4. Use proper pagination (page >= 1, size <= 100)
+# 5. Check enrollment status before operations
