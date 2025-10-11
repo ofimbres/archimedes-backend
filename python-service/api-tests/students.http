@@ -1,0 +1,52 @@
+### Archimedes Students API
+### Clean, modern Python microservice - Students management
+### Base URL: http://localhost:8001
+
+###############################################################################
+### STUDENT MANAGEMENT
+###############################################################################
+
+### 1. Create a Student (Direct Database Creation)
+POST http://localhost:8001/api/v1/students/
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@student.edu",
+  "schoolId": "PUT_SCHOOL_ID_HERE",
+  "gradeLevel": "10",
+  "isActive": true
+}
+
+### 2. Get Student by ID
+GET http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
+
+### 3. Get All Students for a School (with pagination)
+GET http://localhost:8001/api/v1/students/school/PUT_SCHOOL_ID_HERE?page=1&size=10
+
+### 4. Update Student Information
+PUT http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@student.edu",
+  "gradeLevel": "11",
+  "isActive": true
+}
+
+### 5. Soft Delete Student (mark as inactive)
+DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
+
+### 6. Permanently Delete Student (hard delete)
+DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002/permanent
+
+###############################################################################
+### TESTING VARIABLES
+###############################################################################
+
+# Update these UUIDs based on your actual data:
+# School ID: Get from schools.http -> Create School response
+# Student ID: Use the ID returned from "Create Student" above

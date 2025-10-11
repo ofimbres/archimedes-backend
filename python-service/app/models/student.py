@@ -15,11 +15,11 @@ from ..database import Base
 
 class Student(Base):
     """Student model representing students in the education platform.
-    
+
     Students are scoped to schools and have globally unique emails.
     The full_name is a computed column in the database.
     """
-    
+
     __tablename__ = "students"
 
     id = Column(
@@ -55,12 +55,11 @@ class Student(Base):
 
     # Relationships
     school = relationship("School", back_populates="students")
-    # TODO: Add enrollments relationship when Enrollment model is created
-    # enrollments = relationship(
-    #     "Enrollment",
-    #     back_populates="student",
-    #     cascade="all, delete-orphan"
-    # )
+    courses = relationship(
+        "Course",
+        secondary="enrollments",
+        back_populates="students"
+    )
 
     def __repr__(self) -> str:
         """String representation of Student."""

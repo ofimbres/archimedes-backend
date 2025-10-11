@@ -13,7 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
 from ..schemas.student import (
-    StudentCreate,
     StudentUpdate,
     StudentResponse,
     StudentList
@@ -23,33 +22,9 @@ from ..services.student_service import StudentService
 router = APIRouter(prefix="/students", tags=["Students"])
 
 
-@router.post(
-    "/",
-    response_model=StudentResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create a new student",
-    description="Create a new student in the system with validation."
-)
-async def create_student(
-    student_data: StudentCreate,
-    db: AsyncSession = Depends(get_db)
-) -> StudentResponse:
-    """Create a new student.
-
-    Args:
-        student_data: Student creation data
-        db: Database session dependency
-
-    Returns:
-        Created student response
-
-    Raises:
-        409: If email or username already exists
-        404: If school not found
-        400: If validation fails
-    """
-    service = StudentService(db)
-    return await service.create_student(student_data)
+# NOTE: Student creation is handled through /auth/register endpoint
+# This ensures proper Cognito integration and authentication setup.
+# For admin operations, consider a separate admin-only endpoint.
 
 
 @router.get(

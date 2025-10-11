@@ -1,0 +1,205 @@
+### Teachers API - Archimedes Python Service
+### Complete teacher management endpoints
+### Base URL: http://localhost:8001
+
+@baseUrl = http://localhost:8001
+@apiVersion = /api/v1
+
+###############################################################################
+### 🧑‍🏫 TEACHER MANAGEMENT
+###############################################################################
+
+### Variables (Replace with actual values from responses)
+@schoolId = 6f9fa83a-9b3e-4a54-a5ce-a4fd974e30cc
+@teacherId = 660e8400-e29b-41d4-a716-446655440001
+@accessToken = your_access_token_here
+
+### 1. Create Teacher (Auto-creates default courses)
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "Sarah",
+  "last_name": "Johnson",
+  "email": "sarah.johnson@archimedesschool.edu",
+  "username": "sarah.johnson",
+  "school_id": "{{schoolId}}"
+}
+
+# Note: This automatically creates default courses (up to max_classes limit)
+# Each course gets a unique join code for student enrollment
+
+### 2. Get Teacher by ID
+GET {{baseUrl}}{{apiVersion}}/teachers/{{teacherId}}
+
+### 3. Get All Teachers (with pagination)
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?page=1
+    &size=10
+
+### 4. Get Teachers with Filters
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?school_id={{schoolId}}
+    &department=Mathematics
+    &subject=Algebra
+    &page=1
+    &size=10
+
+### 5. Get Teachers by School
+GET {{baseUrl}}{{apiVersion}}/teachers/school/{{schoolId}}
+    ?page=1
+    &size=10
+
+### 6. Update Teacher
+PUT {{baseUrl}}{{apiVersion}}/teachers/{{teacherId}}
+Content-Type: application/json
+
+{
+  "first_name": "Sarah",
+  "last_name": "Johnson-Smith",
+  "email": "sarah.johnson-smith@archimedesschool.edu",
+  "username": "sarah.johnson.smith",
+  "max_classes": 8,
+  "is_active": true
+}
+
+### 7. Update Teacher (Partial)
+PUT {{baseUrl}}{{apiVersion}}/teachers/{{teacherId}}
+Content-Type: application/json
+
+{
+  "max_classes": 10,
+  "is_active": false
+}
+
+### 8. Delete Teacher
+DELETE {{baseUrl}}{{apiVersion}}/teachers/{{teacherId}}
+
+###############################################################################
+### 🔍 SEARCH AND FILTER EXAMPLES
+###############################################################################
+
+### Search by Department
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?department=Science
+    &page=1
+    &size=20
+
+### Search by Subject
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?subject=English
+    &page=1
+    &size=20
+
+### Combined Filters
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?school_id={{schoolId}}
+    &department=Mathematics
+    &page=1
+    &size=5
+
+###############################################################################
+### 📊 BULK OPERATIONS EXAMPLES
+###############################################################################
+
+### Create Multiple Teachers
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "Michael",
+  "last_name": "Chen",
+  "email": "michael.chen@archimedesschool.edu",
+  "username": "michael.chen",
+  "school_id": "{{schoolId}}"
+}
+
+###
+
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "Emily",
+  "last_name": "Rodriguez",
+  "email": "emily.rodriguez@archimedesschool.edu",
+  "username": "emily.rodriguez",
+  "school_id": "{{schoolId}}"
+}
+
+###
+
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "David",
+  "last_name": "Wilson",
+  "email": "david.wilson@archimedesschool.edu",
+  "username": "david.wilson",
+  "school_id": "{{schoolId}}"
+}
+
+###############################################################################
+### 🧪 TESTING SCENARIOS
+###############################################################################
+
+### Test Error Cases
+
+# Invalid School ID
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "Test",
+  "last_name": "Teacher",
+  "email": "test.teacher@archimedesschool.edu",
+  "school_id": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+
+# Duplicate Email
+POST {{baseUrl}}{{apiVersion}}/teachers
+Content-Type: application/json
+
+{
+  "first_name": "Duplicate",
+  "last_name": "Teacher",
+  "email": "sarah.johnson@archimedesschool.edu",
+  "school_id": "{{schoolId}}"
+}
+
+###
+
+# Invalid Teacher ID
+GET {{baseUrl}}{{apiVersion}}/teachers/00000000-0000-0000-0000-000000000000
+
+###
+
+# Invalid Pagination
+GET {{baseUrl}}{{apiVersion}}/teachers
+    ?page=0
+    &size=200
+
+###############################################################################
+### 📝 NOTES
+###############################################################################
+
+# Teacher Management Features:
+# ✅ Create teacher with school association
+# ✅ Auto-create default courses (based on max_classes setting)
+# ✅ Each course gets unique join code for student enrollment
+# ✅ Get teacher by ID with school relationship
+# ✅ Get paginated teachers with filtering
+# ✅ Update teacher information (full or partial)
+# ✅ Delete teacher
+# ✅ Proper error handling and validation
+# ✅ Email and username uniqueness constraints
+# ✅ Computed full_name field
+
+# Remember to:
+# 1. Create a school first (use schools.http)
+# 2. Replace {{schoolId}} with actual school ID
+# 3. Replace {{teacherId}} with actual teacher ID from responses
+# 4. Use proper pagination (page >= 1, size <= 100)

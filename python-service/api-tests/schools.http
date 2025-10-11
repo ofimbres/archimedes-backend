@@ -1,0 +1,49 @@
+### Archimedes Schools API
+### Clean, modern Python microservice - Schools management
+### Base URL: http://localhost:8001
+
+###############################################################################
+### SCHOOL MANAGEMENT
+###############################################################################
+
+### 1. Create School
+POST http://localhost:8001/api/v1/schools/
+Content-Type: application/json
+
+{
+  "name": "Lincoln High School",
+  "code": "LHS",
+  "address": "123 Education Street",
+  "city": "Springfield",
+  "state": "IL",
+  "zip_code": "62701",
+  "phone": "+1-555-0123",
+  "email": "admin@lincolnhs.edu",
+  "website": "https://www.lincolnhs.edu"
+}
+
+### 2. Get School by ID
+GET http://localhost:8001/api/v1/schools/6f9fa83a-9b3e-4a54-a5ce-a4fd974e30cc
+
+### 3. List All Schools (with pagination)
+GET http://localhost:8001/api/v1/schools/?page=1&size=10
+
+### 4. Update School
+PUT http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
+Content-Type: application/json
+
+{
+  "name": "Lincoln High School - Updated",
+  "phone": "+1-555-0124",
+  "website": "https://www.lincolnhs.edu/new"
+}
+
+### 5. Delete School (soft delete)
+DELETE http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
+
+###############################################################################
+### TESTING VARIABLES
+###############################################################################
+
+# Update these UUIDs based on your actual data:
+# School ID: Use the ID returned from "Create School" above

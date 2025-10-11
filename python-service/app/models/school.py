@@ -61,17 +61,16 @@ class School(Base):
         back_populates="school",
         cascade="all, delete-orphan"
     )
-    # TODO: Add these relationships when Teacher and Class models are created
-    # teachers = relationship(
-    #     "Teacher",
-    #     back_populates="school",
-    #     cascade="all, delete-orphan"
-    # )
-    # classes = relationship(
-    #     "Class",
-    #     back_populates="school",
-    #     cascade="all, delete-orphan"
-    # )
+    teachers = relationship(
+        "Teacher",
+        back_populates="school",
+        cascade="all, delete-orphan"
+    )
+    courses = relationship(
+        "Course",
+        back_populates="school",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """String representation of School."""

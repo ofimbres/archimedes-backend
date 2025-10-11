@@ -1,0 +1,69 @@
+### Archimedes Authentication API
+### Clean, modern Python microservice - Authentication endpoints
+### Base URL: http://localhost:8001
+
+###############################################################################
+### AUTHENTICATION & USER REGISTRATION
+###############################################################################
+
+### 1. Register a New Student User
+POST http://localhost:8001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "email": "oscar.fimbres@gmail.com",
+  "password": "TempPassword123!",
+  "givenName": "Oscar",
+  "familyName": "Fimbres",
+  "schoolId": "6f9fa83a-9b3e-4a54-a5ce-a4fd974e30cc",
+  "userType": "students"
+}
+
+### 2. Register a New Teacher User
+POST http://localhost:8001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "jane.smith",
+  "email": "jane.smith@school.edu",
+  "password": "SecurePass456!",
+  "givenName": "Jane",
+  "familyName": "Smith",
+  "schoolId": "6f9fa83a-9b3e-4a54-a5ce-a4fd974e30cc",
+  "userType": "teachers"
+}
+
+### 3. User Login
+POST http://localhost:8001/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "password": "TempPassword123!"
+}
+
+### 4. Refresh Access Token
+POST http://localhost:8001/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "PUT_REFRESH_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}
+
+### 5. User Logout
+POST http://localhost:8001/api/v1/auth/logout
+Content-Type: application/json
+
+{
+  "access_token": "PUT_ACCESS_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}
+
+###############################################################################
+### TESTING VARIABLES
+###############################################################################
+
+# Update these with actual values from your responses:
+# School ID: Get from schools.http -> Create School response
+# Access Token: Get from login response above
+# Refresh Token: Get from login response above

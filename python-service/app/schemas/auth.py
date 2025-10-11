@@ -1,8 +1,6 @@
-"""
-Authentication schemas for user registration and login.
-"""
+"""Authentication schemas for user registration and login."""
 
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr, validator
@@ -10,7 +8,7 @@ from pydantic import BaseModel, Field, EmailStr, validator
 
 class UserRegistrationRequest(BaseModel):
     """Schema for user registration request."""
-    
+
     username: str = Field(
         ...,
         min_length=3,
@@ -64,19 +62,19 @@ class UserRegistrationRequest(BaseModel):
         """Validate password strength."""
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
-        
+
         # Check for at least one uppercase, lowercase, digit, and special char
         has_upper = any(c.isupper() for c in v)
         has_lower = any(c.islower() for c in v)
         has_digit = any(c.isdigit() for c in v)
         has_special = any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in v)
-        
+
         if not all([has_upper, has_lower, has_digit, has_special]):
             raise ValueError(
                 'Password must contain uppercase, lowercase, '
                 'digit, and special character'
             )
-        
+
         return v
 
     class Config:
@@ -86,7 +84,7 @@ class UserRegistrationRequest(BaseModel):
 
 class UserRegistrationResponse(BaseModel):
     """Schema for user registration response."""
-    
+
     user_id: UUID = Field(..., description="Database user ID")
     cognito_user_id: str = Field(..., description="Cognito user ID")
     username: str = Field(..., description="Username")
@@ -105,3 +103,49 @@ class UserRegistrationResponse(BaseModel):
         json_encoders = {
             UUID: lambda v: str(v)
         }
+
+
+class UserLoginRequest(BaseModel):
+    """Schema for user login request."""
+
+    username: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        description="Username or email"
+    )
+    password: str = Field(
+        ...,
+        min_length=1,
+        description="User password"
+    )
+
+
+class UserLoginResponse(BaseModel):
+    """Schema for user login response."""
+
+    access_token: str = Field(..., description="JWT access token")
+    token_type: str = Field(default="Bearer", description="Token type")
+    expires_in: int = Field(
+        ..., description="Token expiration time in seconds"
+    )
+    refresh_token: Optional[str] = Field(None, description="Refresh token")
+    user: dict = Field(..., description="User information")
+
+    class Config:
+        """Pydantic configuration."""
+        json_encoders = {
+            UUID: lambda v: str(v)
+        }
+
+
+class TokenRefreshRequest(BaseModel):
+    """Schema for token refresh request."""
+
+    refresh_token: str = Field(..., description="Refresh token")
+
+
+class LogoutRequest(BaseModel):
+    """Schema for logout request."""
+
+    access_token: str = Field(..., description="Access token to invalidate")

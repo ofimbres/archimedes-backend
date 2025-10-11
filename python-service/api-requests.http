@@ -1,5 +1,42 @@
 ### Archimedes Python Service API Requests
-### Base URL: http://localhost:8001
+### ### 8. Register a New Teacher User
+POST http://localhost:8001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "jane.smith",
+  "email": "jane.smith@school.edu",
+  "password": "SecurePass456!",
+  "givenName": "Jane",
+  "familyName": "Smith",
+  "schoolId": "550e8400-e29b-41d4-a716-446655440001",
+  "userType": "teacher"
+}
+
+### 9. User Login
+POST http://localhost:8001/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "password": "TempPassword123!"
+}
+
+### 10. Refresh Access Token
+POST http://localhost:8001/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "PUT_REFRESH_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}
+
+### 11. User Logout
+POST http://localhost:8001/api/v1/auth/logout
+Content-Type: application/json
+
+{
+  "access_token": "PUT_ACCESS_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}p://localhost:8001
 
 ###############################################################################
 ### HEALTH & DOCUMENTATION
@@ -59,11 +96,36 @@ Content-Type: application/json
   "userType": "teachers"
 }
 
+### 9. User Login
+POST http://localhost:8001/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "oscar.fimbres",
+  "password": "TempPassword123!"
+}
+
+### 10. Refresh Access Token
+POST http://localhost:8001/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "PUT_REFRESH_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}
+
+### 11. User Logout
+POST http://localhost:8001/api/v1/auth/logout
+Content-Type: application/json
+
+{
+  "access_token": "PUT_ACCESS_TOKEN_FROM_LOGIN_RESPONSE_HERE"
+}
+
 ###############################################################################
 ### STUDENT MANAGEMENT
 ###############################################################################
 
-### 8. Create a Student (Direct Database Creation)
+### 12. Create a Student (Direct Database Creation)
 POST http://localhost:8001/api/v1/students/
 Content-Type: application/json
 
@@ -76,13 +138,13 @@ Content-Type: application/json
   "isActive": true
 }
 
-### 9. Get Student by ID
+### 13. Get Student by ID
 GET http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
 
-### 10. Get All Students for a School (with pagination)
+### 14. Get All Students for a School (with pagination)
 GET http://localhost:8001/api/v1/students/school/550e8400-e29b-41d4-a716-446655440001?page=1&size=10
 
-### 11. Update Student Information
+### 15. Update Student Information
 PUT http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
 Content-Type: application/json
 
@@ -94,17 +156,17 @@ Content-Type: application/json
   "isActive": true
 }
 
-### 12. Soft Delete Student (mark as inactive)
+### 16. Soft Delete Student (mark as inactive)
 DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002
 
-### 13. Permanently Delete Student (hard delete)
+### 17. Permanently Delete Student (hard delete)
 DELETE http://localhost:8001/api/v1/students/550e8400-e29b-41d4-a716-446655440002/permanent
 
 ###############################################################################
 ### SCHOOL MANAGEMENT
 ###############################################################################
 
-### 14. Create School
+### 18. Create School
 POST http://localhost:8001/api/v1/schools/
 Content-Type: application/json
 
@@ -120,13 +182,13 @@ Content-Type: application/json
   "website": "https://www.lincolnhs.edu"
 }
 
-### 15. Get School by ID
+### 19. Get School by ID
 GET http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
 
-### 16. List All Schools (with pagination)
+### 20. List All Schools (with pagination)
 GET http://localhost:8001/api/v1/schools/?page=1&size=10
 
-### 17. Update School
+### 21. Update School
 PUT http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
 Content-Type: application/json
 
@@ -136,7 +198,7 @@ Content-Type: application/json
   "website": "https://www.lincolnhs.edu/new"
 }
 
-### 18. Delete School (soft delete)
+### 22. Delete School (soft delete)
 DELETE http://localhost:8001/api/v1/schools/550e8400-e29b-41d4-a716-446655440001
 
 ###############################################################################

@@ -32,37 +32,7 @@ CREATE UNIQUE INDEX idx_schools_code ON schools(code);
 CREATE INDEX idx_schools_name ON schools(name);
 
 -- =============================================================================
--- 2. TEACHERS TABLE
--- =============================================================================
-
-CREATE TABLE teachers
-    (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                 school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
-                                                                                          first_name VARCHAR(50) NOT NULL,
-                                                                                                                 last_name VARCHAR(50) NOT NULL,
-                                                                                                                                       email VARCHAR(100) UNIQUE NOT NULL,
-                                                                                                                                                                 username VARCHAR(50) UNIQUE NOT NULL,
-                                                                                                                                                                                             max_classes INTEGER DEFAULT 6,
-                                                                                                                                                                                                                         is_active BOOLEAN DEFAULT TRUE,
-                                                                                                                                                                                                                                                   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                                                                                                                                                                                                                                                                               updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW());
-
--- Computed column for full name
-
-ALTER TABLE teachers ADD COLUMN full_name VARCHAR(255) GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED;
-
--- Indexes for teachers
-
-CREATE INDEX idx_teachers_school ON teachers(school_id);
-
-
-CREATE UNIQUE INDEX idx_teachers_email ON teachers(email);
-
-
-CREATE INDEX idx_teachers_active ON teachers(school_id, is_active);
-
--- =============================================================================
--- 3. STUDENTS TABLE
+-- 2. STUDENTS TABLE
 -- =============================================================================
 
 CREATE TABLE students
@@ -89,6 +59,32 @@ CREATE UNIQUE INDEX idx_students_email ON students(email);
 
 
 CREATE INDEX idx_students_active ON students(school_id, is_active);
+
+-- =============================================================================
+-- 3. TEACHERS TABLE
+-- =============================================================================
+
+CREATE TABLE teachers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    max_classes INTEGER DEFAULT 6,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add computed full_name column
+ALTER TABLE teachers ADD COLUMN full_name VARCHAR(255) GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED;
+
+-- Indexes for teachers
+CREATE INDEX idx_teachers_school ON teachers(school_id);
+CREATE UNIQUE INDEX idx_teachers_email ON teachers(email);
+CREATE UNIQUE INDEX idx_teachers_username ON teachers(username);
+CREATE INDEX idx_teachers_active ON teachers(school_id, is_active);
 
 -- =============================================================================
 -- 4. CLASSES TABLE

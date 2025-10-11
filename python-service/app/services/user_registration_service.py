@@ -5,7 +5,9 @@ from fastapi import HTTPException, status
 
 from ..schemas.auth import UserRegistrationRequest, UserRegistrationResponse
 from ..schemas.student import StudentCreate, StudentResponse
+from ..schemas.teacher import TeacherCreate, TeacherResponse
 from ..services.student_service import StudentService
+from ..services.teacher_service import TeacherService
 from ..services.cognito_service import CognitoService
 
 
@@ -54,11 +56,7 @@ class UserRegistrationService:
             if registration_data.user_type == "students":
                 db_user = await self._register_student(registration_data)
             elif registration_data.user_type == "teachers":
-                # TODO: Implement teacher registration
-                raise HTTPException(
-                    status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                    detail="Teacher registration not yet implemented"
-                )
+                db_user = await self._register_teacher(registration_data)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -122,3 +120,26 @@ class UserRegistrationService:
 
         return await student_service.create_student(student_data)
 
+    async def _register_teacher(
+        self,
+        registration_data: UserRegistrationRequest
+    ) -> TeacherResponse:
+        """Register a teacher in the database.
+
+        Args:
+            registration_data: Registration data
+
+        Returns:
+            Teacher response object
+        """
+        teacher_service = TeacherService(self.db)
+
+        teacher_data = TeacherCreate(
+            school_id=registration_data.school_id,
+            first_name=registration_data.given_name,
+            last_name=registration_data.family_name,
+            email=registration_data.email,
+            username=registration_data.username
+        )
+
+        return await teacher_service.create_teacher(teacher_data)
