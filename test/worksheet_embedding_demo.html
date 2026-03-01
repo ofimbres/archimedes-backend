@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebWorksheet Embedding Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .worksheet-frame { width: 100%; height: 800px; border: 2px solid #ccc; margin: 20px 0; }
+        .controls { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .score-display { background: #e8f5e8; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { background: #007acc; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #005999; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 WebWorksheet Embedding Demo</h1>
+        
+        <div class="status info">
+            <strong>Status:</strong> Demonstrating how to embed AL01 worksheet and extract scores
+        </div>
+        
+        <div class="controls">
+            <h3>📋 Student Information</h3>
+            <label>Student ID: <input type="text" id="studentId" value="1000" /></label>
+            <button onclick="loadWorksheet()">Load Worksheet</button>
+            <button onclick="extractScore()">Extract Score</button>
+            <button onclick="resetWorksheet()">Reset</button>
+        </div>
+        
+        <div class="score-display">
+            <h3>📊 Score Information</h3>
+            <div id="scoreInfo">No score extracted yet</div>
+            <div id="studentAnswers">Student answers will appear here</div>
+        </div>
+        
+        <!-- Embedded Worksheet -->
+        <iframe 
+            id="worksheetFrame" 
+            class="worksheet-frame"
+            src=""
+            title="WebWorksheet AL01">
+        </iframe>
+        
+        <div class="status warning">
+            <strong>Note:</strong> This demo shows the concept. Actual implementation requires:
+            <ul>
+                <li>Hosting webworksheet.js files locally (they're currently external)</li>
+                <li>Modifying the worksheet HTML to disable email submission</li>
+                <li>Adding score extraction JavaScript</li>
+                <li>Implementing proper iframe communication</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Demo JavaScript for worksheet interaction
+        
+        function loadWorksheet() {
+            const studentId = document.getElementById('studentId').value;
+            const frame = document.getElementById('worksheetFrame');
+            
+            // In real implementation, you'd pass the student ID to the worksheet
+            // For now, just load the static HTML file
+            frame.src = 'mini-quizzes/AL01.html';
+            
+            updateStatus('Loading worksheet for student ' + studentId + '...', 'info');
+            
+            // Listen for worksheet load
+            frame.onload = function() {
+                updateStatus('Worksheet loaded successfully!', 'success');
+                setupScoreExtraction();
+            };
+        }
+        
+        function setupScoreExtraction() {
+            // In a real implementation, you would:
+            // 1. Inject score extraction JavaScript into the iframe
+            // 2. Override the submitForm() function
+            // 3. Set up postMessage communication
+            
+            const frame = document.getElementById('worksheetFrame');
+            
+            try {
+                // This would work if same-origin and no sandbox restrictions
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                
+                // Add score extraction to the worksheet
+                const script = frameDoc.createElement('script');
+                script.textContent = `
+                    // Override submitForm to capture scores instead of emailing
+                    window.originalSubmitForm = window.submitForm;
+                    window.submitForm = function(buttonId) {
+                        // Extract student answers
+                        const answers = extractStudentAnswers();
+                        const score = calculateScore();
+                        
+                        // Send to parent window
+                        window.parent.postMessage({
+                            type: 'scoreData',
+                            data: { answers, score }
+                        }, '*');
+                        
+                        return false; // Prevent original email submission
+                    };
+                    
+                    function extractStudentAnswers() {
+                        const answers = {};
+                        const inputs = document.querySelectorAll('input[id^="i"]');
+                        inputs.forEach(input => {
+                            if (input.value.trim()) {
+                                answers[input.id] = input.value.trim();
+                            }
+                        });
+                        return answers;
+                    }
+                    
+                    function calculateScore() {
+                        // Access the grade cell (P60) that webworksheet calculates
+                        const gradeCell = document.getElementById('P60');
+                        return gradeCell ? gradeCell.textContent : 'Unknown';
+                    }
+                `;
+                frameDoc.head.appendChild(script);
+                
+                updateStatus('Score extraction setup complete!', 'success');
+                
+            } catch (error) {
+                updateStatus('Cannot access iframe content (CORS/sandbox restrictions)', 'warning');
+                console.log('Iframe access error:', error);
+            }
+        }
+        
+        function extractScore() {
+            const frame = document.getElementById('worksheetFrame');
+            
+            try {
+                const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                
+                // Extract current student answers
+                const answers = {};
+                const inputs = frameDoc.querySelectorAll('input[id^="i"]');
+                inputs.forEach(input => {
+                    if (input.value && input.value.trim()) {
+                        answers[input.id] = input.value.trim();
+                    }
+                });
+                
+                // Try to get calculated score
+                const gradeCell = frameDoc.getElementById('P60');
+                const score = gradeCell ? gradeCell.textContent : 'Not calculated yet';
+                
+                // Display results
+                displayScore(answers, score);
+                
+            } catch (error) {
+                updateStatus('Cannot extract score due to iframe restrictions', 'warning');
+                
+                // Show alternative approach
+                displayScore({
+                    'simulated': 'Due to CORS restrictions, showing mock data',
+                    'iG65': '15',
+                    'iG66': '23', 
+                    'iG67': '8'
+                }, '75%');
+            }
+        }
+        
+        function displayScore(answers, score) {
+            const scoreInfo = document.getElementById('scoreInfo');
+            const studentAnswers = document.getElementById('studentAnswers');
+            
+            scoreInfo.innerHTML = `
+                <strong>Current Score:</strong> ${score}<br>
+                <strong>Questions Answered:</strong> ${Object.keys(answers).length}
+            `;
+            
+            studentAnswers.innerHTML = `
+                <strong>Student Answers:</strong><br>
+                ${Object.entries(answers).map(([id, value]) => 
+                    `${id}: ${value}`
+                ).join('<br>')}
+            `;
+            
+            updateStatus('Score extracted successfully!', 'success');
+        }
+        
+        function resetWorksheet() {
+            const frame = document.getElementById('worksheetFrame');
+            frame.src = '';
+            document.getElementById('scoreInfo').textContent = 'No score extracted yet';
+            document.getElementById('studentAnswers').textContent = 'Student answers will appear here';
+            updateStatus('Worksheet reset', 'info');
+        }
+        
+        function updateStatus(message, type) {
+            // Update status display (you could add a status div)
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Listen for messages from worksheet iframe
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'scoreData') {
+                displayScore(event.data.data.answers, event.data.data.score);
+            }
+        });
+        
+        // Auto-load worksheet on page load
+        window.addEventListener('load', function() {
+            setTimeout(loadWorksheet, 1000);
+        });
+    </script>
+</body>
+</html>

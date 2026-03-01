@@ -57,6 +57,9 @@ class StudentCreate(StudentBase):
     """Schema for creating a new student."""
     
     school_id: UUID = Field(..., description="UUID of the school")
+    cognito_user_id: Optional[str] = Field(
+        None, description="Cognito sub for OAuth users; links identity to this record"
+    )
 
     @validator('school_id')
     def validate_school_id(cls, v: UUID) -> UUID:

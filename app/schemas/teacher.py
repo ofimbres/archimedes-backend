@@ -17,6 +17,9 @@ class TeacherBase(BaseModel):
 class TeacherCreate(TeacherBase):
     """Schema for creating a teacher."""
     school_id: UUID = Field(..., description="ID of the school")
+    cognito_user_id: Optional[str] = Field(
+        None, description="Cognito sub for OAuth users; links identity to this record"
+    )
 
 
 class TeacherUpdate(BaseModel):

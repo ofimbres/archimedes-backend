@@ -1,9 +1,10 @@
-# Use Python 3.11 slim image
-FROM mcr.microsoft.com/devcontainers/python:3.13
+# Use Python 3.13 with Debian Bookworm (latest Python + stable Debian)
+FROM mcr.microsoft.com/devcontainers/python:3.12
 
-# Install PostgreSQL client tools
+# Install PostgreSQL client tools and AWS CLI
 RUN apt-get update && apt-get install -y \
     postgresql-client \
+    awscli \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up working directory

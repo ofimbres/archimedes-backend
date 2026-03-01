@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archimedes Math Worksheets - Topics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .student-input {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .input-group input {
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 150px;
+        }
+
+        .input-group button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .input-group button:hover {
+            background: #0056b3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+
+        .topics-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .topic-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #007bff;
+        }
+
+        .topic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .topic-code {
+            background: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .worksheet-count {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .topic-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .worksheets-preview {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .worksheet-item {
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #495057;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .worksheet-item:hover {
+            background: #e9ecef;
+        }
+
+        .api-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .api-status.error {
+            background: #dc3545;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            background: #f8d7da;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .student-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .student-info h3 {
+            color: #155724;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .topics-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📐 Archimedes Math Platform</h1>
+            <p>Select your math topic and start learning!</p>
+        </div>
+
+        <div class="student-input">
+            <div class="input-group">
+                <label for="studentId">Student ID:</label>
+                <input type="text" id="studentId" placeholder="Enter your student ID (e.g., 1000)" value="1000">
+                <button onclick="loadTopics()">Load Topics</button>
+            </div>
+        </div>
+
+        <div id="studentInfo" class="student-info" style="display: none;">
+            <h3>Welcome, Student <span id="currentStudentId"></span>!</h3>
+            <p>Choose a topic below to start your math worksheets</p>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <p>🔄 Loading topics...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div id="topicsGrid" class="topics-grid"></div>
+
+        <div id="apiStatus" class="api-status">
+            API: Checking...
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8001/api/v1';
+        let currentStudentId = '';
+
+        // Check API status on load
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('apiStatus');
+                if (data.status === 'healthy') {
+                    statusElement.textContent = 'API: Connected ✅';
+                    statusElement.className = 'api-status';
+                } else {
+                    statusElement.textContent = 'API: Issues ⚠️';
+                    statusElement.className = 'api-status error';
+                }
+            } catch (error) {
+                const statusElement = document.getElementById('apiStatus');
+                statusElement.textContent = 'API: Disconnected ❌';
+                statusElement.className = 'api-status error';
+            }
+        }
+
+        // Load topics from API
+        async function loadTopics() {
+            const studentId = document.getElementById('studentId').value.trim();
+            
+            if (!studentId) {
+                alert('Please enter a student ID');
+                return;
+            }
+
+            currentStudentId = studentId;
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('topicsGrid').innerHTML = '';
+            
+            // Show student info
+            document.getElementById('currentStudentId').textContent = studentId;
+            document.getElementById('studentInfo').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/topics`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const topics = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Display topics
+                displayTopics(topics);
+                
+            } catch (error) {
+                console.error('Error loading topics:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Failed to load topics: ${error.message}`;
+            }
+        }
+
+        // Display topics in grid
+        function displayTopics(topics) {
+            const grid = document.getElementById('topicsGrid');
+            grid.innerHTML = '';
+
+            topics.forEach(topic => {
+                const card = createTopicCard(topic);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create a topic card
+        function createTopicCard(topic) {
+            const card = document.createElement('div');
+            card.className = 'topic-card';
+            card.onclick = () => selectTopic(topic);
+
+            const worksheetsHtml = topic.worksheets
+                .slice(0, 5) // Show first 5 worksheets
+                .map(worksheet => `
+                    <div class="worksheet-item" onclick="event.stopPropagation(); selectWorksheet('${worksheet.id}', '${worksheet.title}')">
+                        <strong>${worksheet.id}:</strong> ${worksheet.title}
+                    </div>
+                `).join('');
+
+            const moreWorksheets = topic.worksheets.length > 5 ? 
+                `<div class="worksheet-item" style="font-style: italic; color: #6c757d;">
+                    ... and ${topic.worksheets.length - 5} more worksheets
+                </div>` : '';
+
+            card.innerHTML = `
+                <div class="topic-header">
+                    <div class="topic-code">${topic.category}</div>
+                    <div class="worksheet-count">${topic.worksheet_count} worksheets</div>
+                </div>
+                <div class="topic-name">${topic.name || 'Math Topic'}</div>
+                <div class="worksheets-preview">
+                    ${worksheetsHtml}
+                    ${moreWorksheets}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Select a topic (show all worksheets)
+        function selectTopic(topic) {
+            alert(`Selected Topic: ${topic.category}\n\nThis topic has ${topic.worksheet_count} worksheets.\n\nIn a full application, this would navigate to a worksheet selection page.`);
+        }
+
+        // Select a specific worksheet
+        async function selectWorksheet(worksheetId, worksheetTitle) {
+            if (!currentStudentId) {
+                alert('Please enter a student ID first');
+                return;
+            }
+
+            if (confirm(`Start worksheet: ${worksheetId} - ${worksheetTitle}?\n\nStudent: ${currentStudentId}`)) {
+                try {
+                    // Create session
+                    const sessionResponse = await fetch(`${API_BASE_URL}/sessions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            student_id: currentStudentId,
+                            worksheet_id: worksheetId
+                        })
+                    });
+
+                    if (!sessionResponse.ok) {
+                        throw new Error(`Failed to create session: ${sessionResponse.status}`);
+                    }
+
+                    const session = await sessionResponse.json();
+                    
+                    // Open worksheet in new tab
+                    const worksheetUrl = `${API_BASE_URL}/worksheets/${worksheetId}/content?student_id=${currentStudentId}`;
+                    window.open(worksheetUrl, '_blank');
+                    
+                    alert(`Session created successfully!\nSession ID: ${session.session_id}\n\nThe worksheet will open in a new tab.`);
+
+                } catch (error) {
+                    console.error('Error creating session:', error);
+                    alert(`Failed to start worksheet: ${error.message}`);
+                }
+            }
+        }
+
+        // Load topics on page load with default student ID
+        window.addEventListener('load', () => {
+            checkApiStatus();
+        });
+
+        // Allow Enter key to load topics
+        document.getElementById('studentId').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadTopics();
+            }
+        });
+    </script>
+</body>
+</html>

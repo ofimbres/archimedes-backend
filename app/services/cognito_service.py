@@ -1,9 +1,15 @@
 """
 AWS Cognito service for user authentication.
+Supports both username/password and Hosted UI (e.g. Sign in with Google).
 """
 
+import base64
+import json
+from typing import Dict, Any, Optional
+from urllib.parse import urlencode
+
 import boto3
-from typing import Dict, Any
+import httpx
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
 
@@ -22,6 +28,8 @@ class CognitoService:
         )
         self.user_pool_id = settings.cognito_user_pool_id
         self.client_id = settings.cognito_client_id
+        self.domain = (settings.cognito_domain or "").rstrip("/")
+        self.client_secret = settings.cognito_client_secret or None
 
     async def register_user(
         self,
@@ -303,3 +311,112 @@ class CognitoService:
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Logout failed: {error_message}"
                 )
+
+    def get_authorization_url(
+        self,
+        redirect_uri: str,
+        state: Optional[str] = None,
+        identity_provider: Optional[str] = "Google",
+        scope: str = "openid email profile",
+    ) -> str:
+        """Build Cognito Hosted UI authorize URL (e.g. Sign in with Google).
+
+        Args:
+            redirect_uri: Callback URL (must match one configured in Cognito app client).
+            state: Optional state for CSRF protection.
+            identity_provider: IdP name in Cognito (e.g. 'Google'). None = show Cognito login.
+            scope: OAuth scopes (default openid email profile).
+
+        Returns:
+            Full URL to redirect the user to.
+        """
+        if not self.domain:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Cognito Hosted UI is not configured (COGNITO_DOMAIN)"
+            )
+        params = {
+            "response_type": "code",
+            "client_id": self.client_id,
+            "redirect_uri": redirect_uri,
+            "scope": scope.replace(" ", "+"),
+        }
+        if state:
+            params["state"] = state
+        if identity_provider:
+            params["identity_provider"] = identity_provider
+        return f"https://{self.domain}/oauth2/authorize?{urlencode(params)}"
+
+    async def exchange_code_for_tokens(
+        self,
+        code: str,
+        redirect_uri: str,
+    ) -> Dict[str, Any]:
+        """Exchange authorization code for tokens (OAuth2 code flow).
+
+        Args:
+            code: Authorization code from Cognito callback.
+            redirect_uri: Same redirect_uri used in the authorize request.
+
+        Returns:
+            Dict with access_token, id_token, refresh_token, expires_in, user_info.
+        """
+        if not self.domain:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Cognito Hosted UI is not configured (COGNITO_DOMAIN)"
+            )
+        token_url = f"https://{self.domain}/oauth2/token"
+        body = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "client_id": self.client_id,
+        }
+        if self.client_secret:
+            body["client_secret"] = self.client_secret
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                token_url,
+                data=body,
+                headers=headers,
+            )
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Token exchange failed: {response.text or response.status_code}"
+            )
+        data = response.json()
+        id_token = data.get("id_token") or ""
+        user_info = self._decode_id_token_claims(id_token)
+        return {
+            "access_token": data.get("access_token", ""),
+            "id_token": id_token,
+            "refresh_token": data.get("refresh_token"),
+            "token_type": data.get("token_type", "Bearer"),
+            "expires_in": data.get("expires_in", 3600),
+            "user_info": user_info,
+        }
+
+    @staticmethod
+    def _decode_id_token_claims(id_token: str) -> Dict[str, Any]:
+        """Decode JWT payload for user_info (no verification; token from our Cognito token exchange)."""
+        if not id_token or "." not in id_token:
+            return {}
+        try:
+            payload_b64 = id_token.split(".")[1]
+            padding = 4 - len(payload_b64) % 4
+            if padding != 4:
+                payload_b64 += "=" * padding
+            raw = base64.urlsafe_b64decode(payload_b64)
+            claims = json.loads(raw)
+            return {
+                "username": claims.get("cognito:username") or claims.get("sub", ""),
+                "email": claims.get("email"),
+                "given_name": claims.get("given_name"),
+                "family_name": claims.get("family_name"),
+                "sub": claims.get("sub"),
+            }
+        except Exception:
+            return {}

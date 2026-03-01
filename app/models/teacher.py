@@ -35,6 +35,10 @@ class Teacher(Base):
     username: Mapped[str] = mapped_column(
         String(50), nullable=False, unique=True
     )
+    cognito_user_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True, nullable=True, index=True,
+        comment="Cognito sub for OAuth users; links to Cognito identity",
+    )
 
     # Foreign key to school
     school_id: Mapped[UUID] = mapped_column(

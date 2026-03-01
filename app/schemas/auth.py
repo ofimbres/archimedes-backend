@@ -3,7 +3,7 @@
 from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, model_validator, validator
 
 
 class UserRegistrationRequest(BaseModel):
@@ -77,9 +77,7 @@ class UserRegistrationRequest(BaseModel):
 
         return v
 
-    class Config:
-        """Pydantic configuration."""
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UserRegistrationResponse(BaseModel):
@@ -130,6 +128,7 @@ class UserLoginResponse(BaseModel):
         ..., description="Token expiration time in seconds"
     )
     refresh_token: Optional[str] = Field(None, description="Refresh token")
+    id_token: Optional[str] = Field(None, description="OIDC id_token (e.g. from OAuth/Google)")
     user: dict = Field(..., description="User information")
 
     class Config:
@@ -149,3 +148,65 @@ class LogoutRequest(BaseModel):
     """Schema for logout request."""
 
     access_token: str = Field(..., description="Access token to invalidate")
+
+
+class MeResponse(BaseModel):
+    """Current user profile from JWT: either a linked DB profile or none (complete profile needed)."""
+
+    user_type: Optional[Literal["students", "teachers", "admin"]] = Field(
+        None, description="Which profile or role exists"
+    )
+    profile: Optional[dict] = Field(
+        None, description="Student or teacher record; null if not yet completed"
+    )
+
+    class Config:
+        json_encoders = {UUID: lambda v: str(v)}
+
+
+class CompleteProfileRequest(BaseModel):
+    """Request to create student/teacher from OAuth identity (e.g. after Google sign-in).
+    Students: send either joinCode (to join a class) or schoolId (no class). Teachers: schoolId required.
+    """
+
+    school_id: Optional[UUID] = Field(
+        None, alias="schoolId", description="School to link to (required for teachers; optional for students if joinCode set)"
+    )
+    join_code: Optional[str] = Field(
+        None, alias="joinCode", min_length=5, max_length=10,
+        description="Class join code for students; resolves course and school, enrolls in course"
+    )
+    user_type: Literal["students", "teachers"] = Field(
+        ..., alias="userType", description="Register as student or teacher"
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    @model_validator(mode="after")
+    def validate_student_teacher_fields(self):
+        """Student: exactly one of join_code or school_id. Teacher: school_id required."""
+        user_type = self.user_type
+        school_id = self.school_id
+        join_code = self.join_code and str(self.join_code).strip()
+        if user_type == "teachers":
+            if not school_id:
+                raise ValueError("Teachers must provide schoolId")
+            return self
+        if user_type == "students":
+            has_code = bool(join_code)
+            has_school = school_id is not None
+            if has_code and has_school:
+                raise ValueError("Students must provide either joinCode or schoolId, not both")
+            if not has_code and not has_school:
+                raise ValueError("Students must provide either joinCode or schoolId")
+            return self
+        return self
+
+
+class MeUpdateRequest(BaseModel):
+    """Optional personal info update for the current user (student or teacher)."""
+
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50, alias="firstName")
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50, alias="lastName")
+
+    model_config = ConfigDict(populate_by_name=True)

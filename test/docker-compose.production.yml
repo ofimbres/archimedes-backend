@@ -1,0 +1,109 @@
+# ==========================================
+# 🐍 Archimedes Python Service - Production Compose
+# ==========================================
+# Production deployment with PostgreSQL and monitoring
+
+version: '3.8'
+
+services:
+  # Python FastAPI Application
+  archimedes-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: archimedes-python:latest
+    container_name: archimedes-app
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql+asyncpg://archimedes:${DB_PASSWORD}@postgres:5432/archimedes_prod
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - archimedes-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - app-logs:/app/logs
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: archimedes-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: archimedes_prod
+      POSTGRES_USER: archimedes
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d/
+    networks:
+      - archimedes-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archimedes -d archimedes_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis (for caching and sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: archimedes-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - archimedes-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: archimedes-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - archimedes-app
+    networks:
+      - archimedes-network
+
+networks:
+  archimedes-network:
+    driver: bridge
+    name: archimedes-network
+
+volumes:
+  postgres-data:
+    name: archimedes-postgres-data
+  redis-data:
+    name: archimedes-redis-data
+  app-logs:
+    name: archimedes-app-logs
+  nginx-logs:
+    name: archimedes-nginx-logs

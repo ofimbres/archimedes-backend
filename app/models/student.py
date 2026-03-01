@@ -40,6 +40,10 @@ class Student(Base):
     full_name = Column(String(255), Computed("first_name || ' ' || last_name"))
     email = Column(String(100), unique=True, nullable=False, index=True)
     username = Column(String(50), unique=True, nullable=False)
+    cognito_user_id = Column(
+        String(255), unique=True, nullable=True, index=True,
+        comment="Cognito sub for OAuth users; links to Cognito identity",
+    )
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     created_at = Column(
         DateTime(timezone=True),

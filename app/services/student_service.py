@@ -61,8 +61,10 @@ class StudentService:
                 first_name=student_data.first_name,
                 last_name=student_data.last_name,
                 email=student_data.email,
-                username=student_data.username
-                # full_name will be computed automatically by PostgreSQL
+                username=student_data.username,
+                cognito_user_id=getattr(
+                    student_data, "cognito_user_id", None
+                ),
             )
             self.db.add(student)
             await self.db.commit()

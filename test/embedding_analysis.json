@@ -1,0 +1,54 @@
+{
+  "embedding_feasibility": {
+    "can_embed": true,
+    "challenges": [
+      "External JavaScript dependencies from webworksheet.com",
+      "Global JavaScript variables may conflict with parent page",
+      "Form submission tries to email results (not modern web app friendly)",
+      "CSS styles may conflict with parent page styling",
+      "No built-in API for programmatic score extraction",
+      "Hard-coded student ID input (J60) and submission logic"
+    ],
+    "solutions": [
+      "Use iframe to sandbox the worksheet (isolates JS/CSS conflicts)",
+      "Download and serve webworksheet.js files locally",
+      "Override submitForm() function to capture scores instead of emailing",
+      "Add CSS scoping or iframe to prevent style conflicts",
+      "Create JavaScript bridge for parent-child communication",
+      "Modify HTML to disable email submission and enable score extraction"
+    ],
+    "score_extraction": "possible_with_modifications"
+  },
+  "technical_details": {
+    "rendering": {
+      "javascript_dependencies": [
+        "http://webworksheet.com/release/030701/webworksheet.js",
+        "http://webworksheet.com/release/030701/webworksheetUpdate.js",
+        "m4u_extended.js (local file)"
+      ],
+      "external_dependencies": "Relies on webworksheet.com servers",
+      "css_styling": "Self-contained with embedded styles",
+      "dynamic_generation": "Uses LCG algorithm for problem generation",
+      "student_interaction": "Input fields with onChange events"
+    },
+    "score_extraction": {
+      "current_mechanism": "Email submission with Grade: P60 attachment",
+      "grade_calculation": "Performed by webworksheet.js calculate() functions",
+      "student_answers": "Stored in input fields with IDs like iG65, iO65, etc.",
+      "correct_answers": "Calculated dynamically using VLOOKUP formulas",
+      "extraction_methods": [
+        "JavaScript DOM access to input field values",
+        "Override submitForm() to intercept submission data",
+        "Access calculated grade in cell P60",
+        "Monitor onChange events to track student progress"
+      ]
+    }
+  },
+  "recommendations": [
+    "Use iframe embedding for safety and isolation",
+    "Create a wrapper script to extract scores via postMessage API",
+    "Host webworksheet.js files locally for reliability",
+    "Implement score extraction via DOM manipulation",
+    "Build a modern API wrapper around the legacy worksheets"
+  ]
+}

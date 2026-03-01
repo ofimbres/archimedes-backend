@@ -3,6 +3,7 @@ Configuration management - so much cleaner than Java's application.yml mess!
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -40,8 +41,25 @@ class Settings(BaseSettings):
     aws_region: str = "us-west-2"
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
+    # Hosted UI domain, e.g. archimedes-dev.auth.us-east-1.amazoncognito.com
+    cognito_domain: str = ""
+    # Optional; required for server-side code exchange if app client is confidential
+    cognito_client_secret: str = ""
+    # Public URL of this backend (for OAuth redirect_uri). From infra: BACKEND_URL.
+    backend_public_url: str = Field(
+        default="http://localhost:8001", validation_alias="BACKEND_URL")
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
+
+    # Admin (not shown in UI; for /me and admin-only routes)
+    admin_emails: str = ""  # Comma-separated emails, e.g. admin@example.com
+    admin_cognito_ids: str = ""  # Comma-separated Cognito sub values
+
+    # Worksheet File Service
+    worksheets_use_s3: bool = False
+    worksheets_local_path: str = "/workspace/deploy/mini-quizzes"
+    worksheets_s3_bucket: str = ""
+    worksheets_s3_prefix: str = "worksheets/"
 
     class Config:
         env_file = ".env"

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧮 Problem Generation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 3px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧮 Problem Generation Test</h1>
+    
+    <div class="test-result success">
+        <strong>✅ FIXED:</strong> Added WebWorksheet fallback implementation to generate problems when external dependencies fail
+    </div>
+    
+    <div class="test-result">
+        <h3>🎯 What's Been Fixed:</h3>
+        <ul>
+            <li><strong>External Dependencies:</strong> Added fallback WebWorksheet implementation</li>
+            <li><strong>LCG Algorithm:</strong> Properly implemented for question generation</li>
+            <li><strong>Problem Generation:</strong> Each student gets different expressions</li>
+            <li><strong>Auto-calculation:</strong> Problems generate automatically when student ID is set</li>
+        </ul>
+    </div>
+    
+    <h3>🔍 Test Different Students (Should Show Different Problems):</h3>
+    
+    <div>
+        <button onclick="testStudent('1000')">Test Student 1000</button>
+        <button onclick="testStudent('1001')">Test Student 1001</button>
+        <button onclick="testStudent('2000')">Test Student 2000</button>
+        <button onclick="testStudent('1234')">Test Student 1234</button>
+    </div>
+    
+    <div id="currentTest" style="margin: 20px 0; padding: 10px; background: #e8f4f8; border-radius: 5px;">
+        <strong>Current Test:</strong> Click a button to test
+    </div>
+    
+    <iframe id="testFrame" src=""></iframe>
+    
+    <div class="comparison">
+        <div>
+            <h4>🎓 Student 1000</h4>
+            <iframe src="http://localhost:8001/worksheet/AL01/1000"></iframe>
+        </div>
+        <div>
+            <h4>👩‍🎓 Student 1001</h4>
+            <iframe src="http://localhost:8001/worksheet/AL01/1001"></iframe>
+        </div>
+    </div>
+    
+    <div class="test-result warning">
+        <strong>🔍 How to Verify It's Working:</strong>
+        <ol>
+            <li>Open browser console (F12)</li>
+            <li>Look for messages like "🎲 Generating problems for student: 1000"</li>
+            <li>Check for "✅ Worksheet updated successfully"</li>
+            <li>Compare different student IDs - they should show different expressions</li>
+        </ol>
+    </div>
+    
+    <script>
+        function testStudent(studentId) {
+            const frame = document.getElementById('testFrame');
+            const url = `http://localhost:8001/worksheet/AL01/${studentId}`;
+            frame.src = url;
+            
+            document.getElementById('currentTest').innerHTML = 
+                `<strong>Current Test:</strong> Student ${studentId} | URL: <a href="${url}" target="_blank">${url}</a>`;
+        }
+        
+        // Auto-load first test
+        window.addEventListener('load', function() {
+            testStudent('1000');
+        });
+    </script>
+</body>
+</html>
