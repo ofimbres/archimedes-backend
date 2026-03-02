@@ -1,6 +1,8 @@
 """Authentication router for user registration and management."""
 
+import html
 from typing import Any, Optional
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -40,9 +42,16 @@ router = APIRouter(
 )
 
 # OAuth callback URL (must match Cognito app client redirect URIs)
+
+
 def _oauth_callback_uri() -> str:
-    base = (settings.backend_public_url or "").rstrip("/")
-    return f"{base}/api/v1/auth/callback"
+    return settings.oauth_callback_uri.strip().rstrip("/")
+
+
+def _frontend_callback_url() -> Optional[str]:
+    """Frontend base URL for OAuth callback redirect (custom auth UI). None if not configured."""
+    url = (settings.frontend_url or "").strip().rstrip("/")
+    return url if url else None
 
 
 @router.get(
@@ -51,8 +60,10 @@ def _oauth_callback_uri() -> str:
     description="Returns the URL to redirect the user to for Cognito Hosted UI sign-in (e.g. Google).",
 )
 async def get_oauth_login_url(
-    state: Optional[str] = Query(None, description="Optional state for CSRF protection"),
-    identity_provider: Optional[str] = Query("Google", description="Cognito IdP name (e.g. Google)"),
+    state: Optional[str] = Query(
+        None, description="Optional state for CSRF protection"),
+    identity_provider: Optional[str] = Query(
+        "Google", description="Cognito IdP name (e.g. Google)"),
 ) -> Any:
     """Return the Cognito Hosted UI authorize URL. Frontend redirects the user to this URL."""
     cognito = CognitoService()
@@ -72,7 +83,8 @@ async def get_oauth_login_url(
 )
 async def oauth_redirect(
     state: Optional[str] = Query(None, description="Optional state for CSRF"),
-    identity_provider: Optional[str] = Query("Google", description="IdP name in Cognito"),
+    identity_provider: Optional[str] = Query(
+        "Google", description="IdP name in Cognito"),
 ) -> RedirectResponse:
     """Redirect the user to Cognito Hosted UI (e.g. Google sign-in)."""
     cognito = CognitoService()
@@ -85,35 +97,6 @@ async def oauth_redirect(
     return RedirectResponse(url=url, status_code=302)
 
 
-def _callback_html(user: dict) -> str:
-    """Simple HTML page shown after OAuth callback when browser requests HTML."""
-    def _h(s: str) -> str:
-        return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
-    email = _h((user.get("email") or user.get("username") or "—"))
-    raw_name = f"{user.get('given_name') or ''} {user.get('family_name') or ''}".strip() or (user.get("email") or user.get("username") or "")
-    name = _h(raw_name)
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Signed in – Archimedes</title>
-  <style>
-    body {{ font-family: system-ui, sans-serif; max-width: 32rem; margin: 2rem auto; padding: 0 1rem; }}
-    h1 {{ font-size: 1.25rem; }}
-    .user {{ color: #333; margin: 1rem 0; }}
-    a {{ color: #0066cc; }}
-  </style>
-</head>
-<body>
-  <h1>You're signed in</h1>
-  <p class="user"><strong>{name}</strong> ({email})</p>
-  <p>When you add a frontend, call <code>GET /api/v1/auth/callback?code=...</code> or use the JSON API.</p>
-  <p><a href="/login">Sign in again</a> · <a href="/docs">API docs</a></p>
-</body>
-</html>"""
-
-
 @router.get(
     "/callback",
     summary="OAuth callback (Cognito Hosted UI / Google)",
@@ -121,19 +104,39 @@ def _callback_html(user: dict) -> str:
 )
 async def oauth_callback(
     request: Request,
-    code: str = Query(..., description="Authorization code from Cognito"),
-    state: Optional[str] = Query(None, description="State passed to authorize URL"),
+    code: Optional[str] = Query(
+        None, description="Authorization code from Cognito"),
+    state: Optional[str] = Query(
+        None, description="State passed to authorize URL"),
 ) -> Response:
-    """Exchange authorization code for tokens. Returns HTML page in browser, JSON for API clients."""
+    """Exchange authorization code for tokens, or return error when Cognito redirects with error=."""
+    frontend_base = _frontend_callback_url()
+
+    if not code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing code; Cognito may have redirected with an error. Check error and error_description.",
+        )
     cognito = CognitoService()
     redirect_uri = _oauth_callback_uri()
     auth_result = await cognito.exchange_code_for_tokens(code=code, redirect_uri=redirect_uri)
     access_token = auth_result["access_token"]
     user_info = auth_result.get("user_info") or {}
-    accept = request.headers.get("accept", "") or ""
-    if "text/html" in accept:
-        html = _callback_html(user=user_info)
-        return HTMLResponse(content=html)
+
+    if frontend_base:
+        fragment_params = {
+            "access_token": access_token,
+            "token_type": auth_result.get("token_type", "Bearer"),
+            "expires_in": str(auth_result.get("expires_in", 3600)),
+        }
+        if auth_result.get("refresh_token"):
+            fragment_params["refresh_token"] = auth_result["refresh_token"]
+        fragment = urlencode(fragment_params)
+        return RedirectResponse(
+            url=f"{frontend_base}/auth/callback#{fragment}",
+            status_code=302,
+        )
+
     resp = UserLoginResponse(
         access_token=access_token,
         token_type=auth_result["token_type"],
@@ -158,8 +161,10 @@ async def me(
     """Return the current user's DB profile if linked (by cognito_user_id), or admin role, else profile=null."""
     sub = claims.sub
     email = (claims.email or "").strip().lower()
-    admin_emails = [e.strip().lower() for e in (settings.admin_emails or "").split(",") if e.strip()]
-    admin_ids = [s.strip() for s in (settings.admin_cognito_ids or "").split(",") if s.strip()]
+    admin_emails = [e.strip().lower() for e in (
+        settings.admin_emails or "").split(",") if e.strip()]
+    admin_ids = [s.strip() for s in (
+        settings.admin_cognito_ids or "").split(",") if s.strip()]
     if admin_ids and sub in admin_ids:
         return MeResponse(user_type="admin", profile=None)
     if admin_emails and email in admin_emails:
@@ -168,12 +173,14 @@ async def me(
     result = await db.execute(select(Student).where(Student.cognito_user_id == sub))
     student = result.scalar_one_or_none()
     if student:
-        profile = StudentResponse.model_validate(student).model_dump(mode="json")
+        profile = StudentResponse.model_validate(
+            student).model_dump(mode="json")
         return MeResponse(user_type="students", profile=profile)
     result = await db.execute(select(Teacher).where(Teacher.cognito_user_id == sub))
     teacher = result.scalar_one_or_none()
     if teacher:
-        profile = TeacherResponse.model_validate(teacher).model_dump(mode="json")
+        profile = TeacherResponse.model_validate(
+            teacher).model_dump(mode="json")
         return MeResponse(user_type="teachers", profile=profile)
     return MeResponse(user_type=None, profile=None)
 
@@ -196,24 +203,28 @@ async def update_me(
     if student:
         data = body.model_dump(exclude_unset=True, by_alias=False)
         if not data:
-            profile = StudentResponse.model_validate(student).model_dump(mode="json")
+            profile = StudentResponse.model_validate(
+                student).model_dump(mode="json")
             return MeResponse(user_type="students", profile=profile)
         student_service = StudentService(db)
         update_data = StudentUpdate(**data)
         updated = await student_service.update_student(student.id, update_data)
-        profile = StudentResponse.model_validate(updated).model_dump(mode="json")
+        profile = StudentResponse.model_validate(
+            updated).model_dump(mode="json")
         return MeResponse(user_type="students", profile=profile)
     result = await db.execute(select(Teacher).where(Teacher.cognito_user_id == sub))
     teacher = result.scalar_one_or_none()
     if teacher:
         data = body.model_dump(exclude_unset=True, by_alias=False)
         if not data:
-            profile = TeacherResponse.model_validate(teacher).model_dump(mode="json")
+            profile = TeacherResponse.model_validate(
+                teacher).model_dump(mode="json")
             return MeResponse(user_type="teachers", profile=profile)
         teacher_service = TeacherService(db)
         update_data = TeacherUpdate(**data)
         updated = await teacher_service.update_teacher(teacher.id, update_data)
-        profile = TeacherResponse.model_validate(updated).model_dump(mode="json")
+        profile = TeacherResponse.model_validate(
+            updated).model_dump(mode="json")
         return MeResponse(user_type="teachers", profile=profile)
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -239,17 +250,21 @@ async def complete_profile(
     result = await db.execute(select(Student).where(Student.cognito_user_id == sub))
     student = result.scalar_one_or_none()
     if student:
-        profile = StudentResponse.model_validate(student).model_dump(mode="json")
+        profile = StudentResponse.model_validate(
+            student).model_dump(mode="json")
         return JSONResponse(
-            content=MeResponse(user_type="students", profile=profile).model_dump(mode="json"),
+            content=MeResponse(user_type="students",
+                               profile=profile).model_dump(mode="json"),
             status_code=200,
         )
     result = await db.execute(select(Teacher).where(Teacher.cognito_user_id == sub))
     teacher = result.scalar_one_or_none()
     if teacher:
-        profile = TeacherResponse.model_validate(teacher).model_dump(mode="json")
+        profile = TeacherResponse.model_validate(
+            teacher).model_dump(mode="json")
         return JSONResponse(
-            content=MeResponse(user_type="teachers", profile=profile).model_dump(mode="json"),
+            content=MeResponse(user_type="teachers",
+                               profile=profile).model_dump(mode="json"),
             status_code=200,
         )
 
@@ -325,7 +340,8 @@ async def complete_profile(
             cognito_user_id=sub,
         )
         created = await teacher_service.create_teacher(teacher_data)
-        profile = TeacherResponse.model_validate(created).model_dump(mode="json")
+        profile = TeacherResponse.model_validate(
+            created).model_dump(mode="json")
         return MeResponse(user_type="teachers", profile=profile)
 
 
@@ -400,9 +416,6 @@ async def login(
             username=request.username,
             password=request.password
         )
-
-        # TODO: Optionally fetch additional user data from database
-        # based on auth_result['user_info']['username']
 
         return UserLoginResponse(
             access_token=auth_result['access_token'],

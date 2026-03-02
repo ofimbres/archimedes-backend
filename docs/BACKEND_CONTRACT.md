@@ -29,10 +29,11 @@ After `cdk deploy ArchimedesBackendStack`, the backend app should use these (via
 - `COGNITO_DOMAIN` ← CognitoDomain (or derive JWKS from it)  
 - `DB_SECRET_ARN` ← DbSecretArn  
 - `DB_HOST` ← DbEndpoint (optional)  
-- `BACKEND_URL` ← BackendUrl (for CORS, OAuth callback URL, etc.)
+- `OAUTH_CALLBACK_URI` ← Full OAuth callback URL (e.g. `https://api.example.com/api/v1/auth/callback`); must match Cognito app client.
+- `FRONTEND_URL` ← Frontend origin (e.g. `https://app.example.com`); when set, backend redirects OAuth callback to `{FRONTEND_URL}/auth/callback#access_token=...` (custom auth UI).
 - `COGNITO_CLIENT_SECRET` ← (optional) App client secret; required if the Cognito app client is confidential and the backend performs the authorization-code → token exchange for Hosted UI / Google.
 
-**Cognito Hosted UI (e.g. Sign in with Google):** The backend uses `BACKEND_URL` to build the OAuth callback URL: `{BACKEND_URL}/api/v1/auth/callback`. Ensure this exact URL is added to the Cognito app client’s “Allowed callback URLs”. The backend exposes `GET /api/v1/auth/oauth/url` (returns the Hosted UI URL) and `GET /api/v1/auth/callback` (exchanges the code for tokens).
+**Cognito Hosted UI (e.g. Sign in with Google):** The backend uses `OAUTH_CALLBACK_URI` as the OAuth callback URL. When `FRONTEND_URL` is set, the backend redirects to the frontend with tokens in the URL fragment instead of returning HTML/JSON. Set it in env and add the same URL to the Cognito app client’s “Allowed callback URLs”. The backend exposes `GET /api/v1/auth/oauth/url` (returns the Hosted UI URL) and `GET /api/v1/auth/callback` (exchanges the code for tokens).
 
 ---
 
@@ -74,7 +75,8 @@ See [SIGNED_URLS_SETUP.md](./SIGNED_URLS_SETUP.md) for key setup and deploy step
 | `COGNITO_CLIENT_ID` | Backend | UserPoolClientId |
 | `COGNITO_DOMAIN` | Backend | CognitoDomain (Hosted UI domain) |
 | `COGNITO_CLIENT_SECRET` | Backend | Optional; for server-side token exchange |
-| `BACKEND_URL` | Backend | BackendUrl (callback URL base) |
+| `OAUTH_CALLBACK_URI` | Backend | Full OAuth callback URL (must match Cognito) |
+| `FRONTEND_URL` | Backend | Frontend origin; OAuth callback redirects to `{FRONTEND_URL}/auth/callback#...` |
 | `DB_SECRET_ARN` | Backend | DbSecretArn |
 | `DB_HOST` | Backend | DbEndpoint (optional) |
 | `CLOUDFRONT_URL` | StaticHtml | CloudFrontUrl |

@@ -45,9 +45,17 @@ class Settings(BaseSettings):
     cognito_domain: str = ""
     # Optional; required for server-side code exchange if app client is confidential
     cognito_client_secret: str = ""
-    # Public URL of this backend (for OAuth redirect_uri). From infra: BACKEND_URL.
-    backend_public_url: str = Field(
-        default="http://localhost:8001", validation_alias="BACKEND_URL")
+    # OAuth callback URL (must match Cognito app client exactly).
+    oauth_callback_uri: str = Field(
+        default="http://localhost:8001/api/v1/auth/callback",
+        validation_alias="OAUTH_CALLBACK_URI",
+    )
+    # Frontend URL for OAuth callback redirect (custom auth UI). When set, backend redirects
+    # to {FRONTEND_URL}/auth/callback#access_token=... instead of returning HTML/JSON.
+    frontend_url: str = Field(
+        default="http://localhost:3000",
+        validation_alias="FRONTEND_URL",
+    )
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
 

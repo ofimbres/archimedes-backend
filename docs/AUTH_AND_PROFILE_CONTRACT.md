@@ -17,7 +17,7 @@ Use the token returned after login (password or OAuth callback). The backend val
 ## 1. High-level flow
 
 1. **Login** – User signs in via:
-   - **Google (OAuth):** Redirect to backend OAuth URL → Cognito Hosted UI → callback returns tokens (and optionally HTML).
+   - **Google (OAuth):** Redirect to backend OAuth URL → Cognito/Google consent → backend callback redirects to frontend `/auth/callback#access_token=...` (when `FRONTEND_URL` is set).
    - **Password:** `POST /api/v1/auth/login` with `username` and `password`; response includes tokens and `user` info.
 
 2. **Check profile** – Frontend calls `GET /api/v1/auth/me` with `Authorization: Bearer <token>`.
@@ -42,7 +42,7 @@ Use the token returned after login (password or OAuth callback). The backend val
 |--------|------|------|-------------|
 | GET | `/api/v1/auth/oauth/url` | No | Returns `{ "url": "<Cognito Hosted UI URL>", "redirect_uri": "..." }`. Frontend redirects user to `url` (e.g. `window.location = url`). |
 | GET | `/api/v1/auth/oauth/redirect` | No | 302 redirect to Cognito Hosted UI. Use as the href for a “Sign in with Google” button. |
-| GET | `/api/v1/auth/callback?code=...&state=...` | No | OAuth callback. Backend exchanges `code` for tokens. Browser receives HTML or JSON with tokens and user info. **Callback URL** must be exactly `{BACKEND_URL}/api/v1/auth/callback` in Cognito. |
+| GET | `/api/v1/auth/callback?code=...&state=...` | No | OAuth callback. Backend exchanges `code` for tokens. **Callback URL** must match `OAUTH_CALLBACK_URI` in your backend .env (e.g. `http://localhost:8001/api/v1/auth/callback` in Cognito). |
 
 **Query params (optional):**
 
@@ -50,7 +50,18 @@ Use the token returned after login (password or OAuth callback). The backend val
 - `oauth/redirect`: same.
 - `callback`: `code` (required), `state` (optional).
 
-**Callback response (JSON):** Same shape as login response below (e.g. `access_token`, `id_token`, `refresh_token`, `user`).
+**OAuth callback behavior (custom auth UI):**
+
+When `FRONTEND_URL` is configured, the backend **redirects** (302) the browser to:
+
+```
+{FRONTEND_URL}/auth/callback#access_token={access_token}&refresh_token={refresh_token}&token_type=Bearer&expires_in={expires_in}
+```
+
+- Tokens are in the URL **fragment** (not sent to the server; standard OAuth SPA pattern).
+- Fragment params: `access_token` (required), `refresh_token` (optional), `token_type` (optional, default `Bearer`), `expires_in` (optional).
+- On error (e.g. `invalid_scope`), redirect: `{FRONTEND_URL}/auth/callback#error=...&error_description=...`
+- When `FRONTEND_URL` is empty, backend returns HTML or JSON (legacy Hosted UI fallback).
 
 ---
 
@@ -229,7 +240,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 ## 7. CORS and callback URL
 
 - Backend should allow the frontend origin in CORS when calling `/api/v1/auth/*` and other APIs.
-- For Google sign-in, Cognito redirects to the **backend** callback URL (`{BACKEND_URL}/api/v1/auth/callback`). After the backend returns (HTML or JSON), the frontend can either:
+- For Google sign-in, Cognito redirects to the **backend** callback URL (the value of `OAUTH_CALLBACK_URI`). After the backend returns (HTML or JSON), the frontend can either:
   - Use a dedicated “post-login” page that reads tokens from the response (e.g. if backend returns HTML with tokens in a script or redirects to frontend with tokens in fragment/query), or
   - Have the backend return JSON and the callback URL point to the frontend with `?code=...` and have the frontend send the code to the backend to exchange for tokens (if you add such an endpoint). Current contract: callback is the backend URL; backend exchanges code and returns tokens (HTML or JSON).
 

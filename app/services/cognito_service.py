@@ -6,7 +6,7 @@ Supports both username/password and Hosted UI (e.g. Sign in with Google).
 import base64
 import json
 from typing import Dict, Any, Optional
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import boto3
 import httpx
@@ -14,6 +14,11 @@ from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
 
 from ..config import settings
+
+
+def _query_quote(s: str, safe: str = "", encoding: str | None = None, errors: str | None = None) -> str:
+    """Quote for query string but leave '+' unencoded (Cognito expects scope=openid+email+profile)."""
+    return quote(s, safe="+")
 
 
 class CognitoService:
@@ -345,7 +350,8 @@ class CognitoService:
             params["state"] = state
         if identity_provider:
             params["identity_provider"] = identity_provider
-        return f"https://{self.domain}/oauth2/authorize?{urlencode(params)}"
+        # Use quote with safe='+' so scope stays as openid+email+profile (Cognito expects literal +)
+        return f"https://{self.domain}/oauth2/authorize?{urlencode(params, quote_via=_query_quote)}"
 
     async def exchange_code_for_tokens(
         self,
