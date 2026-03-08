@@ -31,21 +31,26 @@ async def create_course(
         course = await service.create_course(course_data)
         return CourseResponse.model_validate(course)
     except ValueError as e:
-        if "Teacher not found" in str(e):
+        msg = str(e)
+        if "Teacher not found" in msg:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Teacher not found"
             )
-        elif "same school" in str(e):
+        if "Course limit reached" in msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=msg
+            )
+        if "same school" in msg:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Teacher and course must belong to the same school"
             )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(e)
-            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=msg
+        )
 
 
 @router.get("/{course_id}", response_model=CourseResponse)

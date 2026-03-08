@@ -42,8 +42,7 @@ class CourseService:
                 return code
 
     async def create_course(self, course_data: CourseCreate) -> Course:
-        """Create a new course."""
-        # Verify teacher exists
+        """Create a new course. School is taken from the teacher."""
         teacher_result = await self.db.execute(
             select(Teacher).where(Teacher.id == course_data.teacher_id)
         )
@@ -51,19 +50,23 @@ class CourseService:
         if not teacher:
             raise ValueError("Teacher not found")
 
-        # Verify school exists and matches teacher's school
-        if teacher.school_id != course_data.school_id:
+        max_allowed = teacher.max_classes if teacher.max_classes is not None else 6
+        count_result = await self.db.execute(
+            select(func.count(Course.id)).where(Course.teacher_id == teacher.id)
+        )
+        current_count = count_result.scalar() or 0
+        if current_count >= max_allowed:
             raise ValueError(
-                "Teacher and course must belong to the same school"
+                f"Course limit reached (maximum {max_allowed} classes for your plan)"
             )
 
-        # Generate unique join code
+        school_id = teacher.school_id
         join_code = await self._generate_unique_join_code()
 
-        # Create course
         course_dict = course_data.model_dump()
-        course_dict['join_code'] = join_code
-        course_dict['is_active'] = True
+        course_dict["school_id"] = school_id
+        course_dict["join_code"] = join_code
+        course_dict["is_active"] = True
 
         course = Course(**course_dict)
         self.db.add(course)
@@ -75,12 +78,10 @@ class CourseService:
     async def create_default_course(
         self,
         teacher_id: UUID,
-        school_id: UUID,
         course_number: int = 1
     ) -> Course:
-        """Create a default course for a new teacher."""
+        """Create a default course for a new teacher (school from teacher)."""
         default_course = CourseCreate(
-            school_id=school_id,
             teacher_id=teacher_id,
             class_name=f"Course {course_number}",
             subject="General",

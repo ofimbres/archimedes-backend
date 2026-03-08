@@ -9,15 +9,18 @@ from uuid import UUID
 class CourseBase(BaseModel):
     """Base course schema with common fields."""
     class_name: str = Field(..., min_length=1, max_length=100)
-    subject: str = Field(..., min_length=1, max_length=50)
+    subject: str = Field("General", min_length=1, max_length=50)
     academic_year: str = Field("2024-25", max_length=10)
     semester: str = Field("Fall", max_length=20)
 
 
-class CourseCreate(CourseBase):
-    """Schema for creating a course."""
-    school_id: UUID = Field(..., description="ID of the school")
-    teacher_id: UUID = Field(..., description="ID of the teacher")
+class CourseCreate(BaseModel):
+    """Schema for creating a course. School is derived from the teacher."""
+    teacher_id: UUID = Field(..., description="Teacher ID (school from their profile)")
+    class_name: str = Field(..., min_length=1, max_length=100, description="Course name")
+    subject: str = Field("General", min_length=1, max_length=50)
+    academic_year: str = Field("2024-25", max_length=10)
+    semester: str = Field("Fall", max_length=20)
 
 
 class CourseUpdate(BaseModel):

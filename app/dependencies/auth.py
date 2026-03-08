@@ -66,13 +66,18 @@ def _verify_cognito_token(token: str) -> Dict[str, Any]:
         "verify_iss": True,
         "require": ["exp", "iss", "sub"],
     }
+    decode_kwargs = {
+        "algorithms": ["RS256"],
+        "issuer": issuer,
+        "options": options,
+    }
+    if settings.cognito_client_id:
+        decode_kwargs["audience"] = settings.cognito_client_id
     try:
         payload = jwt.decode(
             token,
             signing_key.key,
-            algorithms=["RS256"],
-            issuer=issuer,
-            options=options,
+            **decode_kwargs,
         )
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -80,9 +85,12 @@ def _verify_cognito_token(token: str) -> Dict[str, Any]:
             detail="Token has expired",
         )
     except jwt.InvalidTokenError as e:
+        detail = "Invalid token"
+        if getattr(settings, "debug", False):
+            detail = f"Invalid token: {type(e).__name__}: {str(e)}"
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail=detail,
         ) from e
 
     # ID token has aud; access token may not. If we passed audience and it failed we'd have raised.

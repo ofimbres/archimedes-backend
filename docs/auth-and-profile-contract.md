@@ -26,7 +26,7 @@ Use the token returned after login (password or OAuth callback). The backend val
    - If **`profile` is not null** → User has a linked student or teacher (or is admin). Use `user_type` and `profile` to show the correct app.
    - If **`profile` is null** and **`user_type` is not `"admin"`** → Show **“Complete your profile”**: choose role (Student / Teacher), then context (join code for students, school for teachers), then submit.
 
-4. **Complete profile** – Frontend calls `POST /api/v1/auth/complete-profile` with body (see below). Backend creates the student or teacher and returns the same shape as `/me`.
+4. **Complete profile** – Frontend calls `POST /api/v1/auth/complete-profile` with body (see below). **Send the ID token** in the `Authorization` header (not the access token), or the backend returns "Email is required to complete profile". Backend creates the student or teacher and returns the same shape as `/me`.
 
 5. **Personal info (optional)** – After profile exists, user can update name via `PATCH /api/v1/auth/me`.
 
@@ -55,11 +55,12 @@ Use the token returned after login (password or OAuth callback). The backend val
 When `FRONTEND_URL` is configured, the backend **redirects** (302) the browser to:
 
 ```
-{FRONTEND_URL}/auth/callback#access_token={access_token}&refresh_token={refresh_token}&token_type=Bearer&expires_in={expires_in}
+{FRONTEND_URL}/auth/callback#access_token=...&refresh_token=...&id_token=...&token_type=Bearer&expires_in=...
 ```
 
 - Tokens are in the URL **fragment** (not sent to the server; standard OAuth SPA pattern).
-- Fragment params: `access_token` (required), `refresh_token` (optional), `token_type` (optional, default `Bearer`), `expires_in` (optional).
+- Fragment params: `access_token` (required), `refresh_token` (optional), `id_token` (optional), `token_type` (optional), `expires_in` (optional).
+- **Store `id_token`** as well as `access_token`: the backend needs the **ID token** for `POST /auth/complete-profile` (see below).
 - On error (e.g. `invalid_scope`), redirect: `{FRONTEND_URL}/auth/callback#error=...&error_description=...`
 - When `FRONTEND_URL` is empty, backend returns HTML or JSON (legacy Hosted UI fallback).
 
@@ -139,7 +140,7 @@ Store `access_token` (and optionally `refresh_token`, `id_token`) for subsequent
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/v1/auth/complete-profile` | Bearer | Create the linked student or teacher record for the current user (e.g. after first Google sign-in). Idempotent: if profile already exists, returns 200 with existing profile. |
+| POST | `/api/v1/auth/complete-profile` | Bearer **id_token** | Create the linked student or teacher record. **Use the ID token** in `Authorization: Bearer <id_token>` (not the access token). The backend reads email/name from the token; Cognito puts these only in the ID token. Idempotent: if profile exists, returns 200 with existing profile. |
 
 **Request body (camelCase):**
 
@@ -265,7 +266,12 @@ This contract is the source of truth for the frontend; backend implements it as 
 
 ---
 
-## 9. ADR – Decisions
+## 9. ADR – Decisions (summary)
+
+This section summarizes key decisions that affect the auth/profile contract.  
+The **canonical backend ADRs** live under `docs/adrs/`, for example:
+
+- `docs/adrs/0002-auth-callback-redirect.md` – OAuth callback behavior and redirect strategy.
 
 | Decision | Rationale |
 |----------|-----------|
@@ -274,4 +280,4 @@ This contract is the source of truth for the frontend; backend implements it as 
 | **Admin not in UI** | Admin is assigned via backend config (e.g. env list); frontend only reacts to `user_type: "admin"` from GET /me. |
 | **Profile linked by cognito_user_id** | Students and teachers store `cognito_user_id` (Cognito sub); GET /me and complete-profile use it so one Cognito identity maps to at most one student or one teacher. |
 | **PATCH /me for personal info** | Keeps complete-profile minimal (role + context); name/email from token. Optional personal info (e.g. first/last name) editable later via PATCH /me. |
-| **OAuth callback on backend** | Cognito redirect_uri is the backend; backend exchanges code for tokens and returns HTML or JSON so the same callback works for browser and API clients. |
+| **OAuth callback on backend** | Cognito redirect_uri is the backend; backend exchanges code for tokens and returns HTML or JSON or a redirect so the same callback works for browser and API clients. |

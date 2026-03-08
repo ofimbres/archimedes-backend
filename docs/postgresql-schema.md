@@ -280,4 +280,4 @@ ORDER BY c.class_name;
 - **School Statistics:** Enrollment counts, teacher loads
 - **Popular Subjects:** Most enrolled courses
 - **Grade Distribution:** Students per grade level
-- **Enrollment Trends:** Active vs dropped students
+- **Enrollment Trends:** Active vs dropped student

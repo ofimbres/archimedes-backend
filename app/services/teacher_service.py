@@ -70,7 +70,6 @@ class TeacherService:
             try:
                 await course_service.create_default_course(
                     teacher_id=teacher.id,
-                    school_id=teacher.school_id,
                     course_number=i
                 )
             except Exception:

@@ -131,6 +131,8 @@ async def oauth_callback(
         }
         if auth_result.get("refresh_token"):
             fragment_params["refresh_token"] = auth_result["refresh_token"]
+        if auth_result.get("id_token"):
+            fragment_params["id_token"] = auth_result["id_token"]
         fragment = urlencode(fragment_params)
         return RedirectResponse(
             url=f"{frontend_base}/auth/callback#{fragment}",
