@@ -41,70 +41,70 @@ SELECT * FROM students
 WHERE school_id = '123e4567-e89b-12d3-a456-426614174000' 
 ORDER BY full_name;
 
--- All classes in a school
+-- All courses in a school
 SELECT c.*, t.full_name as teacher_name
-FROM classes c
+FROM courses c
 JOIN teachers t ON c.teacher_id = t.id
 WHERE c.school_id = '123e4567-e89b-12d3-a456-426614174000'
-ORDER BY c.class_name;
+ORDER BY c.course_name;
 
 -- =============================================================================
 -- 4. TEACHER OPERATIONS
 -- =============================================================================
 
--- Get all classes for a teacher
-SELECT * FROM classes 
+-- Get all courses for a teacher
+SELECT * FROM courses
 WHERE teacher_id = '456e7890-e89b-12d3-a456-426614174001'
-ORDER BY class_name;
+ORDER BY course_name;
 
--- Get teacher's student count across all classes
+-- Get teacher's student count across all courses
 SELECT 
     t.full_name,
     COUNT(e.student_id) as total_students
 FROM teachers t
-JOIN classes c ON t.id = c.teacher_id
-JOIN enrollments e ON c.id = e.class_id
+JOIN courses c ON t.id = c.teacher_id
+JOIN enrollments e ON c.id = e.course_id
 WHERE t.id = '456e7890-e89b-12d3-a456-426614174001'
 AND e.enrollment_status = 'active'
 GROUP BY t.id, t.full_name;
 
 -- =============================================================================
--- 5. PERIOD & ENROLLMENT OPERATIONS
+-- 5. COURSE & ENROLLMENT OPERATIONS
 -- =============================================================================
 
--- Get all students in a class
+-- Get all students in a course
 SELECT s.*, e.enrolled_at, e.enrollment_status
 FROM students s
 JOIN enrollments e ON s.id = e.student_id
-WHERE e.class_id = 'abc1234d-e89b-12d3-a456-426614174003'
+WHERE e.course_id = 'abc1234d-e89b-12d3-a456-426614174003'
 AND e.enrollment_status = 'active'
 ORDER BY s.full_name;
 
--- Get all classes for a student
+-- Get all courses for a student
 SELECT c.*, t.full_name as teacher_name, e.enrollment_status
-FROM classes c
+FROM courses c
 JOIN teachers t ON c.teacher_id = t.id
-JOIN enrollments e ON c.id = e.class_id
+JOIN enrollments e ON c.id = e.course_id
 WHERE e.student_id = '789e0123-e89b-12d3-a456-426614174002'
-ORDER BY c.class_name;
+ORDER BY c.course_name;
 
 -- =============================================================================
 -- 6. JOIN CODE OPERATIONS
 -- =============================================================================
 
--- Find class by join code (for student enrollment)
+-- Find course by join code (for student enrollment)
 SELECT c.*, t.full_name as teacher_name, s.name as school_name
-FROM classes c
-JOIN teachers t ON c.teacher_id = t.id  
+FROM courses c
+JOIN teachers t ON c.teacher_id = t.id
 JOIN schools s ON c.school_id = s.id
 WHERE c.join_code = 'ALG7M';
 
 -- Get teacher's join codes (for sharing with students)
-SELECT c.class_name, c.join_code, c.subject
-FROM classes c
+SELECT c.course_name, c.join_code, c.subject
+FROM courses c
 WHERE c.teacher_id = '456e7890-e89b-12d3-a456-426614174001'
 AND c.is_active = TRUE
-ORDER BY c.class_name;
+ORDER BY c.course_name;
 
 -- =============================================================================
 -- 7. ANALYTICS QUERIES
@@ -115,24 +115,24 @@ SELECT
     s.name as school_name,
     COUNT(DISTINCT st.id) as total_students,
     COUNT(DISTINCT t.id) as total_teachers,
-    COUNT(DISTINCT p.id) as total_periods,
+    COUNT(DISTINCT c.id) as total_courses,
     COUNT(e.id) as total_enrollments
 FROM schools s
 LEFT JOIN students st ON s.id = st.school_id AND st.is_active = TRUE
 LEFT JOIN teachers t ON s.id = t.school_id AND t.is_active = TRUE  
-LEFT JOIN periods p ON s.id = p.school_id AND p.is_active = TRUE
-LEFT JOIN enrollments e ON p.id = e.period_id AND e.status = 'ACTIVE'
+LEFT JOIN courses c ON s.id = c.school_id AND c.is_active = TRUE
+LEFT JOIN enrollments e ON c.id = e.course_id AND e.enrollment_status = 'active'
 GROUP BY s.id, s.name
 ORDER BY s.name;
 
 -- Most popular subjects
 SELECT 
-    p.subject,
+    c.subject,
     COUNT(e.student_id) as enrolled_students
-FROM periods p
-JOIN enrollments e ON p.id = e.period_id
-WHERE e.status = 'ACTIVE'
-GROUP BY p.subject
+FROM courses c
+JOIN enrollments e ON c.id = e.course_id
+WHERE e.enrollment_status = 'active'
+GROUP BY c.subject
 ORDER BY enrolled_students DESC;
 
 -- Students per grade level

@@ -8,7 +8,7 @@ from uuid import UUID
 
 class CourseBase(BaseModel):
     """Base course schema with common fields."""
-    class_name: str = Field(..., min_length=1, max_length=100)
+    course_name: str = Field(..., min_length=1, max_length=100)
     subject: str = Field("General", min_length=1, max_length=50)
     academic_year: str = Field("2024-25", max_length=10)
     semester: str = Field("Fall", max_length=20)
@@ -17,7 +17,7 @@ class CourseBase(BaseModel):
 class CourseCreate(BaseModel):
     """Schema for creating a course. School is derived from the teacher."""
     teacher_id: UUID = Field(..., description="Teacher ID (school from their profile)")
-    class_name: str = Field(..., min_length=1, max_length=100, description="Course name")
+    course_name: str = Field(..., min_length=1, max_length=100, description="Course name")
     subject: str = Field("General", min_length=1, max_length=50)
     academic_year: str = Field("2024-25", max_length=10)
     semester: str = Field("Fall", max_length=20)
@@ -25,7 +25,7 @@ class CourseCreate(BaseModel):
 
 class CourseUpdate(BaseModel):
     """Schema for updating a course (all optional fields)."""
-    class_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    course_name: Optional[str] = Field(None, min_length=1, max_length=100)
     subject: Optional[str] = Field(None, min_length=1, max_length=50)
     academic_year: Optional[str] = Field(None, max_length=10)
     semester: Optional[str] = Field(None, max_length=20)

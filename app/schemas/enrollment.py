@@ -44,7 +44,7 @@ class EnrollmentResponse(BaseModel):
 
     id: UUID
     student_id: UUID
-    class_id: UUID
+    course_id: UUID
     enrolled_at: datetime
     enrollment_status: str
     is_active: bool
@@ -53,12 +53,10 @@ class EnrollmentResponse(BaseModel):
 
     # Nested objects (optional, for detailed responses)
     student_name: Optional[str] = None
+    student_email: Optional[str] = None
     course_name: Optional[str] = None
     teacher_name: Optional[str] = None
     teacher_id: Optional[UUID] = None
-
-    # Convenience alias for API consistency
-    course_id: Optional[UUID] = None
 
 
 class EnrollmentListResponse(BaseModel):

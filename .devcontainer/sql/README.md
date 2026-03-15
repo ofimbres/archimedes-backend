@@ -10,7 +10,7 @@ This directory contains all SQL scripts for setting up and managing the PostgreS
 - Run this first to create the complete database structure
 
 ### **02_sample_data.sql** 
-- Inserts sample schools, teachers, students, periods, and enrollments
+- Inserts sample schools, teachers, students, courses, and enrollments
 - Useful for development and testing
 - Run after `01_create_schema.sql`
 
@@ -18,6 +18,14 @@ This directory contains all SQL scripts for setting up and managing the PostgreS
 - Common query patterns and examples
 - Includes authentication, dashboard, and analytics queries
 - Reference for application development
+
+**Activities and assignments:** Schema creates `topics`, `subtopics`, `activities`, and `assignments` tables. The backend seeds in order: topics and subtopics from `docs/topics.csv`, then activities from `docs/miniquiz-activities.csv` (when tables are empty, on startup or via `python scripts/seed_activities.py`).
+
+### **05_migrate_classes_to_courses.sql**
+- One-off migration for existing databases that still have table `classes` and column `class_id`. Renames table to `courses`, column to `course_id`, and `class_name` to `course_name`. New installs use `01_create_schema.sql` only.
+
+### **06_migrate_activities_to_taxonomy.sql**
+- One-off migration for existing databases that have `activities` with `topic`/`subtopic` columns. Creates `topics` and `subtopics` tables, backfills from activities, adds `activities.subtopic_id`, then drops `topic`/`subtopic`. New installs use `01_create_schema.sql` only.
 
 ## 🚀 Quick Setup
 
@@ -59,15 +67,15 @@ After running sample data, try these join codes:
 ## 📈 Sample Queries
 
 ```sql
--- Find a class by join code
-SELECT * FROM periods WHERE join_code = 'ALG7M';
+-- Find a course by join code
+SELECT * FROM courses WHERE join_code = 'ALG7M';
 
--- Get all students in a class
-SELECT s.full_name 
+-- Get all students in a course
+SELECT s.full_name
 FROM students s
-JOIN enrollments e ON s.id = e.student_id  
-JOIN periods p ON e.period_id = p.id
-WHERE p.join_code = 'ALG7M' AND e.status = 'ACTIVE';
+JOIN enrollments e ON s.id = e.student_id
+JOIN courses c ON e.course_id = c.id
+WHERE c.join_code = 'ALG7M' AND e.enrollment_status = 'active';
 ```
 
 See `03_queries.sql` for more examples!

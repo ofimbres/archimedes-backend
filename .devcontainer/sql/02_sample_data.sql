@@ -100,9 +100,9 @@ INSERT INTO students (id, school_id, first_name, last_name, email, username) VAL
 );
 
 -- =============================================================================
--- SAMPLE CLASSES
+-- SAMPLE COURSES
 -- =============================================================================
-INSERT INTO classes (id, school_id, teacher_id, class_name, subject, join_code, academic_year, semester) VALUES 
+INSERT INTO courses (id, school_id, teacher_id, course_name, subject, join_code, academic_year, semester) VALUES
 (
     'abc1234d-e89b-12d3-a456-426614174003',
     '123e4567-e89b-12d3-a456-426614174000',
@@ -149,7 +149,7 @@ INSERT INTO classes (id, school_id, teacher_id, class_name, subject, join_code, 
 -- =============================================================================
 -- SAMPLE ENROLLMENTS
 -- =============================================================================
-INSERT INTO enrollments (id, student_id, class_id, enrolled_at, enrollment_status) VALUES 
+INSERT INTO enrollments (id, student_id, course_id, enrolled_at, enrollment_status) VALUES
 (
     'def5678e-e89b-12d3-a456-426614174004',
     '789e0123-e89b-12d3-a456-426614174002',

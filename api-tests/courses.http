@@ -22,7 +22,7 @@ Content-Type: application/json
 {
   "school_id": "{{schoolId}}",
   "teacher_id": "{{teacherId}}",
-  "class_name": "Advanced Mathematics",
+  "course_name": "Advanced Mathematics",
   "subject": "Mathematics",
   "academic_year": "2024-25",
   "semester": "Fall"
@@ -45,7 +45,7 @@ PUT {{baseUrl}}{{apiVersion}}/courses/{{courseId}}
 Content-Type: application/json
 
 {
-  "class_name": "Advanced Calculus",
+  "course_name": "Advanced Calculus",
   "subject": "Mathematics",
   "academic_year": "2024-25",
   "semester": "Spring"

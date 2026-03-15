@@ -12,6 +12,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.school import School
+    from app.models.assignment import Assignment
 
 
 class Teacher(Base):
@@ -74,6 +75,10 @@ class Teacher(Base):
     )
     courses = relationship(
         "Course", back_populates="teacher", cascade="all, delete-orphan"
+    )
+    assignments: Mapped[list["Assignment"]] = relationship(
+        "Assignment",
+        back_populates="teacher",
     )
 
     @hybrid_property

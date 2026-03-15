@@ -6,5 +6,19 @@ from .teacher import Teacher
 from .worksheet_session import WorksheetSession
 from .course import Course
 from .enrollment import Enrollment
+from .topic import Topic
+from .subtopic import Subtopic
+from .activity import Activity
+from .assignment import Assignment
 
-__all__ = ["School", "Student", "Teacher", "Course", "Enrollment"]
+__all__ = [
+    "School",
+    "Student",
+    "Teacher",
+    "Course",
+    "Enrollment",
+    "Topic",
+    "Subtopic",
+    "Activity",
+    "Assignment",
+]

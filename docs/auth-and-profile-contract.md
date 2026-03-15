@@ -46,9 +46,13 @@ Use the token returned after login (password or OAuth callback). The backend val
 
 **Query params (optional):**
 
-- `oauth/url`: `state`, `identity_provider` (default `"Google"`).
+- `oauth/url`: `state`, `identity_provider` (default `"Google"`), `prompt`.
 - `oauth/redirect`: same.
 - `callback`: `code` (required), `state` (optional).
+
+**Account picker:** Without `prompt=select_account`, Google (and Cognito) often reuse the last signed-in account and skip the account chooser. The backend forwards the `prompt` query parameter to Cognito’s authorize URL (e.g. `...&prompt=select_account`). To show the account selection screen every time, use:
+- `GET /api/v1/auth/oauth/redirect?prompt=select_account`, or
+- `GET /api/v1/auth/oauth/url?prompt=select_account` and redirect to the returned `url`.
 
 **OAuth callback behavior (custom auth UI):**
 
@@ -214,7 +218,49 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 ---
 
-## 5. Recommended UI flow
+## 5. Teacher: viewing students in a course (roster / student management)
+
+**User journey:** After students sign in and complete profile with the class join code (or join via enrollments/join), the teacher should be able to see who is registered in each of their courses.
+
+**API for the frontend:**
+
+1. **Get the teacher’s courses** (from the current user’s profile you have `profile.id` as the teacher id):
+   - `GET /api/v1/courses/teacher/{teacher_id}?page=1&size=100`
+   - Response: `{ courses: [...], total, page, size, total_pages }`. Each course has `id`, `course_name`, `join_code`, `school_id`, etc.
+
+2. **Get students enrolled in a course** (roster for one class):
+   - `GET /api/v1/enrollments/course/{course_id}?page=1&size=100`
+   - Optional: `?is_active=true` to show only active enrollments.
+   - Response: `{ enrollments: [...], total, page, size, total_pages }`. Each enrollment has:
+     - `id`, `student_id`, `course_id`, `enrollment_status`, `enrolled_at`, `is_active`
+     - `student_name`, `student_email` (for roster display)
+     - `course_name` (optional)
+
+**Suggested UI:** Teacher dashboard → “My classes” (list from step 1) → user selects a course → “Roster” or “Students” tab/section that calls step 2 and shows a table of `student_name`, `student_email`, `enrollment_status`, `enrolled_at`. Optionally show the course’s `join_code` again so the teacher can share it with new students.
+
+**Frontend prompt (copy-paste):**  
+*“Call `GET /api/v1/courses/teacher/{teacher_id}` to list the teacher’s courses. For each course, call `GET /api/v1/enrollments/course/{course_id}` to get the list of enrolled students (roster). Display `student_name`, `student_email`, and `enrollment_status` in a table. Use the teacher id from `GET /auth/me` response `profile.id` when the user is a teacher.”*
+
+---
+
+## 6. Teacher & student: activities and assignments
+
+**Backend model:** Activities (miniquiz, exercises) live in a catalog. Each activity belongs to a **subtopic**, and each subtopic belongs to a **topic** (taxonomy). Teachers assign activities to a **course**; all enrolled students see those assignments. Students complete work via the existing worksheet/session flow (activity_id = worksheet_id).
+
+**API for the frontend:**
+
+1. **Get taxonomy for filter UI (topic / subtopic dropdowns):** `GET /api/v1/activities/topics` → `[{ topic: string, subtopics: string[] }, ...]`.
+2. **Search activities:** `GET /api/v1/activities?topic=...&subtopic=...&activity_type=miniquiz` (params optional) → `{ activities: [...], total }`. Each activity has `activity_id`, `topic`, `subtopic`, `description`, `activity_type`, `created_at`, optional `topic_id`, `subtopic_id`, and `content_url` (full URL to the exercise HTML, e.g. `{base}/{activity_id}.html`; base from env `S3_MINI_QUIZ_BASE_URL` or `MINIQUIZ_BASE_URL`).
+3. **Get one activity:** `GET /api/v1/activities/{activity_id}` → same shape including `content_url`; 404 if not found.
+4. **Create assignment (teacher; must own course):** `POST /api/v1/assignments` body `{ course_id, activity_id, teacher_id, due_date?, title_override? }`. Use `teacher_id` from GET /auth/me `profile.id`. 403 if not course owner.
+5. **List assignments for a course:** `GET /api/v1/assignments/courses/{course_id}` → `{ assignments: [...], total }`. Each has `id`, `course_id`, `activity_id`, `due_date`, `created_at`, nested `activity`, `course_name`.
+
+**Frontend prompt (copy-paste for activities & assignments):**  
+*"Use GET /api/v1/activities/topics for topic/subtopic filters. Search with GET /api/v1/activities?topic=...&subtopic=.... Get one activity with GET /api/v1/activities/{activity_id}. Activity responses include content_url (e.g. https://d21jyw7vfrv0n9.cloudfront.net/AL01.html) when backend env S3_MINI_QUIZ_BASE_URL or MINIQUIZ_BASE_URL is set. Teachers create assignments with POST /api/v1/assignments (body: course_id, activity_id, teacher_id from GET /auth/me profile.id, optional due_date, title_override). List assignments with GET /api/v1/assignments/courses/{course_id}. Use assignment.activity.content_url or activity_id with worksheet/session for completion."*
+
+---
+
+## 7. Recommended UI flow
 
 1. **Login screen:** “Sign in with Google” (link to `/api/v1/auth/oauth/redirect` or fetch `/api/v1/auth/oauth/url` and redirect to `url`) and optionally “Sign in with email” (form → `POST /auth/login`).
 2. After login, store tokens and call **GET /auth/me**.
@@ -230,7 +276,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 ---
 
-## 6. Admin
+## 8. Admin
 
 - **Not** selectable in the UI. Admins are configured on the backend (e.g. list of emails or Cognito ids in env).
 - When such a user calls GET /me, backend returns `user_type: "admin"` and `profile: null` (unless you add an admin profile later).
@@ -238,7 +284,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 ---
 
-## 7. CORS and callback URL
+## 9. CORS and callback URL
 
 - Backend should allow the frontend origin in CORS when calling `/api/v1/auth/*` and other APIs.
 - For Google sign-in, Cognito redirects to the **backend** callback URL (the value of `OAUTH_CALLBACK_URI`). After the backend returns (HTML or JSON), the frontend can either:
@@ -247,7 +293,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 ---
 
-## 8. Summary table
+## 10. Summary table
 
 | Action | Endpoint | When |
 |--------|----------|------|
@@ -261,12 +307,19 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 | Update personal info | PATCH `/auth/me` body `{ firstName?, lastName? }` | Profile edit screen |
 | Refresh token | POST `/auth/refresh` | When access token expires |
 | Logout | POST `/auth/logout` | Logout action |
+| Teacher: list my courses | GET `/api/v1/courses/teacher/{teacher_id}` | Teacher dashboard / “My classes” |
+| Teacher: list students in a course (roster) | GET `/api/v1/enrollments/course/{course_id}` | Course detail / “Roster” or “Students” tab |
+| Get topics/subtopics for activity filters | GET `/api/v1/activities/topics` | Teacher: "Add assignment" filters |
+| Search activities | GET `/api/v1/activities?topic=...&subtopic=...` | Teacher: pick activity to assign |
+| Get one activity by id | GET `/api/v1/activities/{activity_id}` | When opening an assignment |
+| Create assignment | POST `/api/v1/assignments` (body: course_id, activity_id, teacher_id, optional due_date, title_override) | Teacher: after selecting course and activity |
+| List assignments for a course | GET `/api/v1/assignments/courses/{course_id}` | Teacher or student: course assignments |
 
 This contract is the source of truth for the frontend; backend implements it as in `app/routers/auth.py` and `app/schemas/auth.py`.
 
 ---
 
-## 9. ADR – Decisions (summary)
+## 11. ADR – Decisions (summary)
 
 This section summarizes key decisions that affect the auth/profile contract.  
 The **canonical backend ADRs** live under `docs/adrs/`, for example:

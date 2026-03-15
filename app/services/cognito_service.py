@@ -323,6 +323,7 @@ class CognitoService:
         state: Optional[str] = None,
         identity_provider: Optional[str] = "Google",
         scope: str = "openid email profile",
+        prompt: Optional[str] = None,
     ) -> str:
         """Build Cognito Hosted UI authorize URL (e.g. Sign in with Google).
 
@@ -331,6 +332,7 @@ class CognitoService:
             state: Optional state for CSRF protection.
             identity_provider: IdP name in Cognito (e.g. 'Google'). None = show Cognito login.
             scope: OAuth scopes (default openid email profile).
+            prompt: Optional OIDC prompt (e.g. 'select_account' to show account picker).
 
         Returns:
             Full URL to redirect the user to.
@@ -350,6 +352,8 @@ class CognitoService:
             params["state"] = state
         if identity_provider:
             params["identity_provider"] = identity_provider
+        if prompt:
+            params["prompt"] = prompt
         # Use quote with safe='+' so scope stays as openid+email+profile (Cognito expects literal +)
         return f"https://{self.domain}/oauth2/authorize?{urlencode(params, quote_via=_query_quote)}"
 

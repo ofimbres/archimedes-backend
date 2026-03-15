@@ -15,7 +15,16 @@ from contextlib import asynccontextmanager
 
 from .database import engine, Base
 from .routers import (
-    health, students, auth, schools, teachers, enrollments, courses, worksheets
+    health,
+    students,
+    auth,
+    schools,
+    teachers,
+    enrollments,
+    courses,
+    worksheets,
+    activities,
+    assignments,
 )
 
 
@@ -25,6 +34,15 @@ async def lifespan(app: FastAPI):
     # Startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Seed taxonomy and activities: topics -> subtopics -> activities (if each table empty)
+    from .database import AsyncSessionLocal
+    from .services.activity_service import ActivityService
+    async with AsyncSessionLocal() as db:
+        service = ActivityService(db)
+        counts = await service.seed_all_if_empty()
+        if any(counts.values()):
+            print(f"Seeded taxonomy/activities: {counts}")
 
     yield
 
@@ -60,6 +78,8 @@ app.include_router(teachers.router, prefix="/api/v1", tags=["Teachers"])
 app.include_router(enrollments.router, prefix="/api/v1", tags=["Enrollments"])
 app.include_router(courses.router, prefix="/api/v1", tags=["Courses"])
 app.include_router(worksheets.router, prefix="/api/v1", tags=["Worksheets"])
+app.include_router(activities.router, prefix="/api/v1", tags=["Activities"])
+app.include_router(assignments.router, prefix="/api/v1", tags=["Assignments"])
 
 
 @app.get("/")
@@ -104,7 +124,7 @@ async def login_page():
 <body>
   <h1>Archimedes</h1>
   <p>Sign in with your account</p>
-  <a href="/api/v1/auth/oauth/redirect" class="button">Sign in with Google</a>
+  <a href="/api/v1/auth/oauth/redirect?prompt=select_account" class="button">Sign in with Google</a>
   <p class="links"><a href="/">API</a> · <a href="/docs">Docs</a></p>
 </body>
 </html>"""

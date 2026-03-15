@@ -57,7 +57,7 @@ class CourseService:
         current_count = count_result.scalar() or 0
         if current_count >= max_allowed:
             raise ValueError(
-                f"Course limit reached (maximum {max_allowed} classes for your plan)"
+                f"Course limit reached (maximum {max_allowed} courses for your plan)"
             )
 
         school_id = teacher.school_id
@@ -83,7 +83,7 @@ class CourseService:
         """Create a default course for a new teacher (school from teacher)."""
         default_course = CourseCreate(
             teacher_id=teacher_id,
-            class_name=f"Course {course_number}",
+            course_name=f"Course {course_number}",
             subject="General",
             academic_year="2024-25",
             semester="Fall"

@@ -1,4 +1,4 @@
-"""Enrollment SQLAlchemy model for student-class relationships."""
+"""Enrollment SQLAlchemy model for student-course relationships."""
 
 from sqlalchemy import String, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
@@ -11,7 +11,7 @@ from app.database import Base
 
 
 class Enrollment(Base):
-    """Enrollment model for many-to-many student-class relationship."""
+    """Enrollment model for many-to-many student-course relationship."""
 
     __tablename__ = "enrollments"
 
@@ -28,9 +28,9 @@ class Enrollment(Base):
         ForeignKey("students.id", ondelete="CASCADE"),
         nullable=False
     )
-    class_id: Mapped[UUID] = mapped_column(
+    course_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("classes.id", ondelete="CASCADE"),
+        ForeignKey("courses.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -77,5 +77,5 @@ class Enrollment(Base):
         """String representation of enrollment."""
         return (
             f"<Enrollment(id={self.id}, student_id={self.student_id}, "
-            f"class_id={self.class_id}, status={self.enrollment_status})>"
+            f"course_id={self.course_id}, status={self.enrollment_status})>"
         )

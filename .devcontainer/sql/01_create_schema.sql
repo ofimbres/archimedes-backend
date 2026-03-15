@@ -87,70 +87,109 @@ CREATE UNIQUE INDEX idx_teachers_username ON teachers(username);
 CREATE INDEX idx_teachers_active ON teachers(school_id, is_active);
 
 -- =============================================================================
--- 4. CLASSES TABLE
+-- 4. COURSES TABLE
 -- =============================================================================
 
-CREATE TABLE classes
+CREATE TABLE courses
     (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                 school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
-                                                                                          teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
-                                                                                                                                                     class_name VARCHAR(100) NOT NULL,
-                                                                                                                                                                             subject VARCHAR(50) NOT NULL,
-                                                                                                                                                                                                 join_code VARCHAR(10) UNIQUE NOT NULL, -- Easy code for students to join
- academic_year VARCHAR(10) NOT NULL DEFAULT '2024-25',
-                                            semester VARCHAR(20) NOT NULL DEFAULT 'Fall',
-                                                                                  is_active BOOLEAN DEFAULT TRUE,
-                                                                                                            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                                                                                                                                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW());
+     school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+     teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+     course_name VARCHAR(100) NOT NULL,
+     subject VARCHAR(50) NOT NULL,
+     join_code VARCHAR(10) UNIQUE NOT NULL,
+     academic_year VARCHAR(10) NOT NULL DEFAULT '2024-25',
+     semester VARCHAR(20) NOT NULL DEFAULT 'Fall',
+     is_active BOOLEAN DEFAULT TRUE,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW());
 
--- Add constraint to ensure class school matches teacher school
+-- Constraint: course school must match teacher school
+ALTER TABLE courses ADD CONSTRAINT check_teacher_school_match CHECK (school_id =
+    (SELECT school_id FROM teachers WHERE id = teacher_id));
 
-ALTER TABLE classes ADD CONSTRAINT check_teacher_school_match CHECK (school_id =
-                                                                         (SELECT school_id
-                                                                          FROM teachers
-                                                                          WHERE id = teacher_id));
-
--- Indexes for classes
-
-CREATE INDEX idx_classes_school ON classes(school_id);
-
-
-CREATE INDEX idx_classes_teacher ON classes(teacher_id);
-
-
-CREATE INDEX idx_classes_active ON classes(school_id, is_active);
-
-
-CREATE INDEX idx_classes_year ON classes(school_id, academic_year);
-
-
-CREATE UNIQUE INDEX idx_classes_join_code ON classes(join_code);
+CREATE INDEX idx_courses_school ON courses(school_id);
+CREATE INDEX idx_courses_teacher ON courses(teacher_id);
+CREATE INDEX idx_courses_active ON courses(school_id, is_active);
+CREATE INDEX idx_courses_year ON courses(school_id, academic_year);
+CREATE UNIQUE INDEX idx_courses_join_code ON courses(join_code);
 
 -- =============================================================================
--- 5. ENROLLMENTS TABLE (Many-to-Many: Students ↔ Classes)
+-- 5. ENROLLMENTS TABLE (Many-to-Many: Students <-> Courses)
 -- =============================================================================
 
 CREATE TABLE enrollments
     (id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                 student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-                                                                                            class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-                                                                                                                                                    enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                                                                                                                                                                                 enrollment_status VARCHAR(20) DEFAULT 'active',
-                                                                                                                                                                                                                                       is_active BOOLEAN DEFAULT TRUE,
-                                                                                                                                                                                                                                                                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                                                                                                                                                                                                                                                                                             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Prevent duplicate enrollments
- UNIQUE(student_id, class_id));
-
--- Indexes for enrollments
+     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+     enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     enrollment_status VARCHAR(20) DEFAULT 'active',
+     is_active BOOLEAN DEFAULT TRUE,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     UNIQUE(student_id, course_id));
 
 CREATE INDEX idx_enrollments_student ON enrollments(student_id);
-
-
-CREATE INDEX idx_enrollments_class ON enrollments(class_id);
-
-
+CREATE INDEX idx_enrollments_course ON enrollments(course_id);
 CREATE INDEX idx_enrollments_status ON enrollments(enrollment_status);
-
-
-CREATE INDEX idx_enrollments_active ON enrollments(class_id, enrollment_status)
+CREATE INDEX idx_enrollments_active ON enrollments(course_id, enrollment_status)
 WHERE enrollment_status = 'active';
+
+-- =============================================================================
+-- 6. TOPICS TABLE (taxonomy for activities)
+-- =============================================================================
+
+CREATE TABLE topics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(200) UNIQUE NOT NULL,
+    display_order INTEGER
+);
+
+CREATE INDEX idx_topics_name ON topics(name);
+
+-- =============================================================================
+-- 7. SUBTOPICS TABLE (topic_id -> topics)
+-- =============================================================================
+
+CREATE TABLE subtopics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    name VARCHAR(200) NOT NULL,
+    display_order INTEGER,
+    UNIQUE(topic_id, name)
+);
+
+CREATE INDEX idx_subtopics_topic ON subtopics(topic_id);
+CREATE INDEX idx_subtopics_name ON subtopics(name);
+
+-- =============================================================================
+-- 8. ACTIVITIES TABLE (catalog of assignable items, e.g. miniquiz)
+-- =============================================================================
+
+CREATE TABLE activities (
+    activity_id VARCHAR(20) PRIMARY KEY,
+    subtopic_id UUID NOT NULL REFERENCES subtopics(id) ON DELETE RESTRICT,
+    description VARCHAR(500),
+    activity_type VARCHAR(50) NOT NULL DEFAULT 'miniquiz',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_activities_subtopic ON activities(subtopic_id);
+CREATE INDEX idx_activities_type ON activities(activity_type);
+
+-- =============================================================================
+-- 9. ASSIGNMENTS TABLE (teacher assigns activity to course)
+-- =============================================================================
+
+CREATE TABLE assignments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    activity_id VARCHAR(20) NOT NULL REFERENCES activities(activity_id) ON DELETE CASCADE,
+    assigned_by UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    due_date TIMESTAMP WITH TIME ZONE,
+    title_override VARCHAR(200),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(course_id, activity_id)
+);
+
+CREATE INDEX idx_assignments_course ON assignments(course_id);
+CREATE INDEX idx_assignments_assigned_by ON assignments(assigned_by);

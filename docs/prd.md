@@ -8,10 +8,11 @@ This PRD describes the backend service that powers the Archimedes education plat
 
 Archimedes is a school-focused learning platform for teachers and students. This backend service provides:
 
-- **Multi-tenant school management** (schools, teachers, students, classes).
+- **Multi-tenant school management** (schools, teachers, students, courses).
 - **Authentication and identity integration** via AWS Cognito (Google + email/password).
 - **Class enrollment** using short join codes.
-- **Foundations for analytics and reporting** across schools, classes, and students.
+- **Assignments**: teachers assign activities (e.g. miniquiz) to courses; students see and complete them via the existing worksheet flow (see ADR 0004).
+- **Foundations for analytics and reporting** across schools, courses, and students.
 
 The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 
@@ -29,8 +30,8 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
   - Support first-time sign-in flows and “complete your profile” UX.
 
 - **Simple classroom model**
-  - Represent schools, teachers, classes, students, and enrollments.
-  - Allow students to join classes via short join codes.
+  - Represent schools, teachers, courses, students, and enrollments.
+  - Allow students to join courses via short join codes.
 
 - **Safe multi-tenancy**
   - Ensure data is clearly scoped by school.
@@ -41,7 +42,7 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 
 ### Non-goals (for this backend)
 
-- **Rich LMS features** (assignments, grading UI, content authoring) – these can be separate services or future phases.
+- **Rich LMS features** (full grading UI, content authoring) – assignment-to-course is in scope (ADR 0004); deeper grading/authoring can be separate or future phases.
 - **Deep analytics dashboards** – backend will expose the data, but full analytics productization is out of scope for now.
 - **Multi-platform clients** (native mobile apps) – web-first; APIs may support mobile later but are not optimized here yet.
 
@@ -52,16 +53,18 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 ### Primary users
 
 - **Teachers**
-  - Create and manage classes.
+  - Create and manage courses.
   - On account creation, the system auto-creates up to six default courses (configurable via `max_classes`); each has a unique join code. Teachers can rename and use them or create additional courses **up to their plan limit** (see below).
-  - **Class limit (free tier):** A teacher may have at most `max_classes` courses (default **6**). The backend rejects `POST /api/v1/courses/` with **403 Forbidden** when the limit is reached.
-  - **Frontend (course limit):** When `POST /api/v1/courses/` returns **403**, the response body is `{"detail": "Course limit reached (maximum N classes for your plan)"}` (N = teacher’s `max_classes` or 6). Show a message such as: *“You’ve reached the maximum number of classes for your plan (N). Upgrade to add more.”* Optionally link to an upgrade or pricing page.
+  - **Course limit (free tier):** A teacher may have at most `max_classes` courses (default **6**). The backend rejects `POST /api/v1/courses/` with **403 Forbidden** when the limit is reached.
+  - **Frontend (course limit):** When `POST /api/v1/courses/` returns **403**, the response body is `{"detail": "Course limit reached (maximum N courses for your plan)"}` (N = teacher’s `max_classes` or 6). Show a message such as: *“You’ve reached the maximum number of courses for your plan (N). Upgrade to add more.”* Optionally link to an upgrade or pricing page.
   - Share join codes with students.
   - View rosters and basic engagement metrics.
+  - **Set assignments**: search the activity catalog by topic/subtopic and assign activities (e.g. miniquiz) to a course; optionally set a due date.
 
 - **Students**
-  - Join a class using a join code or school selection.
-  - Access class content and activities (via frontend).
+  - Join a course using a join code or school selection.
+  - See assignments for their enrolled courses and complete them (e.g. miniquiz via existing worksheet flow).
+  - Access course content and activities (via frontend).
 
 - **Admins**
   - Configure schools and high-level settings.
@@ -71,17 +74,18 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 
 - Teacher signs in (Google or password) and lands in the teacher dashboard.
 - Teacher signs up → receives auto-created default courses (e.g. 6) with join codes → can rename courses and share codes with students.
+- Teacher assigns activities to a course: search activities by topic → select activity → create assignment for course (optional due date).
 - Student signs in (Google) for the first time, completes profile:
   - Chooses role (student/teacher).
   - Provides join code or school.
-- Student is enrolled into the appropriate class via join code.
+- Student is enrolled into the appropriate course via join code.
 - Admin can inspect or export school-level data for analysis.
 
 ### User journey: student registration with join code
 
 - **Teacher:** Create or view a course in the app → see the auto-generated join code → share it with the class (e.g. on board, handout, or in-app).
-- **Student (first time):** Sign in → “Complete your profile” → choose role **Student** → enter the class code the teacher provided → submit → backend creates student and enrolls in that course.
-- **Student (already has account):** “Join another class” → enter the join code → submit → backend enrolls in the course.
+- **Student (first time):** Sign in → “Complete your profile” → choose role **Student** → enter the join code the teacher provided → submit → backend creates student and enrolls in that course.
+- **Student (already has account):** “Join another course” → enter the join code → submit → backend enrolls in the course.
 
 API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (complete-profile and enrollments/join).
 
@@ -100,10 +104,15 @@ API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (c
   - Track whether a Cognito user has a linked internal profile.
   - Provide a clear “complete profile” API for frontend to create student/teacher records.
 
-- **Class enrollment**
-  - Generate short, human-friendly **join codes** for classes.
-  - Allow students to join a class using a code.
-  - Support listing classes and enrollments for a teacher or student.
+- **Course enrollment**
+  - Generate short, human-friendly **join codes** for courses.
+  - Allow students to join a course using a code.
+  - Support listing courses and enrollments for a teacher or student.
+
+- **Assignments and activities**
+  - Maintain a **taxonomy** (topics, subtopics tables) and an **activities** catalog (e.g. miniquiz); activities link via subtopic_id. Seed topics and subtopics from `docs/topics.csv`, then activities from `docs/miniquiz-activities.csv` when empty.
+  - Let teachers create **assignments** (course + activity + optional due date); only the course owner can create.
+  - Expose list of assignments per course for teachers and enrolled students. Completion uses the existing worksheet/session flow (activity_id = worksheet_id).
 
 - **Data access**
   - Provide APIs that are aligned with the conceptual schema in `postgresql-schema.md`.
@@ -112,7 +121,7 @@ API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (c
 ### Non-functional requirements
 
 - **Performance**
-  - Low-latency responses for core flows (auth, profile, class lists, enrollments) under typical school load.
+  - Low-latency responses for core flows (auth, profile, course lists, enrollments) under typical school load.
 
 - **Security**
   - Enforce authorization checks based on roles (student/teacher/admin).
@@ -130,15 +139,23 @@ API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (c
 High-level entities (see `postgresql-schema.md` for details):
 
 - **School**
-  - Top-level tenant; owns teachers, students, and classes.
+  - Top-level tenant; owns teachers, students, and courses.
 - **Teacher**
-  - Belongs to a school; can own multiple classes.
+  - Belongs to a school; can own multiple courses.
 - **Student**
-  - Belongs to a school; can enroll in multiple classes.
-- **Class**
+  - Belongs to a school; can enroll in multiple courses.
+- **Course**
   - Belongs to a school and a teacher; has a **join code**.
 - **Enrollment**
-  - Links a student to a class; tracks status (active, dropped, completed).
+  - Links a student to a course; tracks status (active, dropped, completed).
+- **Topic**
+  - Taxonomy root for the activity catalog (e.g. Algebra, Arithmetic Operations); seeded from `docs/topics.csv`.
+- **Subtopic**
+  - Belongs to a topic; activities reference a subtopic. Seeded from `docs/topics.csv` (TOPIC, SUBTOPIC rows).
+- **Activity**
+  - Catalog item (e.g. miniquiz) with activity_id, linked to taxonomy via subtopic_id (topic/subtopic from join); assignable to courses.
+- **Assignment**
+  - Links a course to an activity (teacher-assigned); optional due date; all enrolled students see it.
 
 Authentication-related concepts (see `auth-and-profile-contract.md`):
 
@@ -169,7 +186,7 @@ Authentication-related concepts (see `auth-and-profile-contract.md`):
 ### Existing courses over the limit
 
 - Teachers who already have more courses than their `max_classes` (e.g. 9 when limit is 6) keep all existing courses; the limit is enforced only when **creating** a new course.
-- **Recommendation:** Do not delete or deactivate those extra courses automatically (avoids breaking enrollments and existing class data). Treat them as grandfathered. If product later wants a one-time cleanup (e.g. deactivate or archive courses beyond the limit), that can be a separate migration or admin action.
+- **Recommendation:** Do not delete or deactivate those extra courses automatically (avoids breaking enrollments and existing course data). Treat them as grandfathered. If product later wants a one-time cleanup (e.g. deactivate or archive courses beyond the limit), that can be a separate migration or admin action.
 
 ---
 
@@ -197,12 +214,15 @@ This section records what this backend provides and what the frontend (other rep
 - **Teacher courses and join codes:** `GET /api/v1/courses/teacher/{teacher_id}` returns a list of courses; `GET /api/v1/courses/{course_id}` returns a single course. Both responses include `join_code`. Teachers can use these to display or share codes once the frontend calls them.
 - **Student join-code flow:** `POST /api/v1/auth/complete-profile` (with `joinCode`) and `POST /api/v1/enrollments/join` (with `join_code`) are implemented. Students can register or join a class using the code the teacher provides.
 - **Teacher default courses:** On teacher account creation, the backend auto-creates up to six default courses with unique join codes (see ADR 0003).
+- **Assignments and activities:** `GET /api/v1/activities` (filter by topic, subtopic), `GET /api/v1/activities/topics`, `GET /api/v1/activities/{activity_id}` (lookup by exercise id), `POST /api/v1/assignments`, `GET /api/v1/assignments/courses/{course_id}`. Taxonomy and activities seeded from `docs/topics.csv` and `docs/miniquiz-activities.csv` on first run (app startup when tables are empty) or via `python scripts/seed_activities.py` (see ADR 0004).
 
 **Frontend gap (teacher flow to display join code):**
 
 - **Teacher Home / “My classes”:** The contract (auth-and-profile-contract.md) says: “Teacher gets [the join code] from the backend when viewing a course (e.g. GET course by id or list teacher courses). Teacher shows this code in class.” Today, the teacher UI does not yet call these course APIs or render courses with their join codes. To complete the flow:
   - From the teacher area (e.g. Teacher Home or “My classes”), call `GET /api/v1/courses/teacher/{teacher_id}` (using the teacher id from the current user’s profile).
   - Render each course (e.g. name, subject) and its **join_code** so the teacher can show or copy it in class.
+
+**Frontend (assignments):** Teacher UI can call `GET /api/v1/activities?topic=...` to search, then `POST /api/v1/assignments` with teacher_id from `GET /auth/me` profile. Student UI can call `GET /api/v1/assignments/courses/{course_id}` to list assignments and open activities via the existing worksheet content/session endpoints.
 
 ---
 

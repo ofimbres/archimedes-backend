@@ -1,4 +1,4 @@
-"""Class SQLAlchemy model for teacher courses."""
+"""Course SQLAlchemy model for teacher courses."""
 
 from sqlalchemy import String, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
@@ -13,12 +13,13 @@ if TYPE_CHECKING:
     from app.models.school import School
     from app.models.teacher import Teacher
     from app.models.student import Student
+    from app.models.assignment import Assignment
 
 
 class Course(Base):
     """Course model representing a teacher's class."""
 
-    __tablename__ = "classes"
+    __tablename__ = "courses"
 
     # Primary key
     id: Mapped[UUID] = mapped_column(
@@ -40,7 +41,7 @@ class Course(Base):
     )
 
     # Required fields
-    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    course_name: Mapped[str] = mapped_column(String(100), nullable=False)
     subject: Mapped[str] = mapped_column(String(50), nullable=False)
     join_code: Mapped[str] = mapped_column(
         String(10), nullable=False, unique=True
@@ -80,10 +81,14 @@ class Course(Base):
         secondary="enrollments",
         back_populates="courses"
     )
+    assignments: Mapped[list["Assignment"]] = relationship(
+        "Assignment",
+        back_populates="course",
+    )
 
     def __repr__(self) -> str:
         """String representation of course."""
         return (
-            f"<Course(id={self.id}, name='{self.class_name}', "
+            f"<Course(id={self.id}, name='{self.course_name}', "
             f"join_code='{self.join_code}')>"
         )

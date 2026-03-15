@@ -49,7 +49,7 @@ class EnrollmentService:
             select(Enrollment).where(
                 and_(
                     Enrollment.student_id == student_id,
-                    Enrollment.class_id == course.id
+                    Enrollment.course_id == course.id
                 )
             )
         )
@@ -59,7 +59,7 @@ class EnrollmentService:
         # Create enrollment
         enrollment = Enrollment(
             student_id=student_id,
-            class_id=course.id,
+            course_id=course.id,
             enrollment_status="active",
             is_active=True
         )
@@ -94,7 +94,7 @@ class EnrollmentService:
             select(Enrollment).where(
                 and_(
                     Enrollment.student_id == enrollment_data.student_id,
-                    Enrollment.class_id == enrollment_data.course_id
+                    Enrollment.course_id == enrollment_data.course_id
                 )
             )
         )
@@ -104,7 +104,7 @@ class EnrollmentService:
         # Create enrollment
         enrollment = Enrollment(
             student_id=enrollment_data.student_id,
-            class_id=enrollment_data.course_id,
+            course_id=enrollment_data.course_id,
             enrollment_status=enrollment_data.enrollment_status,
             is_active=True
         )
@@ -174,10 +174,9 @@ class EnrollmentService:
         for enrollment in enrollments:
             response = EnrollmentResponse.model_validate(enrollment)
             response.student_name = enrollment.student.full_name
-            response.course_name = enrollment.course.class_name
+            response.course_name = enrollment.course.course_name
             response.teacher_name = enrollment.course.teacher.full_name
             response.teacher_id = enrollment.course.teacher_id
-            response.course_id = enrollment.class_id  # Alias for consistency
             enrollment_responses.append(response)
 
         return EnrollmentListResponse(
@@ -199,7 +198,7 @@ class EnrollmentService:
         query = (
             select(Enrollment)
             .options(selectinload(Enrollment.student))
-            .where(Enrollment.class_id == course_id)
+            .where(Enrollment.course_id == course_id)
         )
 
         if is_active is not None:
@@ -208,7 +207,7 @@ class EnrollmentService:
         # Get total count
         count_query = (
             select(func.count(Enrollment.id))
-            .where(Enrollment.class_id == course_id)
+            .where(Enrollment.course_id == course_id)
         )
         if is_active is not None:
             count_query = count_query.where(Enrollment.is_active == is_active)
@@ -225,11 +224,12 @@ class EnrollmentService:
 
         total_pages = (total + size - 1) // size
 
-        # Build response with nested data
+        # Build response with nested data (teacher roster / student management)
         enrollment_responses = []
         for enrollment in enrollments:
             response = EnrollmentResponse.model_validate(enrollment)
             response.student_name = enrollment.student.full_name
+            response.student_email = getattr(enrollment.student, "email", None)
             enrollment_responses.append(response)
 
         return EnrollmentListResponse(

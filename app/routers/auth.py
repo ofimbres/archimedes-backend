@@ -64,6 +64,10 @@ async def get_oauth_login_url(
         None, description="Optional state for CSRF protection"),
     identity_provider: Optional[str] = Query(
         "Google", description="Cognito IdP name (e.g. Google)"),
+    prompt: Optional[str] = Query(
+        None,
+        description="OIDC prompt (e.g. select_account to show Google account picker)",
+    ),
 ) -> Any:
     """Return the Cognito Hosted UI authorize URL. Frontend redirects the user to this URL."""
     cognito = CognitoService()
@@ -72,8 +76,14 @@ async def get_oauth_login_url(
         redirect_uri=redirect_uri,
         state=state,
         identity_provider=identity_provider,
+        prompt=prompt,
     )
-    return {"url": url, "redirect_uri": redirect_uri}
+    return {
+        "url": url,
+        "redirect_uri": redirect_uri,
+        "prompt": prompt,
+        "prompt_in_url": "prompt=" in url,
+    }
 
 
 @router.get(
@@ -85,6 +95,10 @@ async def oauth_redirect(
     state: Optional[str] = Query(None, description="Optional state for CSRF"),
     identity_provider: Optional[str] = Query(
         "Google", description="IdP name in Cognito"),
+    prompt: Optional[str] = Query(
+        None,
+        description="OIDC prompt (e.g. select_account to show Google account picker)",
+    ),
 ) -> RedirectResponse:
     """Redirect the user to Cognito Hosted UI (e.g. Google sign-in)."""
     cognito = CognitoService()
@@ -93,6 +107,7 @@ async def oauth_redirect(
         redirect_uri=redirect_uri,
         state=state,
         identity_provider=identity_provider,
+        prompt=prompt,
     )
     return RedirectResponse(url=url, status_code=302)
 
@@ -279,8 +294,8 @@ async def complete_profile(
         )
     first_name = (claims.given_name or "User").strip() or "User"
     last_name = (claims.family_name or "").strip()
-    # Stable unique username for OAuth users (Cognito sub)
-    username = sub
+    # Stable unique username for OAuth users (Cognito sub); schema allows only letters, numbers, ., _
+    username = sub.replace("-", "_")
 
     if body.user_type == "students":
         school_id = body.school_id
