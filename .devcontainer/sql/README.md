@@ -24,6 +24,9 @@ This directory contains all SQL scripts for setting up and managing the PostgreS
 ### **05_migrate_classes_to_courses.sql**
 - One-off migration for existing databases that still have table `classes` and column `class_id`. Renames table to `courses`, column to `course_id`, and `class_name` to `course_name`. New installs use `01_create_schema.sql` only.
 
+### **05b_fix_assignments_fk_to_courses.sql**
+- Use when you see: *"assignments violates foreign key constraint ... is not present in table 'classes'"*. This happens if the app created table `courses` (e.g. via SQLAlchemy `create_all`) before migration 05 ran, so `assignments.course_id` still references `classes`. This script repoints the FK to `courses`. Run against the same DB as the app.
+
 ### **06_migrate_activities_to_taxonomy.sql**
 - One-off migration for existing databases that have `activities` with `topic`/`subtopic` columns. Creates `topics` and `subtopics` tables, backfills from activities, adds `activities.subtopic_id`, then drops `topic`/`subtopic`. New installs use `01_create_schema.sql` only.
 
