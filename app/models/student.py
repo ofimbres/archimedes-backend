@@ -64,6 +64,11 @@ class Student(Base):
         secondary="enrollments",
         back_populates="students"
     )
+    assignment_completions = relationship(
+        "AssignmentCompletion",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         """String representation of Student."""

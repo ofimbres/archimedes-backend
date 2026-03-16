@@ -30,6 +30,9 @@ This directory contains all SQL scripts for setting up and managing the PostgreS
 ### **06_migrate_activities_to_taxonomy.sql**
 - One-off migration for existing databases that have `activities` with `topic`/`subtopic` columns. Creates `topics` and `subtopics` tables, backfills from activities, adds `activities.subtopic_id`, then drops `topic`/`subtopic`. New installs use `01_create_schema.sql` only.
 
+### **07_add_assignment_completions.sql**
+- Adds `assignment_completions` table (student_id, assignment_id, completed_at, score) for tracking which students completed which assignments. Run on existing DBs that don’t have this table; new installs get it from `01_create_schema.sql`.
+
 ## 🚀 Quick Setup
 
 ```bash

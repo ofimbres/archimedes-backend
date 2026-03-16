@@ -7,12 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.services.teacher_service import TeacherService
+from app.services.assignment_service import AssignmentService
 from app.schemas.teacher import (
     TeacherCreate,
     TeacherUpdate,
     TeacherResponse,
     TeacherListResponse
 )
+from app.schemas.assignment import AssignmentListResponse
 
 
 router = APIRouter(
@@ -47,6 +49,44 @@ async def create_teacher(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e)
             )
+
+
+@router.get(
+    "/{teacher_id}/courses/{course_id}/assignments",
+    response_model=AssignmentListResponse,
+)
+async def get_teacher_course_assignments(
+    teacher_id: UUID,
+    course_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    List assignments for a specific course. Only returns data if the course
+    belongs to this teacher. Use this to showcase existing assignments for
+    a course in the teacher context.
+    """
+    assignment_service = AssignmentService(db)
+    try:
+        return await assignment_service.list_by_course_for_teacher(
+            course_id=course_id,
+            teacher_id=teacher_id,
+        )
+    except ValueError as e:
+        msg = str(e)
+        if "not found" in msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=msg,
+            )
+        if "does not own" in msg or "not own" in msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=msg,
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=msg,
+        )
 
 
 @router.get("/{teacher_id}", response_model=TeacherResponse)

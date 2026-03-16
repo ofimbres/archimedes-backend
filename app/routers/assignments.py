@@ -11,6 +11,10 @@ from app.schemas.assignment import (
     AssignmentCreate,
     AssignmentResponse,
     AssignmentListResponse,
+    AssignmentCompletionCreate,
+    AssignmentCompletionResponse,
+    AssignmentCompletionListResponse,
+    AssignmentProgressResponse,
 )
 from app.schemas.activity import ActivityResponse
 
@@ -42,8 +46,14 @@ async def create_assignment(
             due_date=assignment.due_date,
             title_override=assignment.title_override,
             created_at=assignment.created_at,
-            activity=ActivityResponse.from_activity(assignment.activity) if assignment.activity else None,
-            course_name=assignment.course.course_name if assignment.course else None,
+            activity=(
+                ActivityResponse.from_activity(assignment.activity)
+                if assignment.activity
+                else None
+            ),
+            course_name=(
+                assignment.course.course_name if assignment.course else None
+            ),
         )
     except ValueError as e:
         msg = str(e)
@@ -73,6 +83,88 @@ async def list_course_assignments(
     """List assignments for a course (teacher or enrolled student)."""
     service = AssignmentService(db)
     return await service.list_by_course(course_id)
+
+
+@router.get("/teachers/{teacher_id}", response_model=AssignmentListResponse)
+async def list_teacher_assignments(
+    teacher_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """List all assignments allocated by a teacher (across their courses)."""
+    service = AssignmentService(db)
+    return await service.list_by_teacher(teacher_id)
+
+
+@router.get(
+    "/{assignment_id}/completions",
+    response_model=AssignmentCompletionListResponse,
+)
+async def list_assignment_completions(
+    assignment_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """List students who have completed this assignment."""
+    service = AssignmentService(db)
+    try:
+        return await service.list_completions_for_assignment(assignment_id)
+    except ValueError as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e),
+            )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/{assignment_id}/progress", response_model=AssignmentProgressResponse)
+async def get_assignment_progress(
+    assignment_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Assignment progress view for teachers: all enrolled students in the course
+    with a per-student status:
+    - completed (has completion + optional score)
+    - pending (no completion, not past due)
+    - past_due (no completion, due_date in the past)
+    """
+    service = AssignmentService(db)
+    try:
+        return await service.get_assignment_progress(assignment_id)
+    except ValueError as e:
+        msg = str(e)
+        if "Assignment not found" in msg:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=msg,
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=msg,
+        )
+
+
+@router.post(
+    "/{assignment_id}/completions",
+    response_model=AssignmentCompletionResponse,
+    status_code=201,
+)
+async def record_assignment_completion(
+    assignment_id: UUID,
+    data: AssignmentCompletionCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Record that a student completed an assignment. Student must be enrolled in the course."""
+    service = AssignmentService(db)
+    try:
+        return await service.record_completion(assignment_id, data)
+    except ValueError as e:
+        msg = str(e)
+        if "Assignment not found" in msg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
+        if "not enrolled" in msg:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=msg)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
 
 
 @router.get("/{assignment_id}", response_model=AssignmentResponse)

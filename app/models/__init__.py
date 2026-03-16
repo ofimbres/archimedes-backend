@@ -10,6 +10,7 @@ from .topic import Topic
 from .subtopic import Subtopic
 from .activity import Activity
 from .assignment import Assignment
+from .assignment_completion import AssignmentCompletion
 
 __all__ = [
     "School",
@@ -21,4 +22,5 @@ __all__ = [
     "Subtopic",
     "Activity",
     "Assignment",
+    "AssignmentCompletion",
 ]

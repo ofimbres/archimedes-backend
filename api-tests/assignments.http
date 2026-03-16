@@ -1,0 +1,75 @@
+### Assignments API - Archimedes Python Service
+### Teacher: create/list assignments. Student: list by course, start activity, post completion.
+### Base URL: http://localhost:8001
+
+@baseUrl = http://localhost:8001
+@apiVersion = /api/v1
+
+###############################################################################
+### VARIABLES (replace with values from auth/courses responses)
+###############################################################################
+@courseId = 510bfa8b-c900-4225-a7da-59bcb9015450
+@teacherId = d0e03591-18c8-494f-901e-5bfd145d24bf
+@studentId = 789e0123-e89b-12d3-a456-426614174002
+@assignmentId = 5e4d26cc-9c9a-478f-82fc-e9fd1117aa02
+@accessToken = your_access_token_here
+
+###############################################################################
+### STUDENT FLOW: List assignments → Start (content_url / activity_id) → Post completion
+###############################################################################
+# 1) Student page: list assignments for a course (getAssignmentsByCourse)
+# 2) "Start": open activity via assignment.activity.content_url or use activity_id with worksheet/session
+# 3) After worksheet/miniquiz done: postAssignmentCompletion(assignmentId, { student_id, score }, accessToken)
+
+### Student – Get assignments for a course (getAssignmentsByCourse)
+GET {{baseUrl}}{{apiVersion}}/assignments/courses/{{courseId}}
+Authorization: Bearer {{accessToken}}
+
+### Student – Record completion after finishing worksheet/miniquiz (postAssignmentCompletion)
+POST {{baseUrl}}{{apiVersion}}/assignments/{{assignmentId}}/completions
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "student_id": "{{studentId}}",
+  "score": 85
+}
+
+###############################################################################
+### TEACHER: Create and list assignments
+###############################################################################
+
+### Teacher – Create assignment
+POST {{baseUrl}}{{apiVersion}}/assignments
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "course_id": "{{courseId}}",
+  "activity_id": "EX01",
+  "teacher_id": "{{teacherId}}",
+  "due_date": "2026-03-21T00:00:00Z",
+  "title_override": null
+}
+
+### List assignments for a course (teacher or student)
+GET {{baseUrl}}{{apiVersion}}/assignments/courses/{{courseId}}
+
+### Teacher – "All my assignments" (getAssignmentsByTeacher)
+# Use for a single view of every assignment the teacher has created across all courses.
+# Helper: getAssignmentsByTeacher(teacherId) → GET /assignments/teachers/{teacher_id}
+GET {{baseUrl}}{{apiVersion}}/assignments/teachers/{{teacherId}}
+Authorization: Bearer {{accessToken}}
+
+### Teacher – List assignments for one of their courses (ownership checked)
+GET {{baseUrl}}{{apiVersion}}/teachers/{{teacherId}}/courses/{{courseId}}/assignments
+
+###############################################################################
+### COMPLETIONS: Who completed an assignment
+###############################################################################
+
+### List students who completed an assignment
+GET {{baseUrl}}{{apiVersion}}/assignments/{{assignmentId}}/completions
+
+### Get single assignment
+GET {{baseUrl}}{{apiVersion}}/assignments/{{assignmentId}}

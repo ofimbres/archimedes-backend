@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.course import Course
     from app.models.teacher import Teacher
     from app.models.activity import Activity
+    from app.models.assignment_completion import AssignmentCompletion
 
 
 class Assignment(Base):
@@ -59,6 +60,11 @@ class Assignment(Base):
     course = relationship("Course", back_populates="assignments")
     teacher = relationship("Teacher", back_populates="assignments")
     activity = relationship("Activity", back_populates="assignments")
+    completions = relationship(
+        "AssignmentCompletion",
+        back_populates="assignment",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return (
