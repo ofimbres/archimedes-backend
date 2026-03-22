@@ -8,6 +8,8 @@ This service handles:
 - Real-time features
 """
 
+from urllib.parse import urlparse
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -61,21 +63,77 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+def _origin_from_base_url(base: str) -> str | None:
+    """scheme://host[:port] for CORS Allow-Origin (no path)."""
+    u = (base or "").strip()
+    if not u:
+        return None
+    parsed = urlparse(u if "://" in u else f"//{u}", scheme="http")
+    if not parsed.netloc:
+        parsed = urlparse(u)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    host = parsed.netloc.split("@")[-1]
+    return f"{parsed.scheme}://{host}"
+
+
+def _origins_http_and_https_for_host(base: str) -> list[str]:
+    """
+    CloudFront may serve the same quiz on http and https; the browser Origin uses
+    the page's actual scheme. Allow both so preflight matches either.
+    """
+    canonical = _origin_from_base_url(base)
+    if not canonical:
+        return []
+    parsed = urlparse(canonical)
+    hostport = parsed.netloc.split("@")[-1]
+    if not hostport:
+        return [canonical]
+    return [f"http://{hostport}", f"https://{hostport}"]
+
+
 def _cors_allow_origins() -> list[str]:
-    raw = (settings.cors_origins or "").strip()
-    if raw:
-        return [o.strip() for o in raw.split(",") if o.strip()]
-    fu = (settings.frontend_url or "").strip().rstrip("/")
-    return [fu] if fu else ["http://localhost:3000"]
+    """
+    Explicit origins only (required with Authorization + allow_credentials).
+
+    Merges: CORS_ORIGINS, FRONTEND_URL, and the origin of MINIQUIZ_BASE_URL /
+    S3_MINI_QUIZ_BASE_URL so CloudFront miniquiz fetch() preflight succeeds without
+    duplicating the CDN in env when it matches the content host.
+    """
+    seen: set[str] = set()
+    ordered: list[str] = []
+
+    def add(origin: str | None) -> None:
+        if not origin:
+            return
+        o = origin.strip().rstrip("/")
+        if not o or o in seen:
+            return
+        seen.add(o)
+        ordered.append(o)
+
+    for part in (settings.cors_origins or "").split(","):
+        add(part.strip())
+    add(_origin_from_base_url(settings.frontend_url))
+    for mo in _origins_http_and_https_for_host(settings.miniquiz_base_url):
+        add(mo)
+
+    if not ordered:
+        add("http://localhost:3000")
+    return ordered
 
 
-# CORS: explicit origins (needed with credentials=True; cannot use "*")
+# CORS: explicit Allow-Origin per request origin (not "*"); preflight must list
+# POST, OPTIONS and headers the miniquiz uses (Authorization, Content-Type).
+_CORS_METHODS = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+_CORS_HEADERS = ["Authorization", "Content-Type", "Accept"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_allow_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "*"],
+    allow_methods=_CORS_METHODS,
+    allow_headers=_CORS_HEADERS,
 )
 
 # Include routers
