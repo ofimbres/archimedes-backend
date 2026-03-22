@@ -27,13 +27,13 @@ Students open assigned miniquiz/HTML content hosted on S3 or a CDN. The API alre
    Show short helper text that assignments open in a new tab and the Archimedes tab should stay open for return navigation.
 
 4. **Per-student completion on the list (one round-trip)**  
-   When the list request includes **`Authorization: Bearer`** for a Cognito user linked to a **student** row (`students.cognito_user_id` = JWT `sub`), each assignment in the response includes optional **`my_completed_at`** and **`my_score`** so the UI can choose “Open” vs “Review” without N+1 completion fetches. Requests without a token, or with a non-student user, omit these fields (null). Teachers listing the same endpoint are unaffected.
+   **`GET /api/v1/assignments/courses/{course_id}`** always requires **`Authorization: Bearer`**. When the user is linked to a **student** row (`students.cognito_user_id` = JWT `sub`) **and** enrolled in the course, each assignment includes **`my_completed_at`** and **`my_score`** (or null if not completed) so the UI can choose “Open” vs “Review” without N+1 completion fetches. **Teachers** and **admins** calling the same endpoint get the list with **`my_*`** null on every row (they are not the enrolled student).
 
 5. **No new signed-URL API**  
    Deferred until product requires private objects or time-limited links; see integration notes in `docs/auth-and-profile-contract.md` (activities & assignments).
 
 6. **Submit → progress from the miniquiz tab**  
-   Launch URL query params: **`assignment_id`**, **`archimedes_api_base`**, **`student_id`**, optional **`activity_id`**. Pass the Cognito token in the URL **hash** (`#access_token=...`) or **`window.M4UConfig.archimedes.accessToken`**. **`m4u_extended.js`** **`fetch`**es **`POST {archimedes_api_base}/api/v1/assignments/{assignment_id}/completions`** with Bearer and JSON **`{ student_id, score? }`**. Backend **`CORS_ORIGINS`** must include the miniquiz CDN host. **`student_id`** and JWT **`sub`** must match the linked student on **`POST /completions`**.
+   Launch URL query params: **`assignment_id`**, **`archimedes_api_base`**, **`student_id`**, optional **`activity_id`**. Pass the Cognito token in the URL **hash** (`#access_token=...`) or **`window.M4UConfig.archimedes.accessToken`**. **`m4u_extended.js`** **`fetch`**es **`POST {archimedes_api_base}/api/v1/assignments/{assignment_id}/completions`** with Bearer and JSON **`{ student_id, score? }`**. **CORS:** the API merges **`CORS_ORIGINS`**, **`FRONTEND_URL`**, and **both http and https** for the host parsed from **`MINIQUIZ_BASE_URL`** (so the CDN origin is allowed without duplicating every scheme in env). **`student_id`** and JWT **`sub`** must match the linked student on **`POST /completions`**. The SPA must use **`localhost` / `127.0.0.1` / a public API host** as **`archimedes_api_base`**, not **`0.0.0.0`** (browsers reject it).
 
 ---
 

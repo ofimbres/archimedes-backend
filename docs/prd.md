@@ -40,6 +40,9 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 - **Well-documented contracts**
   - Keep clear, stable API and auth contracts for the frontend and infra.
 
+- **Browser-safe API configuration (frontend)**  
+  - The SPA must call the API at **`http://localhost:...`**, **`http://127.0.0.1:...`**, or a **public HTTPS** host. Do **not** use **`http://0.0.0.0:...`** as the fetch base URL (browsers treat it as invalid; preflight fails with CORS-like errors). Binding the server to `0.0.0.0` in Docker/uvicorn is fine **server-side** only.
+
 ### Non-goals (for this backend)
 
 - **Rich LMS features** (full grading UI, content authoring) – assignment-to-course is in scope (ADR 0004); deeper grading/authoring can be separate or future phases.
@@ -112,7 +115,7 @@ API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (c
 - **Assignments and activities**
   - Maintain a **taxonomy** (topics, subtopics tables) and an **activities** catalog (e.g. miniquiz); activities link via subtopic_id. Seed topics and subtopics from `docs/topics.csv`, then activities from `docs/miniquiz-activities.csv` when empty.
   - Let teachers create **assignments** (course + activity + optional due date); only the course owner can create.
-  - Expose list of assignments per course for teachers and enrolled students. Each listed assignment includes nested **activity** with **`content_url`** (when the miniquiz base URL env is set). With **`Authorization: Bearer`** for a user linked to a **student** profile, the same list includes optional **`my_completed_at`** / **`my_score`** for that student (see ADR 0005). Students (or the frontend) record completion with **`POST /api/v1/assignments/{assignment_id}/completions`** after finishing work.
+  - Expose list of assignments per course: **`GET /api/v1/assignments/courses/{course_id}`** requires **`Authorization: Bearer`**; caller must be an **enrolled active student**, the **course-owning teacher**, or **platform admin**. Each row includes nested **activity** (including **`content_url`** when the miniquiz base URL env is set). For **students**, optional **`my_completed_at`** / **`my_score`** are included (see ADR 0005). **`GET /api/v1/assignments/{assignment_id}/progress`** is **teacher (course owner) or admin** only. Completion: **`POST /api/v1/assignments/{assignment_id}/completions`** with Bearer; **`student_id`** must match the JWT-linked student. **Enrollments:** **`POST /api/v1/enrollments/join`** and **`GET /api/v1/enrollments/student/{student_id}`** require Bearer and matching student (or admin for the GET). **CORS:** explicit origins (`CORS_ORIGINS`, **`FRONTEND_URL`**, and **http + https** for the miniquiz CDN host derived from **`MINIQUIZ_BASE_URL`**); see `docs/auth-and-profile-contract.md`. **JWT:** Cognito **ID** and **access** tokens are both accepted (`aud` vs `client_id` validation).
 
 - **Data access**
   - Provide APIs that are aligned with the conceptual schema in `postgresql-schema.md`.
@@ -214,7 +217,7 @@ This section records what this backend provides and what the frontend (other rep
 - **Teacher courses and join codes:** `GET /api/v1/courses/teacher/{teacher_id}` returns a list of courses; `GET /api/v1/courses/{course_id}` returns a single course. Both responses include `join_code`. Teachers can use these to display or share codes once the frontend calls them.
 - **Student join-code flow:** `POST /api/v1/auth/complete-profile` (with `joinCode`) and `POST /api/v1/enrollments/join` (with `join_code`) are implemented. Students can register or join a class using the code the teacher provides.
 - **Teacher default courses:** On teacher account creation, the backend auto-creates up to six default courses with unique join codes (see ADR 0003).
-- **Assignments and activities:** `GET /api/v1/activities` (filter by topic, subtopic), `GET /api/v1/activities/topics`, `GET /api/v1/activities/{activity_id}` (lookup by exercise id), `POST /api/v1/assignments`, `GET /api/v1/assignments/courses/{course_id}` (optional Bearer for student completion fields on each row), `POST /api/v1/assignments/{assignment_id}/completions`. Taxonomy and activities seeded from `docs/topics.csv` and `docs/miniquiz-activities.csv` on first run (app startup when tables are empty) or via `python scripts/seed_activities.py` (see ADR 0004). Student launch and list behavior: ADR 0005.
+- **Assignments and activities:** `GET /api/v1/activities` (filter by topic, subtopic), `GET /api/v1/activities/topics`, `GET /api/v1/activities/{activity_id}` (lookup by exercise id), `POST /api/v1/assignments`, `GET /api/v1/assignments/courses/{course_id}` (**Bearer required**; student enrolled, teacher owner, or admin), `GET /api/v1/assignments/{assignment_id}/progress` (teacher owner or admin), `POST /api/v1/assignments/{assignment_id}/completions` (student Bearer + body `student_id` match). Taxonomy and activities seeded from `docs/topics.csv` and `docs/miniquiz-activities.csv` on first run (app startup when tables are empty) or via `python scripts/seed_activities.py` (see ADR 0004). Student launch, miniquiz `fetch`, and CORS: ADR 0005 and `auth-and-profile-contract.md`.
 
 **Frontend gap (teacher flow to display join code):**
 
@@ -222,7 +225,7 @@ This section records what this backend provides and what the frontend (other rep
   - From the teacher area (e.g. Teacher Home or “My classes”), call `GET /api/v1/courses/teacher/{teacher_id}` (using the teacher id from the current user’s profile).
   - Render each course (e.g. name, subject) and its **join_code** so the teacher can show or copy it in class.
 
-**Frontend (assignments):** Teacher UI can call `GET /api/v1/activities?topic=...` to search, then `POST /api/v1/assignments` with `teacher_id` from `GET /auth/me` profile. Student UI should call `GET /api/v1/assignments/courses/{course_id}` **with** the student’s Bearer token so each row can include **`my_completed_at`** / **`my_score`**, use **`assignment.activity.content_url`** as the href for **Open assignment** / **Review assignment** in a **new tab** (`target="_blank"`, `rel="noopener noreferrer"`; no default iframe). Reference UI: `src/pages/student/Assignments.tsx`. Details: `docs/auth-and-profile-contract.md`, ADR 0005.
+**Frontend (assignments):** Teacher UI can call `GET /api/v1/activities?topic=...` to search, then `POST /api/v1/assignments` with `teacher_id` from `GET /auth/me` profile. Student UI calls `GET /api/v1/assignments/courses/{course_id}` **with Bearer** (ID or access token). Build miniquiz launch URLs with query **`assignment_id`**, **`archimedes_api_base`**, **`student_id`**, optional **`activity_id`**, and put **`#access_token=...`** in the hash for `m4u_extended.js` to **`POST .../completions`** (see `src/pages/student/Assignments.tsx`). Use **`http://localhost:8001`** (or your public API URL), not **`0.0.0.0`**, as the API base in the browser. Details: `docs/auth-and-profile-contract.md`, ADR 0005.
 
 ---
 
