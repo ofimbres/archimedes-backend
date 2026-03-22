@@ -56,6 +56,11 @@ class Settings(BaseSettings):
         default="http://localhost:3000",
         validation_alias="FRONTEND_URL",
     )
+    # Comma-separated CORS origins. If empty, FRONTEND_URL is used.
+    cors_origins: str = Field(
+        default="",
+        validation_alias=AliasChoices("CORS_ORIGINS", "CORS_ORIGIN"),
+    )
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
 
@@ -70,7 +75,7 @@ class Settings(BaseSettings):
     worksheets_s3_prefix: str = "worksheets/"
 
     # Miniquiz / exercise content base URL. Activity content URL = {miniquiz_base_url}/{activity_id}.html
-    # e.g. https://d21jyw7vfrv0n9.cloudfront.net or S3 website URL; no trailing slash.
+    # e.g. http://d21jyw7vfrv0n9.cloudfront.net → http://d21jyw7vfrv0n9.cloudfront.net/EX01.html; no trailing slash.
     miniquiz_base_url: str = Field(
         default="",
         validation_alias=AliasChoices("S3_MINI_QUIZ_BASE_URL", "MINIQUIZ_BASE_URL"),

@@ -69,8 +69,13 @@ class AssignmentService:
         self,
         course_id: UUID,
         include_activity: bool = True,
+        viewer_student_id: Optional[UUID] = None,
     ) -> AssignmentListResponse:
-        """List assignments for a course."""
+        """List assignments for a course.
+
+        With ``viewer_student_id``, set ``my_completed_at`` and ``my_score``
+        from that student's completion row when present.
+        """
         query = (
             select(Assignment)
             .where(Assignment.course_id == course_id)
@@ -91,8 +96,21 @@ class AssignmentService:
         course = course_result.scalar_one_or_none()
         course_name = course.course_name if course else None
 
+        completions_by_assignment: dict[UUID, AssignmentCompletion] = {}
+        if viewer_student_id and assignments:
+            aid_list = [a.id for a in assignments]
+            comp_result = await self.db.execute(
+                select(AssignmentCompletion).where(
+                    AssignmentCompletion.student_id == viewer_student_id,
+                    AssignmentCompletion.assignment_id.in_(aid_list),
+                )
+            )
+            for row in comp_result.scalars().all():
+                completions_by_assignment[row.assignment_id] = row
+
         items = []
         for a in assignments:
+            comp = completions_by_assignment.get(a.id)
             resp = AssignmentResponse(
                 id=a.id,
                 course_id=a.course_id,
@@ -107,6 +125,10 @@ class AssignmentService:
                     else None
                 ),
                 course_name=course_name,
+                my_completed_at=comp.completed_at if comp else None,
+                my_score=(
+                    float(comp.score) if comp and comp.score is not None else None
+                ),
             )
             items.append(resp)
 

@@ -39,6 +39,14 @@ class AssignmentResponse(BaseModel):
 
     activity: Optional[ActivityResponse] = None
     course_name: Optional[str] = None
+    # Filled from completions when Bearer maps to a linked student.
+    my_completed_at: Optional[datetime] = None
+    my_score: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="This student's score for the assignment, if completed",
+    )
 
 
 class AssignmentListResponse(BaseModel):

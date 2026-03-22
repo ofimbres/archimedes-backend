@@ -11,7 +11,7 @@ Archimedes is a school-focused learning platform for teachers and students. This
 - **Multi-tenant school management** (schools, teachers, students, courses).
 - **Authentication and identity integration** via AWS Cognito (Google + email/password).
 - **Class enrollment** using short join codes.
-- **Assignments**: teachers assign activities (e.g. miniquiz) to courses; students see and complete them via the existing worksheet flow (see ADR 0004).
+- **Assignments**: teachers assign activities (e.g. miniquiz) to courses; students see assignments, open hosted miniquiz/HTML via **`activity.content_url`** in a new tab, and record completion (see ADR 0004, ADR 0005).
 - **Foundations for analytics and reporting** across schools, courses, and students.
 
 The backend exposes a clean HTTP API (FastAPI) that is consumed by:
@@ -63,7 +63,7 @@ The backend exposes a clean HTTP API (FastAPI) that is consumed by:
 
 - **Students**
   - Join a course using a join code or school selection.
-  - See assignments for their enrolled courses and complete them (e.g. miniquiz via existing worksheet flow).
+  - See assignments for their enrolled courses; open each assignment using the API’s **`assignment.activity.content_url`** in a **new tab** (not an in-app iframe by default; see ADR 0005). Complete the miniquiz/HTML, then the app records completion via **`POST /api/v1/assignments/{id}/completions`** (worksheet/session flow may still apply for some flows; `activity_id` aligns with worksheet id where used).
   - Access course content and activities (via frontend).
 
 - **Admins**
@@ -112,7 +112,7 @@ API details (request bodies, endpoints) are in `auth-and-profile-contract.md` (c
 - **Assignments and activities**
   - Maintain a **taxonomy** (topics, subtopics tables) and an **activities** catalog (e.g. miniquiz); activities link via subtopic_id. Seed topics and subtopics from `docs/topics.csv`, then activities from `docs/miniquiz-activities.csv` when empty.
   - Let teachers create **assignments** (course + activity + optional due date); only the course owner can create.
-  - Expose list of assignments per course for teachers and enrolled students. Completion uses the existing worksheet/session flow (activity_id = worksheet_id).
+  - Expose list of assignments per course for teachers and enrolled students. Each listed assignment includes nested **activity** with **`content_url`** (when the miniquiz base URL env is set). With **`Authorization: Bearer`** for a user linked to a **student** profile, the same list includes optional **`my_completed_at`** / **`my_score`** for that student (see ADR 0005). Students (or the frontend) record completion with **`POST /api/v1/assignments/{assignment_id}/completions`** after finishing work.
 
 - **Data access**
   - Provide APIs that are aligned with the conceptual schema in `postgresql-schema.md`.
@@ -214,7 +214,7 @@ This section records what this backend provides and what the frontend (other rep
 - **Teacher courses and join codes:** `GET /api/v1/courses/teacher/{teacher_id}` returns a list of courses; `GET /api/v1/courses/{course_id}` returns a single course. Both responses include `join_code`. Teachers can use these to display or share codes once the frontend calls them.
 - **Student join-code flow:** `POST /api/v1/auth/complete-profile` (with `joinCode`) and `POST /api/v1/enrollments/join` (with `join_code`) are implemented. Students can register or join a class using the code the teacher provides.
 - **Teacher default courses:** On teacher account creation, the backend auto-creates up to six default courses with unique join codes (see ADR 0003).
-- **Assignments and activities:** `GET /api/v1/activities` (filter by topic, subtopic), `GET /api/v1/activities/topics`, `GET /api/v1/activities/{activity_id}` (lookup by exercise id), `POST /api/v1/assignments`, `GET /api/v1/assignments/courses/{course_id}`. Taxonomy and activities seeded from `docs/topics.csv` and `docs/miniquiz-activities.csv` on first run (app startup when tables are empty) or via `python scripts/seed_activities.py` (see ADR 0004).
+- **Assignments and activities:** `GET /api/v1/activities` (filter by topic, subtopic), `GET /api/v1/activities/topics`, `GET /api/v1/activities/{activity_id}` (lookup by exercise id), `POST /api/v1/assignments`, `GET /api/v1/assignments/courses/{course_id}` (optional Bearer for student completion fields on each row), `POST /api/v1/assignments/{assignment_id}/completions`. Taxonomy and activities seeded from `docs/topics.csv` and `docs/miniquiz-activities.csv` on first run (app startup when tables are empty) or via `python scripts/seed_activities.py` (see ADR 0004). Student launch and list behavior: ADR 0005.
 
 **Frontend gap (teacher flow to display join code):**
 
@@ -222,7 +222,7 @@ This section records what this backend provides and what the frontend (other rep
   - From the teacher area (e.g. Teacher Home or “My classes”), call `GET /api/v1/courses/teacher/{teacher_id}` (using the teacher id from the current user’s profile).
   - Render each course (e.g. name, subject) and its **join_code** so the teacher can show or copy it in class.
 
-**Frontend (assignments):** Teacher UI can call `GET /api/v1/activities?topic=...` to search, then `POST /api/v1/assignments` with teacher_id from `GET /auth/me` profile. Student UI can call `GET /api/v1/assignments/courses/{course_id}` to list assignments and open activities via the existing worksheet content/session endpoints.
+**Frontend (assignments):** Teacher UI can call `GET /api/v1/activities?topic=...` to search, then `POST /api/v1/assignments` with `teacher_id` from `GET /auth/me` profile. Student UI should call `GET /api/v1/assignments/courses/{course_id}` **with** the student’s Bearer token so each row can include **`my_completed_at`** / **`my_score`**, use **`assignment.activity.content_url`** as the href for **Open assignment** / **Review assignment** in a **new tab** (`target="_blank"`, `rel="noopener noreferrer"`; no default iframe). Reference UI: `src/pages/student/Assignments.tsx`. Details: `docs/auth-and-profile-contract.md`, ADR 0005.
 
 ---
 

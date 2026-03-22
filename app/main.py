@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 
+from .config import settings
 from .database import engine, Base
 from .routers import (
     health,
@@ -60,13 +61,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+def _cors_allow_origins() -> list[str]:
+    raw = (settings.cors_origins or "").strip()
+    if raw:
+        return [o.strip() for o in raw.split(",") if o.strip()]
+    fu = (settings.frontend_url or "").strip().rstrip("/")
+    return [fu] if fu else ["http://localhost:3000"]
+
+
+# CORS: explicit origins (needed with credentials=True; cannot use "*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=_cors_allow_origins(),
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "*"],
 )
 
 # Include routers

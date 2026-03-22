@@ -12,6 +12,12 @@ Authorization: Bearer <access_token_or_id_token>
 
 Use the token returned after login (password or OAuth callback). The backend validates Cognito-issued JWTs.
 
+**ID token vs access token:** Send either on `api/v1` routes. **ID tokens** include an `aud` claim (app client id). **Access tokens** use `token_use: "access"` and `client_id` instead of `aud`. When `COGNITO_CLIENT_ID` is configured, the backend checks `aud` for ID tokens and `client_id` for access tokens so the access token no longer fails with a missing-audience error.
+
+**CORS:** Allowed origins come from `CORS_ORIGINS` (comma-separated) or default to `FRONTEND_URL`. `Authorization` and `Content-Type` are permitted on preflight. Include the **miniquiz CDN origin** (e.g. `https://d21jyw7vfrv0n9.cloudfront.net`) in `CORS_ORIGINS` when the static quiz calls the API with `fetch`.
+
+**Miniquiz `fetch` vs local / `0.0.0.0` API (Chrome “Private Network Access”):** A page on the **public web** (e.g. CloudFront) **cannot** call `http://localhost`, `http://127.0.0.1`, or `http://0.0.0.0:8001` — the browser blocks it as *more-private address space* (not fixable by CORS headers alone). **`0.0.0.0` is only for binding the server; never use it as `archimedes_api_base` in the browser.** For production, set **`archimedes_api_base`** to a **public HTTPS** API host (e.g. `https://api.yourdomain.com`). For local dev with a CloudFront-hosted quiz, use a tunnel (ngrok, cloudflared, etc.) to expose the API on **HTTPS with a public hostname**, or test completion using a **locally served** miniquiz + `http://localhost:…`, or avoid `fetch` from the quiz and use a **postMessage** bridge from a tab on `localhost`.
+
 ---
 
 ## 1. High-level flow
@@ -214,7 +220,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 - **Teacher:** Each **course** (class) has a **join code** (short, e.g. 5 characters). Teacher gets it from the backend when viewing a course (e.g. GET course by id or list teacher courses). Teacher shows this code in class; students enter it when completing profile.
 - **Student (first time):** In “Complete your profile”, after choosing role **Student**, ask for the **class join code**. Send it as `joinCode` in `POST /auth/complete-profile` with `userType: "students"`. Backend creates the student and enrolls them in that class.
-- **Student (already has account):** To join another class later, use `POST /api/v1/enrollments/join` with `student_id` and body `{ "join_code": "AB12X" }` (see enrollments API). No change to auth flow.
+- **Student (already has account):** To join another class later, use `POST /api/v1/enrollments/join?student_id=<UUID>` with **`Authorization: Bearer`** and body **`{ "join_code": "AB12X" }` only**; query **`student_id`** must match the JWT-linked student. List active enrollments with `GET /api/v1/enrollments/student/{student_id}?is_active=true&page=1&size=10` (Bearer required; same student or admin).
 
 ---
 
@@ -245,7 +251,7 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 
 ## 6. Teacher & student: activities and assignments
 
-**Backend model:** Activities (miniquiz, exercises) live in a catalog. Each activity belongs to a **subtopic**, and each subtopic belongs to a **topic** (taxonomy). Teachers assign activities to a **course**; all enrolled students see those assignments. Students complete work via the existing worksheet/session flow (activity_id = worksheet_id).
+**Backend model:** Activities (miniquiz, exercises) live in a catalog. Each activity belongs to a **subtopic**, and each subtopic belongs to a **topic** (taxonomy). Teachers assign activities to a **course**; all enrolled students see those assignments. Students open assigned HTML/miniquiz using **`assignment.activity.content_url`** (typically in a **new tab**; see ADR 0005), then record completion with **`POST .../assignments/{id}/completions`**. The worksheet/session flow may still apply where `activity_id` = `worksheet_id`.
 
 **API for the frontend:**
 
@@ -253,15 +259,16 @@ UUIDs are strings; timestamps are ISO 8601. Frontend can rely on these fields fo
 2. **Search activities:** `GET /api/v1/activities?topic=...&subtopic=...&activity_type=miniquiz` (params optional) → `{ activities: [...], total }`. Each activity has `activity_id`, `topic`, `subtopic`, `description`, `activity_type`, `created_at`, optional `topic_id`, `subtopic_id`, and `content_url` (full URL to the exercise HTML, e.g. `{base}/{activity_id}.html`; base from env `S3_MINI_QUIZ_BASE_URL` or `MINIQUIZ_BASE_URL`).
 3. **Get one activity:** `GET /api/v1/activities/{activity_id}` → same shape including `content_url`; 404 if not found.
 4. **Create assignment (teacher; must own course):** `POST /api/v1/assignments` body `{ course_id, activity_id, teacher_id, due_date?, title_override? }`. Use `teacher_id` from GET /auth/me `profile.id`. 403 if not course owner.
-5. **List assignments for a course:** `GET /api/v1/assignments/courses/{course_id}` → `{ assignments: [...], total }`. Each has `id`, `course_id`, `activity_id`, `due_date`, `created_at`, nested `activity`, `course_name`.
-6. **List all assignments for a teacher (optional – “all my assignments” view):** `GET /api/v1/assignments/teachers/{teacher_id}` → same shape as (5), but includes every assignment the teacher has created across all their courses. Frontend helper: e.g. `getAssignmentsByTeacher(teacherId)` calling this endpoint.
-7. **Record completion (student, after worksheet/miniquiz):** `POST /api/v1/assignments/{assignment_id}/completions` body `{ student_id, score? }` with `Authorization: Bearer <accessToken>`. Student must be enrolled in the assignment’s course (403 otherwise).
+5. **List assignments for a course:** `GET /api/v1/assignments/courses/{course_id}` — **`Authorization: Bearer` required.** Caller must be an **enrolled active student** in that course, the **course-owning teacher**, or a configured **admin**. Response shape as above; nested **`activity`** includes at least **`activity_id`**, **`description`**, and **`content_url`** (when the miniquiz base URL env is set). **`my_completed_at`** / **`my_score`** are set only for **students** (null for teachers/admins listing the course).
+6. **Assignment roster progress:** `GET /api/v1/assignments/{assignment_id}/progress` — Bearer required; **course-owning teacher** or **admin** only. Returns per-student **`pending` / `completed` / `past_due`**, optional **`score`**, **`completed_at`**.
+7. **List all assignments for a teacher (optional – “all my assignments” view):** `GET /api/v1/assignments/teachers/{teacher_id}` → same shape as (5), but includes every assignment the teacher has created across all their courses. Frontend helper: e.g. `getAssignmentsByTeacher(teacherId)` calling this endpoint.
+8. **Record completion (student, after worksheet/miniquiz):** `POST /api/v1/assignments/{assignment_id}/completions` body `{ student_id, score? }` with **`Authorization: Bearer` required**. The authenticated Cognito user must be linked to a **student** row, and **`student_id` in the body must equal that profile’s id** (403 otherwise). The student must be enrolled in the assignment’s course (403 otherwise). Idempotent: repeat calls update **`score`** or no-op.
 
 **Student assignments page flow:**  
-Page that lists assignments for a course via **getAssignmentsByCourse** (`GET /api/v1/assignments/courses/{course_id}`). Each row has a “Start” that uses `assignment.activity.content_url` or `activity_id` with the worksheet/miniquiz flow. After the student finishes the worksheet/miniquiz, call **postAssignmentCompletion**(`assignmentId`, `{ student_id, score }`, `accessToken`) — i.e. `POST /api/v1/assignments/{assignment_id}/completions` with that body and `Authorization: Bearer <accessToken>`.
+List assignments with **`GET /api/v1/assignments/courses/{course_id}`** and Bearer so rows include **`my_completed_at`**. Build each launch URL from **`activity.content_url`** plus query **`assignment_id`**, optional **`activity_id`**, **`archimedes_api_base`**, **`student_id`**, and put the Cognito token in the URL **hash** as **`#access_token=...`** (preferred over query for the token). **`m4u_extended.js`** on submit **`fetch`**es **`POST {archimedes_api_base}/api/v1/assignments/{assignment_id}/completions`** with **`Authorization: Bearer`** from the hash (or **`window.M4UConfig.archimedes.accessToken`**). Allow the miniquiz CDN origin in **`CORS_ORIGINS`**. **`target="_blank"`** + **`rel="noopener noreferrer"`** is fine. See ADR 0005.
 
 **Frontend prompt (copy-paste for activities & assignments):**  
-*"Use GET /api/v1/activities/topics for topic/subtopic filters. Search with GET /api/v1/activities?topic=...&subtopic=.... Get one activity with GET /api/v1/activities/{activity_id}. Activity responses include content_url (e.g. https://d21jyw7vfrv0n9.cloudfront.net/AL01.html) when backend env S3_MINI_QUIZ_BASE_URL or MINIQUIZ_BASE_URL is set. Teachers create assignments with POST /api/v1/assignments (body: course_id, activity_id, teacher_id from GET /auth/me profile.id, optional due_date, title_override). List assignments with GET /api/v1/assignments/courses/{course_id}. Use assignment.activity.content_url or activity_id with worksheet/session for completion."*
+*"…List assignments with GET /api/v1/assignments/courses/{course_id} (Bearer). Launch miniquiz with assignment_id, archimedes_api_base, student_id on the query string and access_token in the URL hash; m4u_extended.js POSTs .../completions from the quiz page (CORS). student_id and JWT subject must match backend rules."*
 
 ---
 

@@ -64,15 +64,17 @@ def _verify_cognito_token(token: str) -> Dict[str, Any]:
         "verify_signature": True,
         "verify_exp": True,
         "verify_iss": True,
+        "verify_aud": False,
         "require": ["exp", "iss", "sub"],
     }
     decode_kwargs = {
         "algorithms": ["RS256"],
         "issuer": issuer,
-        "options": options,
+        "options": {
+            **options,
+            "verify_aud": False,
+        },
     }
-    if settings.cognito_client_id:
-        decode_kwargs["audience"] = settings.cognito_client_id
     try:
         payload = jwt.decode(
             token,
@@ -93,8 +95,72 @@ def _verify_cognito_token(token: str) -> Dict[str, Any]:
             detail=detail,
         ) from e
 
-    # ID token has aud; access token may not. If we passed audience and it failed we'd have raised.
+    # ID token: aud must match app client. Access token: client_id must match (no aud).
+    if settings.cognito_client_id:
+        client_id = settings.cognito_client_id
+        token_use = payload.get("token_use")
+        if token_use == "access":
+            if payload.get("client_id") != client_id:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid access token client_id",
+                )
+        elif token_use == "id":
+            aud = payload.get("aud")
+            if isinstance(aud, list):
+                ok = client_id in aud
+            else:
+                ok = aud == client_id
+            if not ok:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid ID token audience",
+                )
+        else:
+            aud = payload.get("aud")
+            if aud is not None:
+                if isinstance(aud, list):
+                    aud_ok = client_id in aud
+                else:
+                    aud_ok = aud == client_id
+                if not aud_ok:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid token audience",
+                    )
+            elif payload.get("client_id") is not None:
+                if payload.get("client_id") != client_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid token client_id",
+                    )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token missing token_use / aud / client_id",
+                )
+
     return payload
+
+
+def claims_is_platform_admin(claims: CurrentUserClaims) -> bool:
+    """True if Cognito sub or email is configured as platform admin."""
+    email = (claims.email or "").strip().lower()
+    admin_emails = [
+        e.strip().lower()
+        for e in (settings.admin_emails or "").split(",")
+        if e.strip()
+    ]
+    admin_ids = [
+        s.strip()
+        for s in (settings.admin_cognito_ids or "").split(",")
+        if s.strip()
+    ]
+    if admin_ids and claims.sub in admin_ids:
+        return True
+    if admin_emails and email in admin_emails:
+        return True
+    return False
 
 
 async def get_current_user_claims(
@@ -127,6 +193,32 @@ async def get_current_user_claims(
     )
 
 
+async def get_optional_current_user_claims(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+) -> Optional[CurrentUserClaims]:
+    """
+    Return verified JWT claims when a Bearer token is present; else None.
+    Invalid or expired tokens still raise 401.
+    """
+    if not credentials or credentials.credentials is None:
+        return None
+    token = credentials.credentials
+    payload = _verify_cognito_token(token)
+    sub = payload.get("sub")
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing sub",
+        )
+    return CurrentUserClaims(
+        sub=sub,
+        email=payload.get("email"),
+        given_name=payload.get("given_name"),
+        family_name=payload.get("family_name"),
+        token_use=payload.get("token_use"),
+    )
+
+
 async def get_current_admin_claims(
     claims: CurrentUserClaims = Depends(get_current_user_claims),
 ) -> CurrentUserClaims:
@@ -134,20 +226,7 @@ async def get_current_admin_claims(
     Require that the current user is an admin (by admin_emails or admin_cognito_ids).
     Use as a dependency on admin-only routes.
     """
-    email = (claims.email or "").strip().lower()
-    admin_emails = [
-        e.strip().lower()
-        for e in (settings.admin_emails or "").split(",")
-        if e.strip()
-    ]
-    admin_ids = [
-        s.strip()
-        for s in (settings.admin_cognito_ids or "").split(",")
-        if s.strip()
-    ]
-    if admin_ids and claims.sub in admin_ids:
-        return claims
-    if admin_emails and email in admin_emails:
+    if claims_is_platform_admin(claims):
         return claims
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

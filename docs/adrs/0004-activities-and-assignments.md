@@ -27,7 +27,8 @@ Teachers need a way to set work for their courses (e.g. assign a miniquiz or exe
    - Create: `POST /api/v1/assignments` with body `course_id`, `activity_id`, `teacher_id` (from `GET /auth/me`), optional `due_date`, `title_override`.
 
 3. **Completion**  
-   - No new completion model: students complete work via existing worksheet sessions; `worksheet_id` = `activity_id`. Assignments only attach an activity to a course (and optional due date).
+   - **`assignment_completions`** (per student per assignment): after a student finishes the assigned miniquiz/HTML, the client calls **`POST /api/v1/assignments/{assignment_id}/completions`** with `student_id` and optional `score`. This is separate from worksheet session records but aligns with the same **`activity_id`** / worksheet id where the worksheet flow is used.  
+   - **`GET /api/v1/assignments/courses/{course_id}`** can include **`my_completed_at`** / **`my_score`** on each assignment when the request carries a Bearer token for a Cognito user linked to that student (see ADR 0005 for student launch UX: reuse **`activity.content_url`**, new tab, no default iframe).
 
 ---
 
@@ -37,7 +38,7 @@ Teachers need a way to set work for their courses (e.g. assign a miniquiz or exe
 
 - Teachers can search activities by topic/subtopic and assign to a course in one place.
 - Single source of truth for catalog (DB) with CSV as initial seed.
-- Reuses existing worksheet/miniquiz flow; no duplicate completion tracking.
+- Reuses existing worksheet/miniquiz flow where applicable; assignment completion is also recorded explicitly for roster/progress (`assignment_completions`).
 - Clear authorization: only course owner creates assignments.
 
 ### Negative / risks
@@ -62,6 +63,7 @@ Teachers need a way to set work for their courses (e.g. assign a miniquiz or exe
 ## References
 
 - PRD: `docs/prd.md` (Assignments and activities, Implementation status).
+- Student launch (content URL, new tab, list fields): ADR 0005 (`docs/adrs/0005-student-assignment-launch.md`).
 - Schema: `docs/postgresql-schema.md` (Activities table, Assignments table).
 - Catalog source: `docs/miniquiz-activities.csv`.
-- Implementation: `app/models/activity.py`, `app/models/assignment.py`, `app/services/activity_service.py`, `app/services/assignment_service.py`, `app/routers/activities.py`, `app/routers/assignments.py`.
+- Implementation: `app/models/activity.py`, `app/models/assignment.py`, `app/models/assignment_completion.py`, `app/services/activity_service.py`, `app/services/assignment_service.py`, `app/routers/activities.py`, `app/routers/assignments.py`.

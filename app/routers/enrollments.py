@@ -6,7 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies.auth import (
+    CurrentUserClaims,
+    claims_is_platform_admin,
+    get_current_user_claims,
+)
+from app.models.student import Student
 from app.services.enrollment_service import EnrollmentService
+from sqlalchemy import select
 from app.schemas.enrollment import (
     EnrollmentCreate,
     EnrollmentCreateDirect,
@@ -25,9 +32,30 @@ router = APIRouter(
 async def enroll_with_join_code(
     student_id: UUID,
     enrollment_data: EnrollmentCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    claims: CurrentUserClaims = Depends(get_current_user_claims),
 ):
-    """Enroll a student in a course using a join code."""
+    """Enroll a student in a course using a join code.
+
+    **Authorization:** Bearer. Query ``student_id`` must match the authenticated
+    student's profile (Cognito ``sub`` → ``students.cognito_user_id``).
+    Body: ``{ "join_code": "..." }`` only.
+    """
+    linked = (
+        await db.execute(
+            select(Student.id).where(Student.cognito_user_id == claims.sub)
+        )
+    ).scalar_one_or_none()
+    if linked is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Authenticated user is not linked to a student profile",
+        )
+    if linked != student_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="student_id must match authenticated student",
+        )
     service = EnrollmentService(db)
     try:
         enrollment = await service.enroll_with_join_code(
@@ -110,9 +138,25 @@ async def get_student_enrollments(
     ),
     page: int = Query(1, ge=1, description="Page number"),
     size: int = Query(10, ge=1, le=100, description="Page size"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    claims: CurrentUserClaims = Depends(get_current_user_claims),
 ):
-    """Get enrollments for a specific student."""
+    """Get enrollments for a specific student.
+
+    **Authorization:** Bearer. Callers may only read their own ``student_id`` unless
+    they are a configured platform admin.
+    """
+    if not claims_is_platform_admin(claims):
+        linked = (
+            await db.execute(
+                select(Student.id).where(Student.cognito_user_id == claims.sub)
+            )
+        ).scalar_one_or_none()
+        if linked is None or linked != student_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not allowed to view enrollments for this student",
+            )
     if page < 1 or size < 1 or size > 100:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

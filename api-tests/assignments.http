@@ -22,10 +22,12 @@
 # 3) After worksheet/miniquiz done: postAssignmentCompletion(assignmentId, { student_id, score }, accessToken)
 
 ### Student – Get assignments for a course (getAssignmentsByCourse)
+### Optional Bearer: when the token maps to a student, each item includes my_completed_at / my_score.
 GET {{baseUrl}}{{apiVersion}}/assignments/courses/{{courseId}}
 Authorization: Bearer {{accessToken}}
 
 ### Student – Record completion after finishing worksheet/miniquiz (postAssignmentCompletion)
+### Bearer required; JWT must map to the same student as student_id in the body.
 POST {{baseUrl}}{{apiVersion}}/assignments/{{assignmentId}}/completions
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
