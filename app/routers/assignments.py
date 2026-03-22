@@ -98,8 +98,9 @@ async def list_course_assignments(
     a configured platform **admin**.
 
     For students, each assignment includes nested **activity** (``activity_id``,
-    ``description``, ``content_url`` when configured) and ``my_completed_at`` /
-    ``my_score`` when applicable.
+    ``description``, ``content_url`` when configured), ``my_completed_at`` /
+    ``my_score``, and ``my_status`` (``completed`` / ``pending`` / ``past_due``;
+    same rules as ``GET .../progress`` roster).
     """
     viewer_student_id = await resolve_course_assignments_list_access(
         db, course_id, claims

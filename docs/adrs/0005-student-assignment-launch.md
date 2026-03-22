@@ -27,7 +27,7 @@ Students open assigned miniquiz/HTML content hosted on S3 or a CDN. The API alre
    Show short helper text that assignments open in a new tab and the Archimedes tab should stay open for return navigation.
 
 4. **Per-student completion on the list (one round-trip)**  
-   **`GET /api/v1/assignments/courses/{course_id}`** always requires **`Authorization: Bearer`**. When the user is linked to a **student** row (`students.cognito_user_id` = JWT `sub`) **and** enrolled in the course, each assignment includes **`my_completed_at`** and **`my_score`** (or null if not completed) so the UI can choose “Open” vs “Review” without N+1 completion fetches. **Teachers** and **admins** calling the same endpoint get the list with **`my_*`** null on every row (they are not the enrolled student).
+   **`GET /api/v1/assignments/courses/{course_id}`** always requires **`Authorization: Bearer`**. When the user is linked to a **student** row (`students.cognito_user_id` = JWT `sub`) **and** enrolled in the course, each assignment includes **`my_completed_at`**, **`my_score`**, and **`my_status`** (`completed` \| `pending` \| `past_due`, same rules as **`GET .../assignments/{id}/progress`** per student) so the UI can choose “Open” vs “Review” and show overdue state without inferring from **`due_date`** alone. **Teachers** and **admins** get **`my_*`** null on every row.
 
 5. **No new signed-URL API**  
    Deferred until product requires private objects or time-limited links; see integration notes in `docs/auth-and-profile-contract.md` (activities & assignments).

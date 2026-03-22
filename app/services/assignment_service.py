@@ -1,6 +1,7 @@
 """Assignment business logic and database operations."""
 
-from typing import Optional
+from datetime import datetime, timezone
+from typing import Literal, Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,20 @@ from app.schemas.assignment import (
     AssignmentStudentStatus,
 )
 from app.schemas.activity import ActivityResponse
+
+
+def _student_work_status(
+    *,
+    has_completion: bool,
+    due_date: Optional[datetime],
+    now: datetime,
+) -> Literal["completed", "pending", "past_due"]:
+    """Align with teacher progress roster: completed > past_due (overdue, not done) > pending."""
+    if has_completion:
+        return "completed"
+    if due_date is not None and now > due_date:
+        return "past_due"
+    return "pending"
 
 
 class AssignmentService:
@@ -73,8 +88,8 @@ class AssignmentService:
     ) -> AssignmentListResponse:
         """List assignments for a course.
 
-        With ``viewer_student_id``, set ``my_completed_at`` and ``my_score``
-        from that student's completion row when present.
+        With ``viewer_student_id``, set ``my_completed_at``, ``my_score``, and
+        ``my_status`` (completed / pending / past_due) from that student's view.
         """
         query = (
             select(Assignment)
@@ -108,9 +123,11 @@ class AssignmentService:
             for row in comp_result.scalars().all():
                 completions_by_assignment[row.assignment_id] = row
 
+        now = datetime.now(timezone.utc)
         items = []
         for a in assignments:
             comp = completions_by_assignment.get(a.id)
+            has_completion = comp is not None
             resp = AssignmentResponse(
                 id=a.id,
                 course_id=a.course_id,
@@ -128,6 +145,15 @@ class AssignmentService:
                 my_completed_at=comp.completed_at if comp else None,
                 my_score=(
                     float(comp.score) if comp and comp.score is not None else None
+                ),
+                my_status=(
+                    _student_work_status(
+                        has_completion=has_completion,
+                        due_date=a.due_date,
+                        now=now,
+                    )
+                    if viewer_student_id
+                    else None
                 ),
             )
             items.append(resp)
@@ -375,8 +401,6 @@ class AssignmentService:
             c.student_id: c for c in completions
         }
 
-        from datetime import datetime, timezone
-
         now = datetime.now(timezone.utc)
         due_date = assignment.due_date
 
@@ -395,7 +419,6 @@ class AssignmentService:
 
             completion = completion_by_student.get(student_id)
             if completion:
-                status: str = "completed"
                 score_val = (
                     float(completion.score)
                     if getattr(completion, "score", None) is not None
@@ -403,19 +426,20 @@ class AssignmentService:
                 )
                 completed_at = completion.completed_at
             else:
-                # No completion; decide pending vs past_due
-                if due_date and now > due_date:
-                    status = "past_due"
-                else:
-                    status = "pending"
                 score_val = None
                 completed_at = None
+
+            work_status = _student_work_status(
+                has_completion=completion is not None,
+                due_date=due_date,
+                now=now,
+            )
 
             students.append(
                 AssignmentStudentStatus(
                     student_id=student_id,
                     student_name=full_name,
-                    status=status,  # type: ignore[arg-type]
+                    status=work_status,
                     score=score_val,
                     completed_at=completed_at,
                 )

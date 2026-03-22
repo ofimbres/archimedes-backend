@@ -29,7 +29,7 @@ Teachers need a way to set work for their courses (e.g. assign a miniquiz or exe
 
 3. **Completion**  
    - **`assignment_completions`** (per student per assignment): after a student finishes the assigned miniquiz/HTML, the client calls **`POST /api/v1/assignments/{assignment_id}/completions`** with **`Authorization: Bearer`**, `student_id` (must match JWT-linked student), and optional `score`. This is separate from worksheet session records but aligns with the same **`activity_id`** / worksheet id where the worksheet flow is used.  
-   - **`GET /api/v1/assignments/courses/{course_id}`** includes **`my_completed_at`** / **`my_score`** on each row when the Bearer user is linked to a **student** enrolled in the course; otherwise those fields are null (see ADR 0005: **`activity.content_url`**, new tab, no default iframe).
+   - **`GET /api/v1/assignments/courses/{course_id}`** includes **`my_completed_at`**, **`my_score`**, and **`my_status`** on each row when the Bearer user is linked to a **student** enrolled in the course; otherwise those fields are null (see ADR 0005: **`activity.content_url`**, new tab, no default iframe).
 
 ---
 

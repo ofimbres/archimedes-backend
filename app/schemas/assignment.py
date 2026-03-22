@@ -47,6 +47,14 @@ class AssignmentResponse(BaseModel):
         le=100,
         description="This student's score for the assignment, if completed",
     )
+    my_status: Optional[Literal["completed", "pending", "past_due"]] = Field(
+        default=None,
+        description=(
+            "Student workflow: completed if recorded; else past_due if due "
+            "passed; else pending. Only for student list callers (with "
+            "my_completed_at / my_score)."
+        ),
+    )
 
 
 class AssignmentListResponse(BaseModel):
