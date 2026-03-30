@@ -14,16 +14,17 @@ from app.models.subtopic import Subtopic
 from app.schemas.activity import ActivityResponse, ActivityListResponse
 
 
-# CSV paths: prefer docs/ in repo for seeding
+# CSV paths: prefer docs/shared/ in repo for seeding
 TOPICS_CSV_PATHS = [
-    Path("/workspace/docs/topics.csv"),
-    Path(__file__).resolve().parent.parent.parent / "docs" / "topics.csv",
+    Path("/workspace/docs/shared/topics.csv"),
+    Path(__file__).resolve().parent.parent.parent / "docs" / "shared" / "topics.csv",
 ]
 
 ACTIVITIES_CSV_PATHS = [
-    Path("/workspace/docs/miniquiz-activities.csv"),
+    Path("/workspace/docs/shared/miniquiz-activities.csv"),
     Path(__file__).resolve().parent.parent.parent
     / "docs"
+    / "shared"
     / "miniquiz-activities.csv",
 ]
 

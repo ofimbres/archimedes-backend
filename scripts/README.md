@@ -9,7 +9,7 @@ Seed the taxonomy (topics, subtopics) and activities from CSV files. Idempotent:
 python scripts/seed_activities.py
 ```
 
-Uses `docs/topics.csv` and `docs/miniquiz-activities.csv`. Requires `DATABASE_URL` in `.env`. The app also auto-seeds on startup when tables are empty (see `main.py` lifespan).
+Uses `docs/shared/topics.csv` and `docs/shared/miniquiz-activities.csv`. Requires `DATABASE_URL` in `.env`. The app also auto-seeds on startup when tables are empty (see `main.py` lifespan).
 
 ---
 

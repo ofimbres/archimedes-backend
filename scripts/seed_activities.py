@@ -21,8 +21,8 @@ from app.services.activity_service import ActivityService
 
 # Resolve CSV paths relative to project root (parent of scripts/)
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-TOPICS_CSV = _PROJECT_ROOT / "docs" / "topics.csv"
-ACTIVITIES_CSV = _PROJECT_ROOT / "docs" / "miniquiz-activities.csv"
+TOPICS_CSV = _PROJECT_ROOT / "docs" / "shared" / "topics.csv"
+ACTIVITIES_CSV = _PROJECT_ROOT / "docs" / "shared" / "miniquiz-activities.csv"
 
 
 async def main() -> int:
