@@ -1,6 +1,7 @@
 # Build Docker image and push to Amazon ECR.
-# Requires: GitHub secret AWS_ROLE_TO_ASSUME (IAM role ARN) + OIDC trust in AWS,
-# or classic AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY on the job (not configured below).
+# Supports either:
+# 1) OIDC role assumption via AWS_ROLE_TO_ASSUME (recommended), or
+# 2) access keys via AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (+ optional AWS_SESSION_TOKEN).
 #
 # See docs/shared/runbooks/aws-dev-deployment.md and docs/shared/adrs/infra/0001-aws-dev-deployment.md
 
@@ -26,10 +27,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Configure AWS credentials (OIDC)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (access keys fallback)
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' && secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate AWS credential path is configured
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' && (secrets.AWS_ACCESS_KEY_ID == '' || secrets.AWS_SECRET_ACCESS_KEY == '') }}
+        run: |
+          echo "No AWS credential source configured."
+          echo "Set AWS_ROLE_TO_ASSUME (recommended), or set AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY."
+          exit 1
 
       - name: Login to Amazon ECR
         id: ecr
