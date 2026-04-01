@@ -1,0 +1,52 @@
+# Build Docker image and push to Amazon ECR.
+# Requires: GitHub secret AWS_ROLE_TO_ASSUME (IAM role ARN) + OIDC trust in AWS,
+# or classic AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY on the job (not configured below).
+#
+# See docs/shared/runbooks/aws-dev-deployment.md and docs/shared/adrs/infra/0001-aws-dev-deployment.md
+
+name: Docker build and push to ECR
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY: dev-archimedes-backend-ecr-repository
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          docker build \
+            --build-arg BUILD_DATE="${BUILD_DATE}" \
+            --build-arg GIT_COMMIT="${IMAGE_TAG}" \
+            --build-arg ENVIRONMENT=dev \
+            -t "${REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}" \
+            -t "${REGISTRY}/${ECR_REPOSITORY}:latest" \
+            .
+          docker push "${REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+          docker push "${REGISTRY}/${ECR_REPOSITORY}:latest"
