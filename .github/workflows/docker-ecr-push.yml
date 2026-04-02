@@ -18,7 +18,7 @@ permissions:
 
 env:
   AWS_REGION: us-west-2
-  ECR_REPOSITORY: dev-archimedes-backend-ecr-repository
+  ECR_REPOSITORY: dev-archimedes-backend
 
 jobs:
   push:
