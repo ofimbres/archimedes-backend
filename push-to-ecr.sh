@@ -17,9 +17,11 @@ NC='\033[0m' # No Color
 # Configuration
 AWS_ACCOUNT_ID="928483661641"
 AWS_REGION="us-west-2"
-ECR_REPOSITORY="dev-archimedes-backend-ecr-repository"
-IMAGE_NAME="dev-archimedes-backend-ecr-repository"
+ECR_REPOSITORY="dev-archimedes-backend"
+IMAGE_NAME="dev-archimedes-backend"
 ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}"
+# Match ECS on Graviton (t4g); override with BUILD_PLATFORM=linux/amd64 if needed.
+BUILD_PLATFORM="${BUILD_PLATFORM:-linux/arm64}"
 
 # Parse command line arguments
 IMAGE_TAG="${1:-latest}"
@@ -33,6 +35,7 @@ echo -e "   • Region: ${AWS_REGION}"
 echo -e "   • Repository: ${ECR_REPOSITORY}"
 echo -e "   • Image Tag: ${IMAGE_TAG}"
 echo -e "   • Environment: ${ENVIRONMENT}"
+echo -e "   • Platform: ${BUILD_PLATFORM}"
 echo ""
 
 # Check prerequisites
@@ -71,65 +74,44 @@ else
     exit 1
 fi
 
-# Build Docker image
-echo -e "${BLUE}🔨 Building Docker image...${NC}"
-echo -e "${YELLOW}   Building: ${IMAGE_NAME}:${IMAGE_TAG}${NC}"
+# Build and push (buildx: correct arch for Graviton ECS; --push loads no local tag)
+echo -e "${BLUE}🔨 Building and pushing (${BUILD_PLATFORM})...${NC}"
+echo -e "${YELLOW}   Tags: ${ECR_URI}:${IMAGE_TAG}${NC}"
 
-# Add build timestamp and git commit for tracking
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-docker build \
-    --build-arg BUILD_DATE="${BUILD_DATE}" \
-    --build-arg GIT_COMMIT="${GIT_COMMIT}" \
-    --build-arg ENVIRONMENT="${ENVIRONMENT}" \
-    -t ${IMAGE_NAME}:${IMAGE_TAG} \
-    .
+TAG_ARGS=( -t "${ECR_URI}:${IMAGE_TAG}" )
+if [ "${IMAGE_TAG}" != "latest" ]; then
+    TAG_ARGS+=( -t "${ECR_URI}:latest" )
+    echo -e "${YELLOW}   Also tagging: ${ECR_URI}:latest${NC}"
+fi
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Docker image built successfully${NC}"
-else
-    echo -e "${RED}❌ Docker build failed${NC}"
+if ! docker buildx version &>/dev/null; then
+    echo -e "${RED}❌ docker buildx not available. Install Docker Buildx or update Docker Desktop.${NC}"
     exit 1
 fi
 
-# Tag image for ECR
-echo -e "${BLUE}🏷️  Tagging image for ECR...${NC}"
-docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${ECR_URI}:${IMAGE_TAG}
-
-# Also tag as latest if not already latest
-if [ "${IMAGE_TAG}" != "latest" ]; then
-    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${ECR_URI}:latest
-    echo -e "${YELLOW}   Tagged as both ${IMAGE_TAG} and latest${NC}"
-fi
-
-echo -e "${GREEN}✅ Image tagged successfully${NC}"
-
-# Push to ECR
-echo -e "${BLUE}📤 Pushing image to ECR...${NC}"
-echo -e "${YELLOW}   Pushing: ${ECR_URI}:${IMAGE_TAG}${NC}"
-
-docker push ${ECR_URI}:${IMAGE_TAG}
-
-# Push latest tag if created
-if [ "${IMAGE_TAG}" != "latest" ]; then
-    echo -e "${YELLOW}   Pushing: ${ECR_URI}:latest${NC}"
-    docker push ${ECR_URI}:latest
-fi
+docker buildx build \
+    --platform "${BUILD_PLATFORM}" \
+    --build-arg BUILD_DATE="${BUILD_DATE}" \
+    --build-arg GIT_COMMIT="${GIT_COMMIT}" \
+    --build-arg ENVIRONMENT="${ENVIRONMENT}" \
+    "${TAG_ARGS[@]}" \
+    --push \
+    .
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Image pushed to ECR successfully${NC}"
+    echo -e "${GREEN}✅ Image built and pushed to ECR${NC}"
 else
-    echo -e "${RED}❌ Failed to push image to ECR${NC}"
+    echo -e "${RED}❌ docker buildx build --push failed${NC}"
     exit 1
 fi
 
 # Display image information
 echo -e "${BLUE}📊 Image Information:${NC}"
-IMAGE_SIZE=$(docker images ${IMAGE_NAME}:${IMAGE_TAG} --format "table {{.Size}}" | tail -n1)
-echo -e "   • Local Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+echo -e "   • Platform: ${BUILD_PLATFORM}"
 echo -e "   • ECR URI: ${ECR_URI}:${IMAGE_TAG}"
-echo -e "   • Image Size: ${IMAGE_SIZE}"
 echo -e "   • Build Date: ${BUILD_DATE}"
 echo -e "   • Git Commit: ${GIT_COMMIT}"
 
@@ -141,19 +123,6 @@ aws ecr describe-images \
     --image-ids imageTag=${IMAGE_TAG} \
     --query 'imageDetails[0].[imagePushedAt,imageSizeInBytes]' \
     --output table 2>/dev/null || echo -e "${YELLOW}   Image details not immediately available${NC}"
-
-# Clean up local images (optional)
-read -p "🧹 Clean up local Docker images? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}🧹 Cleaning up local images...${NC}"
-    docker rmi ${IMAGE_NAME}:${IMAGE_TAG} 2>/dev/null || true
-    docker rmi ${ECR_URI}:${IMAGE_TAG} 2>/dev/null || true
-    if [ "${IMAGE_TAG}" != "latest" ]; then
-        docker rmi ${ECR_URI}:latest 2>/dev/null || true
-    fi
-    echo -e "${GREEN}✅ Local images cleaned up${NC}"
-fi
 
 echo ""
 echo -e "${GREEN}🎉 Deployment completed successfully!${NC}"
