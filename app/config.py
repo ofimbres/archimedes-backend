@@ -2,29 +2,48 @@
 Configuration management - so much cleaner than Java's application.yml mess!
 """
 
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings
-from pydantic import Field, AliasChoices
 
 
 class Settings(BaseSettings):
     """Application settings with automatic environment variable loading"""
 
-    # Database
-    database_url: str = (
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/archimedes"
+    # Database — local/dev: set DATABASE_URL (single string). ECS/RDS IAM: set USE_IAM_AUTH=true
+    # and DB_HOST, DB_PORT, DB_NAME, DB_IAM_USER; omit or ignore DATABASE_URL.
+    database_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("DATABASE_URL", "database_url"),
     )
+    use_iam_auth: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("USE_IAM_AUTH", "use_iam_auth"),
+    )
+    db_host: str = Field(default="", validation_alias="DB_HOST")
+    db_port: int = Field(default=5432, validation_alias="DB_PORT")
+    db_name: str = Field(
+        default="",
+        validation_alias=AliasChoices("DB_NAME", "DBNAME"),
+    )
+    db_iam_user: str = Field(default="", validation_alias="DB_IAM_USER")
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Ensure asyncpg driver is used for PostgreSQL
-        if self.database_url.startswith('postgresql://'):
-            self.database_url = self.database_url.replace(
-                'postgresql://', 'postgresql+asyncpg://'
-            )
-        elif self.database_url.startswith('postgres://'):
-            self.database_url = self.database_url.replace(
-                'postgres://', 'postgresql+asyncpg://'
-            )
+    @model_validator(mode="after")
+    def _normalize_database_config(self) -> "Settings":
+        if self.use_iam_auth:
+            if not self.db_host or not self.db_name or not self.db_iam_user:
+                raise ValueError(
+                    "USE_IAM_AUTH requires DB_HOST, DB_NAME, and DB_IAM_USER"
+                )
+            return self
+        url = (self.database_url or "").strip()
+        if not url:
+            url = "postgresql+asyncpg://postgres:postgres@localhost:5432/archimedes"
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        object.__setattr__(self, "database_url", url)
+        return self
 
     # API
     api_host: str = "0.0.0.0"
@@ -37,8 +56,11 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
-    # AWS Cognito
-    aws_region: str = "us-west-2"
+    # AWS Cognito / RDS IAM auth
+    aws_region: str = Field(
+        default="us-west-2",
+        validation_alias=AliasChoices("AWS_REGION", "aws_region"),
+    )
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
     # Hosted UI domain, e.g. archimedes-dev.auth.us-east-1.amazoncognito.com

@@ -156,7 +156,10 @@ class DevCleanupService:
         print("🚀 Starting full cleanup...")
         print(f"   AWS Region: {settings.aws_region}")
         print(f"   Cognito User Pool: {settings.cognito_user_pool_id}")
-        print(f"   Database: {settings.database_url.split('@')[-1]}")
+        if settings.use_iam_auth:
+            print(f"   Database: {settings.db_host}:{settings.db_port}/{settings.db_name} (IAM)")
+        else:
+            print(f"   Database: {settings.database_url.split('@')[-1]}")
         print("   ⚠️  This will DELETE ALL DATA!")
 
         # Clean up Cognito users
