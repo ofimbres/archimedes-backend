@@ -15,13 +15,21 @@ from .config import settings
 
 def _rds_ssl_context() -> ssl.SSLContext:
     """
-    RDS uses Amazon CAs; Python's default store often lacks them → verify fails with ssl=True.
-    Prefer the AWS global bundle (baked into the Docker image) or RDS_SSL_CA_BUNDLE.
+    RDS uses Amazon CAs; the OS trust store alone often fails verification.
+    Load the AWS RDS global bundle on top of the default context (do not use cafile=
+    alone on create_default_context — it can still mis-handle full chains with asyncpg).
     """
-    bundle = os.environ.get("RDS_SSL_CA_BUNDLE", "/etc/ssl/rds/global-bundle.pem")
-    if os.path.isfile(bundle):
-        return ssl.create_default_context(cafile=bundle)
-    return ssl.create_default_context()
+    ctx = ssl.create_default_context()
+    candidates = [
+        os.environ.get("RDS_SSL_CA_BUNDLE") or "",
+        "/etc/ssl/rds/global-bundle.pem",
+        "/app/docker/rds-global-bundle.pem",
+    ]
+    for path in candidates:
+        if path and os.path.isfile(path):
+            ctx.load_verify_locations(cafile=path)
+            return ctx
+    return ctx
 
 
 def _create_async_engine():
