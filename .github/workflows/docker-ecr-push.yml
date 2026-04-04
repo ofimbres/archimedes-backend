@@ -22,7 +22,9 @@ env:
 
 jobs:
   push:
-    runs-on: ubuntu-latest
+    # Native linux/arm64 (Graviton parity); no QEMU. Requires a repo that can use
+    # GitHub-hosted ARM runners (e.g. public repos). Private: use ubuntu-latest + QEMU or a larger ARM runner.
+    runs-on: ubuntu-24.04-arm
     environment: dev
     steps:
       - uses: actions/checkout@v4
@@ -36,9 +38,6 @@ jobs:
       - name: Login to Amazon ECR
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
