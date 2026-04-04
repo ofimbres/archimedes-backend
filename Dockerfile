@@ -33,7 +33,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /etc/ssl/rds \
+    && curl -fsSL -o /etc/ssl/rds/global-bundle.pem \
+        https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+    && chmod 644 /etc/ssl/rds/global-bundle.pem
 
 RUN groupadd -r appuser && \
     useradd -r -g appuser -d /app -s /sbin/nologin appuser

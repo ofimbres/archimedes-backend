@@ -2,12 +2,26 @@
 Database configuration - SQLAlchemy is SO much cleaner than JPA!
 """
 
+import os
+import ssl
+
 import boto3
 import asyncpg
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
 from .config import settings
+
+
+def _rds_ssl_context() -> ssl.SSLContext:
+    """
+    RDS uses Amazon CAs; Python's default store often lacks them → verify fails with ssl=True.
+    Prefer the AWS global bundle (baked into the Docker image) or RDS_SSL_CA_BUNDLE.
+    """
+    bundle = os.environ.get("RDS_SSL_CA_BUNDLE", "/etc/ssl/rds/global-bundle.pem")
+    if os.path.isfile(bundle):
+        return ssl.create_default_context(cafile=bundle)
+    return ssl.create_default_context()
 
 
 def _create_async_engine():
@@ -18,6 +32,7 @@ def _create_async_engine():
         dbname = settings.db_name
         iam_user = settings.db_iam_user
         region = settings.aws_region
+        ssl_ctx = _rds_ssl_context()
 
         async def async_creator():
             rds = boto3.client("rds", region_name=region)
@@ -33,7 +48,7 @@ def _create_async_engine():
                 user=iam_user,
                 password=token,
                 database=dbname,
-                ssl=True,
+                ssl=ssl_ctx,
             )
 
         return create_async_engine(
