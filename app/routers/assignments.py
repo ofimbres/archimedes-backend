@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -99,8 +99,8 @@ async def list_course_assignments(
 
     For students, each assignment includes nested **activity** (``activity_id``,
     ``description``, ``content_url`` when configured), ``my_completed_at`` /
-    ``my_score``, and ``my_status`` (``completed`` / ``pending`` / ``past_due``;
-    same rules as ``GET .../progress`` roster).
+    ``my_score``, and ``my_status`` (``completed`` / ``pending`` / ``past_due`` /
+    ``late_completed``; same rules as ``GET .../progress`` roster).
     """
     viewer_student_id = await resolve_course_assignments_list_access(
         db, course_id, claims
@@ -146,19 +146,29 @@ async def list_assignment_completions(
 @router.get("/{assignment_id}/progress", response_model=AssignmentProgressResponse)
 async def get_assignment_progress(
     assignment_id: UUID,
+    status_filter: str | None = Query(
+        default=None,
+        alias="status",
+        pattern="^(pending|completed|past_due|late_completed)$",
+    ),
+    student_id: UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
     claims: CurrentUserClaims = Depends(get_current_user_claims),
 ):
     """
-    Per-student status for the assignment roster (pending / completed / past_due),
-    optional score and completed_at.
+    Per-student status for the assignment roster (pending / completed / past_due /
+    late_completed), optional score and completed_at.
 
     **Authorization:** Bearer. Course-owning **teacher** or platform **admin** only.
     """
     await assert_teacher_or_admin_assignment_progress(db, assignment_id, claims)
     service = AssignmentService(db)
     try:
-        return await service.get_assignment_progress(assignment_id)
+        return await service.get_assignment_progress(
+            assignment_id,
+            status=status_filter,
+            filter_student_id=student_id,
+        )
     except ValueError as e:
         msg = str(e)
         if "Assignment not found" in msg:

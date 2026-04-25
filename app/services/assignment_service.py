@@ -30,11 +30,14 @@ from app.schemas.activity import ActivityResponse
 def _student_work_status(
     *,
     has_completion: bool,
+    completed_at: Optional[datetime],
     due_date: Optional[datetime],
     now: datetime,
-) -> Literal["completed", "pending", "past_due"]:
-    """Align with teacher progress roster: completed > past_due (overdue, not done) > pending."""
+) -> Literal["completed", "pending", "past_due", "late_completed"]:
+    """Shared status resolver for student list and teacher progress roster."""
     if has_completion:
+        if completed_at is not None and due_date is not None and completed_at > due_date:
+            return "late_completed"
         return "completed"
     if due_date is not None and now > due_date:
         return "past_due"
@@ -46,6 +49,12 @@ class AssignmentService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    @staticmethod
+    def _is_passing(score: Optional[float]) -> Optional[bool]:
+        if score is None:
+            return None
+        return score >= 70
 
     async def create_assignment(
         self,
@@ -89,7 +98,8 @@ class AssignmentService:
         """List assignments for a course.
 
         With ``viewer_student_id``, set ``my_completed_at``, ``my_score``, and
-        ``my_status`` (completed / pending / past_due) from that student's view.
+        ``my_status`` (completed / pending / past_due / late_completed) from that
+        student's view.
         """
         query = (
             select(Assignment)
@@ -149,8 +159,16 @@ class AssignmentService:
                 my_status=(
                     _student_work_status(
                         has_completion=has_completion,
+                        completed_at=comp.completed_at if comp else None,
                         due_date=a.due_date,
                         now=now,
+                    )
+                    if viewer_student_id
+                    else None
+                ),
+                my_passed=(
+                    self._is_passing(
+                        float(comp.score) if comp and comp.score is not None else None
                     )
                     if viewer_student_id
                     else None
@@ -303,6 +321,9 @@ class AssignmentService:
                 assignment_id=completion.assignment_id,
                 completed_at=completion.completed_at,
                 score=float(completion.score) if completion.score is not None else None,
+                passed=self._is_passing(
+                    float(completion.score) if completion.score is not None else None
+                ),
                 student_name=student_name,
             )
 
@@ -332,6 +353,9 @@ class AssignmentService:
             assignment_id=completion.assignment_id,
             completed_at=completion.completed_at,
             score=float(completion.score) if completion.score is not None else None,
+            passed=self._is_passing(
+                float(completion.score) if completion.score is not None else None
+            ),
             student_name=student_name,
         )
 
@@ -365,6 +389,9 @@ class AssignmentService:
                     assignment_id=c.assignment_id,
                     completed_at=c.completed_at,
                     score=float(c.score) if c.score is not None else None,
+                    passed=self._is_passing(
+                        float(c.score) if c.score is not None else None
+                    ),
                     student_name=student_name,
                 )
             )
@@ -373,8 +400,11 @@ class AssignmentService:
     async def get_assignment_progress(
         self,
         assignment_id: UUID,
+        *,
+        status: Optional[str] = None,
+        filter_student_id: Optional[UUID] = None,
     ) -> AssignmentProgressResponse:
-        """Return per-student status for an assignment (completed / pending / past_due)."""
+        """Return per-student status for an assignment roster."""
         assignment = await self.get_assignment(assignment_id)
         if not assignment:
             raise ValueError("Assignment not found")
@@ -431,9 +461,14 @@ class AssignmentService:
 
             work_status = _student_work_status(
                 has_completion=completion is not None,
+                completed_at=completed_at,
                 due_date=due_date,
                 now=now,
             )
+            if status is not None and work_status != status:
+                continue
+            if filter_student_id is not None and student_id != filter_student_id:
+                continue
 
             students.append(
                 AssignmentStudentStatus(
@@ -441,6 +476,7 @@ class AssignmentService:
                     student_name=full_name,
                     status=work_status,
                     score=score_val,
+                    passed=self._is_passing(score_val),
                     completed_at=completed_at,
                 )
             )

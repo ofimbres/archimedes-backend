@@ -47,13 +47,20 @@ class AssignmentResponse(BaseModel):
         le=100,
         description="This student's score for the assignment, if completed",
     )
-    my_status: Optional[Literal["completed", "pending", "past_due"]] = Field(
+    my_status: Optional[
+        Literal["completed", "pending", "past_due", "late_completed"]
+    ] = Field(
         default=None,
         description=(
-            "Student workflow: completed if recorded; else past_due if due "
-            "passed; else pending. Only for student list callers (with "
-            "my_completed_at / my_score)."
+            "Student workflow: late_completed if completion is after due_date; "
+            "completed if completion exists and is on time (or no due date); "
+            "else past_due if due passed; else pending. Only for student list "
+            "callers (with my_completed_at / my_score)."
         ),
+    )
+    my_passed: Optional[bool] = Field(
+        default=None,
+        description="Derived from my_score using passing threshold when score exists",
     )
 
 
@@ -91,6 +98,7 @@ class AssignmentCompletionResponse(BaseModel):
     assignment_id: UUID
     completed_at: datetime
     score: Optional[float] = None
+    passed: Optional[bool] = None
     student_name: Optional[str] = None
 
 
@@ -106,8 +114,9 @@ class AssignmentStudentStatus(BaseModel):
 
     student_id: UUID
     student_name: str
-    status: Literal["completed", "pending", "past_due"]
+    status: Literal["completed", "pending", "past_due", "late_completed"]
     score: Optional[float] = None
+    passed: Optional[bool] = None
     completed_at: Optional[datetime] = None
 
 
